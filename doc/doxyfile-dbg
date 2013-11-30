@@ -1,0 +1,4 @@
+INPUT              +=   ../doc/src/dbg.dox                                      \
+                        ../inc/base/dbg.h                                       \  
+                        ../inc/base/dbg_cfg.h                                   \
+                        ../src/dbg.c   

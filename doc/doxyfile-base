@@ -1,0 +1,22 @@
+@INCLUDE            =   doxyfile-generic
+@INCLUDE            =   doxyfile-mem
+@INCLUDE            =   doxyfile-dbg
+@INCLUDE            =   doxyfile-bitop
+@INCLUDE            =   doxyfile-critical
+PROJECT_NAME        =   "eSolid - Base system"
+PROJECT_BRIEF       =   "Event Based System"
+INPUT              +=   ../doc/pages/literature.dox                             \
+                        ../doc/pages/changelog.dox                              \
+                        ../doc/pages/abbreviations.dox                          \
+                        ../doc/pages/template.dox                               \
+                        ../template/generic/_port_/_mcu_/family/profile.h       \
+                        ../template/generic/_port_/_cpu_/arch/compiler.h        \
+                        ../template/generic/_port_/_cpu_/arch/cpu.h             \
+                        ../template/generic/_port_/_cpu_/arch/intr_cfg.h        \
+                        ../template/generic/_port_/_cpu_/arch/intr.h            \
+                        ../template/generic/_port_/_cpu_/arch/sysctrl_cfg.h     \
+                        ../template/generic/_port_/_cpu_/arch/sysctrl.h         \
+                        ../template/generic/_port_/_cpu_/cpu.c                  \
+                        ../template/generic/dbg_cfg.h                           \
+                        ../README.md
+OUTPUT_DIRECTORY    =   ../doc/base

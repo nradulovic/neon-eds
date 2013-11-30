@@ -1,0 +1,4 @@
+INPUT              +=   ../doc/src/mem_example.dox                              \
+                        ../doc/src/mem.dox                                      \
+                        ../inc/base/mem.h                                       \  
+                        ../src/mem.c                                           
