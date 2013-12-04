@@ -21,7 +21,7 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of critical.
+ * @brief       Interface of Critical code section locking management.
  * @defgroup    base_critical Critical code section locking management
  * @brief       These methods are used to protect concurrent access to a shared
  *              resource.
@@ -48,21 +48,21 @@
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Enter critical code section
- * @param       intCtx
+ * @param       inteCtx
  *              Interrupt context, pointer to portable type variable which will
  *              hold the interrupt context state during the critical code
  *              section.
  */
-#define ES_CRITICAL_LOCK_ENTER(intCtx)                                          \
-    PORT_INTR_MASK_REPLACE(intCtx, PORT_DEF_MAX_ISR_PRIO)
+#define ES_CRITICAL_LOCK_ENTER(intrCtx)                                         \
+    PORT_INTR_MASK_REPLACE(intrCtx, PORT_DEF_MAX_ISR_PRIO)
 
 /**@brief       Exit critical code section
- * @param       intCtx
+ * @param       intrCtx
  *              Interrupt context, portable type variable which is holding a
  *              previously saved interrupt context state.
  */
-#define ES_CRITICAL_LOCK_EXIT(intCtx)                                           \
-    PORT_INTR_MASK_SET(intCtx)
+#define ES_CRITICAL_LOCK_EXIT(intrCtx)                                          \
+    PORT_INTR_MASK_SET(intrCtx)
 
 /**@} *//**@} *//*--------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
