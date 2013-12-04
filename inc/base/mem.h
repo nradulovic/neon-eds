@@ -43,6 +43,14 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/**@brief       Get Block Size attribute of a pool memory
+ * @param       handle
+ *              Pointer to pool memory instance, see @ref esPMemHandle_T.
+ * @return      The size of blocks inside memory pool
+ */
+#define ES_PMEM_ATTR_BLOCK_SIZE_GET(handle)                                     \
+    (handle)->blockSize
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
