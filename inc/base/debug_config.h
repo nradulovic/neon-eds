@@ -28,8 +28,8 @@
  * @brief       Debug support Configuration
  * @{ *//*--------------------------------------------------------------------*/
 
-#if !defined(DBG_CFG_H_)
-#define DBG_CFG_H_
+#if !defined(DEBUG_CONFIG_H__)
+#define DEBUG_CONFIG_H__
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  DEFINES  ==*/
@@ -40,8 +40,8 @@
  *              - 0 - All debug options are disabled
  *              - 1 - Debug options can be enabled individually
  */
-#if !defined(CFG_DBG_ENABLE)
-# define CFG_DBG_ENABLE                 1
+#if !defined(CONFIG_DEBUG)
+# define CONFIG_DEBUG                   0
 #endif
 
 /**@brief       Enable/disable API arguments validation
@@ -49,11 +49,10 @@
  *              - 0 - API validation is disabled
  *              - 1 - API validation is enabled
  *
- * @note        This option is enabled only if @ref CFG_DBG_ENABLE is enabled,
- *              too.
+ * @note        This option is enabled only if @ref CONFIG_DEBUG is enabled, too.
  */
-#if !defined(CFG_DBG_API_VALIDATION)
-# define CFG_DBG_API_VALIDATION         1
+#if !defined(CONFIG_DEBUG_API_VALIDATION)
+# define CONFIG_DEBUG_API_VALIDATION    1
 #endif
 
 /**@brief       Enable/disable internal checks
@@ -61,28 +60,27 @@
  *              - 0 - API validation is disabled
  *              - 1 - API validation is enabled
  *
- * @note        This option is enabled only if @ref CFG_DBG_ENABLE is enabled,
- *              too.
+ * @note        This option is enabled only if @ref CONFIG_DEBUG is enabled, too.
  */
-#if !defined(CFG_DBG_INTERNAL_CHECK)
-# define CFG_DBG_INTERNAL_CHECK         1
+#if !defined(CONFIG_DEBUG_INTERNAL_CHECK)
+# define CONFIG_DEBUG_INTERNAL_CHECK    1
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
-#if ((1 != CFG_DBG_ENABLE) && (0 != CFG_DBG_ENABLE))
-# error "eSolid RT Kernel: Configuration option CFG_DBG_ENABLE is out of range."
+#if ((CONFIG_DEBUG != 1) && (CONFIG_DEBUG != 0))
+# error "eSolid RT Kernel: Configuration option CONFIG_DEBUG is out of range."
 #endif
 
-#if ((1 != CFG_DBG_API_VALIDATION) && (0 != CFG_DBG_API_VALIDATION))
-# error "eSolid RT Kernel: Configuration option CFG_DBG_API_VALIDATION is out of range."
+#if ((CONFIG_DEBUG_API_VALIDATION != 1) && (CONFIG_DEBUG_API_VALIDATION != 0))
+# error "eSolid RT Kernel: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range."
 #endif
 
-#if ((1 != CFG_DBG_INTERNAL_CHECK) && (0 != CFG_DBG_INTERNAL_CHECK))
-# error "eSolid RT Kernel: Configuration option CFG_DBG_INTERNAL_CHECK is out of range."
+#if ((CONFIG_DEBUG_INTERNAL_CHECK != 1) && (CONFIG_DEBUG_INTERNAL_CHECK != 0))
+# error "eSolid RT Kernel: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range."
 #endif
 
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of dbg_cfg.h
+ * END of debug_config.h
  ******************************************************************************/
-#endif /* DBG_CFG_H_ */
+#endif /* DEBUG_CONFIG_H__ */

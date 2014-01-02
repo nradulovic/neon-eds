@@ -40,7 +40,7 @@
  * @name        Critical code lock management
  * @brief       Disable/enable interrupts by preserving the interrupt context
  * @details     Generally speaking these macros would store the interrupt
- *              context in the local variable of @ref portReg_T type and then
+ *              context in the local variable of @ref portReg type and then
  *              disable interrupts. Local variable is allocated in all of eSolid
  *              functions that need to disable interrupts. Macros would restore
  *              the interrupt context by copying back the allocated variable

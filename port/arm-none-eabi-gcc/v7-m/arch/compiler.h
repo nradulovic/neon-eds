@@ -58,11 +58,11 @@
 # define PORT_C_FUNC                    "unknown"
 #endif
 
-/**@brief       Provides the current file's name which is being compiled
+/**@brief       Provides the free file's name which is being compiled
  */
 #define PORT_C_FILE                     __FILE__
 
-/**@brief       Provides the current source line
+/**@brief       Provides the free source line
  */
 #define PORT_C_LINE                     __LINE__
 
@@ -73,6 +73,8 @@
 /**@brief       Declare a function that will never return
  */
 #define PORT_C_NORETURN                 __attribute__((noreturn))
+
+#define PORT_C_UNUSED                   __attribute__((unused))
 
 /**@brief       Declare a variable that will be stored in ROM address space
  */
@@ -98,14 +100,14 @@
  */
 #define PORT_HWREG_SET(reg, mask, val)                                          \
     do {                                                                        \
-        portReg_T tmp;                                                          \
+        portReg tmp;                                                          \
         tmp = (reg);                                                            \
         tmp &= ~(mask);                                                         \
         tmp |= ((mask) & (val));                                                \
         (reg) = tmp;                                                            \
     } while (0u)
 
-/** @} *//*---------------------------------------------  C++ extern begin  --*/
+/** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -117,12 +119,9 @@ extern "C" {
  * @brief       All required data types are found in @c stdint.h and @c stddef.h
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Bool data type
+/**@brief General purpose registers are 32bit wide.
  */
-typedef enum boolType {
-    TRUE                = 1u,                                                   /**< TRUE                                                   */
-    FALSE               = 0u                                                    /**< FALSE                                                  */
-} bool_T;
+typedef unsigned int portReg;
 
 /** @} *//*-------------------------------------------------------------------*/
 

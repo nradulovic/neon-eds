@@ -169,7 +169,7 @@
  */
 #define SYS_SYST_CSR_ENABLE_Msk         (0x01ul << SYS_SYST_CSR_ENABLE_Pos)
 
-/** @} *//*---------------------------------------------  C++ extern begin  --*/
+/** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -233,7 +233,7 @@ static PORT_C_INLINE_ALWAYS void portSysTmrInit_(
     SYS_SYST->csr = SYS_SYST_CSR_CLKSOURCE_Msk;                                 /* SysTick uses the processor clock.                        */
 }
 
-/**@brief       Get current counter value
+/**@brief       Get free counter value
  * @inline
  */
 static PORT_C_INLINE_ALWAYS portSysTmrReg_T portSysTmrGetCVal_(

@@ -30,10 +30,12 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <stdbool.h>
+
 #include "arch/compiler.h"
 #include "arch/cpu.h"
 #include "arch/intr.h"
-#include "base/dbg.h"
+#include "base/debug.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -41,7 +43,7 @@
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 /**@brief       Definition text of debug messages
- * @note        This array needs to be in synchronization with enum esDbgMsgNum.
+ * @note        This array needs to be in synchronization with enum esDebugMessageNo.
  */
 static const PORT_C_ROM char * const PORT_C_ROM_VAR DbgMsg[] = {
     "Value is out of valid range.",                                             /* ES_DBG_OUT_OF_RANGE                                      */
@@ -63,9 +65,9 @@ static const PORT_C_ROM char * const PORT_C_ROM_VAR DbgMsg[] = {
  *          very confusing situation of why it failed.
  */
 PORT_C_NORETURN void dbgAssert(
-    const PORT_C_ROM struct dbgCobj_ * cObj,
+    const PORT_C_ROM struct debugCobject_ * cObj,
     const PORT_C_ROM char * expr,
-    enum esDbgMsgNum    msg) {
+    enum esDebugMessageNo    msg) {
 
     struct esDbgReport  dbgReport;
 
@@ -87,7 +89,7 @@ PORT_C_NORETURN void dbgAssert(
         &dbgReport);
     PORT_CPU_TERM();
 
-    while (TRUE);
+    while (true);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

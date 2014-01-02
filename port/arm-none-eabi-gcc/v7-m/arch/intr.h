@@ -71,7 +71,7 @@
 
 #define PORT_INTR_TERM()                portIntrTerm()
 
-/**@} *//*----------------------------------------------  C++ extern begin  --*/
+/**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -127,7 +127,7 @@ static PORT_C_INLINE_ALWAYS void portIntrDisable_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
-    portReg_T           state) {
+    portReg           state) {
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -148,9 +148,9 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
-    portReg_T *         state) {
+    portReg *         state) {
 
-    portReg_T           tmp;
+    portReg           tmp;
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -164,15 +164,15 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
     *state = tmp;
 }
 
-/**@brief       Get current and set new interrupt priority mask
+/**@brief       Get free and set new interrupt priority mask
  * @return      Current interrupt priority mask
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
-    portReg_T *         old,
-    portReg_T           new) {
+    portReg *         old,
+    portReg           new) {
 
-    portReg_T           tmp;
+    portReg           tmp;
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -199,7 +199,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
  */
 static PORT_C_INLINE_ALWAYS void intrPrioSet_(
     enum IntrNum        intrNum,
-    portReg_T           prio) {
+    portReg           prio) {
 
     SYS_SCB->shp[((uint32_t)(intrNum) & 0x0ful) - 4u] = prio;
 }

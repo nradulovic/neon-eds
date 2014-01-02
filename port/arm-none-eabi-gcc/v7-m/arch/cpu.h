@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
-
 #include "arch/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -76,17 +75,12 @@
  */
 #define CPU_PSR_THUMB_STATE_Msk         (0x01ul << CPU_PSR_THUMB_STATE_Pos)
 
-/** @} *//*---------------------------------------------  C++ extern begin  --*/
+/** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief General purpose registers are 32bit wide.
- */
-typedef uint32_t portReg_T;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
@@ -105,7 +99,7 @@ typedef uint32_t portReg_T;
  * @inline
  */
 static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFLS_(
-    portReg_T       value) {
+    portReg       value) {
 
     uint_fast8_t    clz;
 

@@ -23,7 +23,7 @@
  * @author  	Nenad Radulovic
  * @brief       Common bit/logic operations
  * @defgroup    base_bit_intf Common bit/logic operations
- * @brief       Common bit/logic operations operations
+ * @brief       Common bit/logic operations
  *********************************************************************//** @{ */
 
 #if !defined(BITOP_H__)
@@ -75,7 +75,7 @@
  *              Float division  : 27 / 5 = 5.4
  *              Rounded division: 27 / 5 = 5
  */
-#define ES_DIV_ROUND(numerator, denominator)                                    \
+#define ES_DIVISION_ROUND(numerator, denominator)                               \
     (((numerator) + ((denominator) / 2u)) / (denominator))
 
 /**@brief       Round up a division
@@ -103,7 +103,7 @@
  *              Float division     : 27 / 5 = 5.4
  *              Rounded up division: 27 / 5 = 6
  */
-#define ES_DIV_ROUNDUP(numerator, denominator)                                  \
+#define ES_DIVISION_ROUNDUP(numerator, denominator)                             \
     (((numerator) + (denominator) - 1u) / (denominator))
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -144,24 +144,24 @@
 
 /**@brief       Helper macro: calculate 2^pwr expression
  * @param       pwr
- *              Power : portReg_T, value which will be used in calculation
+ *              Power : portReg, value which will be used in calculation
  * @details     Some ports may want to use look up tables instead of shifting
  *              operation
  */
-#define ES_BIT_PWR2(pwr)                PORT_CPU_PWR2(pwr)
+#define ES_POWER_OF_2(pwr)              PORT_CPU_PWR2(pwr)
 
 /**@brief       Da li je @c expr jednak nekom stepenu dvojke?
  * @details     Makro vraca TRUE kada je vrednost @c expr izraza jednaka nekom
  *              stepenu dvojke, inace, vraca FALSE.
  * @mseffect
  */
-#define ES_BIT_IS_POW2(num)                                                     \
+#define ES_IS_POWER_OF_2(num)                                                   \
     (!((num) & ((num) - 1)))
 
 /**@brief       Calculate log2 for value @c x during the compilation
  * @mseffect
  */
-#define ES_BIT_UINT8_LOG2(x)                                                    \
+#define ES_UINT8_LOG2(x)                                                        \
     ((x) <   2u ? 0u :                                                          \
      ((x) <   4u ? 1u :                                                         \
       ((x) <   8u ? 2u :                                                        \
@@ -176,14 +176,14 @@
 
 /**@brief       Find last set bit in a word
  * @param       val
- *              Value : portReg_T, value which needs to be evaluated
+ *              Value : portReg, value which needs to be evaluated
  * @return      The position of the last set bit in a value
  * @details     This function is used by the scheduler to efficiently determine
  *              the highest priority of thread ready for execution. For similar
  *              algorithm details see:
  *              http://en.wikipedia.org/wiki/Find_first_set.
  */
-#define ES_BIT_FIND_LAST_SET(val)       PORT_CPU_FLS(val)
+#define ES_FIND_LAST_SET_BIT(val)       PORT_CPU_FLS(val)
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Simple bit operations
@@ -216,7 +216,7 @@
         var &= ~ES_BIT_MASK_MSB(var);                                           \
     } while (0)
 
-/**@} *//*----------------------------------------------  C++ extern begin  --*/
+/**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif

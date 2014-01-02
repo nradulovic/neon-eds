@@ -29,21 +29,21 @@
  * @brief       Debug support API
  * @{ *//*--------------------------------------------------------------------*/
 
-#if !defined(DBG_H__)
-#define DBG_H__
+#if !defined(DEBUG_H__)
+#define DEBUG_H__
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
 
 #include "arch/compiler.h"
-#include "base/dbg_cfg.h"
+#include "base/debug_config.h"
 
 /*===============================================================  MACRO's  ==*/
 
 /*------------------------------------------------------------------------*//**
  * @name        Object and error source information
- * @brief       This describes the current object file and error source
+ * @brief       This describes the free object file and error source
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Declare a module information card
@@ -55,28 +55,23 @@
  *              Module author : string
  * @api
  */
-#if (1 == CFG_DBG_ENABLE)
-# define DECL_MODULE_INFO(modName, modDesc, modAuth)                            \
-    static const PORT_C_ROM struct dbgModInfo_ ModInfo_ = {                     \
+#define DECL_MODULE_INFO(modName, modDesc, modAuth)                             \
+    PORT_C_UNUSED const PORT_C_ROM struct dbgModInfo_ ModInfo_ = {              \
         modName,                                                                \
         modDesc,                                                                \
         modAuth,                                                                \
         PORT_C_FILE                                                             \
     }
-#else
-# define DECL_MODULE_INFO(modName, modDesc, modAuth)                            \
-    PORT_C_UNUSED DECL_MODULE_INFO(modName, modDesc, modAuth)
-#endif
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Error checking
  * @brief       These features are enabled/disabled using the option
- *              @ref CFG_DBG_ENABLE.
+ *              @ref CONFIG_DEBUG.
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Static assert macro
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
  *              Expression : C expression : condition expression which must be
  *              TRUE.
@@ -94,17 +89,17 @@
 
 /**@brief       Generic assert macro.
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
  *              Expression : C expression : condition expression which must be
  *              TRUE.
  * @api
  */
-#if (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG)
 # define ES_DBG_ASSERT(msg, expr)                                               \
     do {                                                                        \
         if (!(expr)) {                                                          \
-            const PORT_C_ROM struct dbgCobj_ thisObj = {                        \
+            const PORT_C_ROM struct debugCobject_ thisObj = {                        \
                 &ModInfo_,                                                      \
                 PORT_C_FUNC,                                                    \
                 PORT_C_LINE                                                     \
@@ -119,16 +114,16 @@
 
 /**@brief       Assert macro that will always execute (no conditional).
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       text
  *              Text : string : a text which will be printed when this assert
  *              macro is executed.
  * @api
  */
-#if (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG)
 # define ES_DBG_ASSERT_ALWAYS(msg, text)                                        \
     do {                                                                        \
-        const PORT_C_ROM struct dbgCobj_ thisObj = {                            \
+        const PORT_C_ROM struct debugCobject_ thisObj = {                            \
             &ModInfo_,                                                          \
             PORT_C_FUNC,                                                        \
             PORT_C_LINE                                                         \
@@ -143,18 +138,18 @@
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Internal checking
  * @brief       These macros are enabled/disabled using the option
- *              @ref CFG_DBG_INTERNAL_CHECK.
+ *              @ref CONFIG_DEBUG_INTERNAL_CHECK.
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Assert macro used for internal execution checking
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
  *              Expression : C expression : condition expression which must be
  *              satisfied
  * @api
  */
-#if (1 == CFG_DBG_INTERNAL_CHECK) && (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG_INTERNAL_CHECK) && (1 == CONFIG_DEBUG)
 # define ES_DBG_INTERNAL(msg, expr)                                             \
     ES_DBG_ASSERT(msg, expr)
 #else
@@ -165,7 +160,7 @@
 /**@} *//*----------------------------------------------------------------*//**
  * @name        API contract validation
  * @brief       These macros are enabled/disabled using the option
- *              @ref CFG_DBG_API_VALIDATION.
+ *              @ref CONFIG_DEBUG_API_VALIDATION.
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Execute code to fulfill the contract
@@ -174,7 +169,7 @@
  *              contracts need to be validated.
  * @api
  */
-#if (1 == CFG_DBG_API_VALIDATION) && (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
 # define ES_DBG_API_OBLIGATION(expr)                                            \
     expr
 #else
@@ -184,13 +179,13 @@
 
 /**@brief       Make sure the caller has fulfilled all contract preconditions
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
  *              Expression : C expression : condition expression which must be
  *              satisfied
  * @api
  */
-#if (1 == CFG_DBG_API_VALIDATION) && (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
 # define ES_DBG_API_REQUIRE(msg, expr)                                          \
     ES_DBG_ASSERT(msg, expr)
 #else
@@ -200,13 +195,13 @@
 
 /**@brief       Make sure the callee has fulfilled all contract postconditions
  * @param       msg
- *              Message : enum esDbgMsgNum : enumerated debug message.
+ *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
  *              Expression : C expression : condition expression which must be
  *              satisfied
  * @api
  */
-#if (1 == CFG_DBG_API_VALIDATION) && (1 == CFG_DBG_ENABLE)
+#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
 # define ES_DBG_API_ENSURE(msg, expr)                                           \
     ES_DBG_ASSERT(msg, expr)
 
@@ -215,7 +210,7 @@
     (void)0
 #endif
 
-/**@} *//*----------------------------------------------  C++ extern begin  --*/
+/**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -232,7 +227,8 @@ extern "C" {
  *              occurred.
  * @api
  */
-enum esDbgMsgNum {
+enum esDebugMessageNo
+{
     ES_DBG_OUT_OF_RANGE,                                                        /**< @brief Value is out of valid range.                    */
     ES_DBG_OBJECT_NOT_VALID,                                                    /**< @brief Object is not valid.                            */
     ES_DBG_POINTER_NULL,                                                        /**< @brief Pointer has NULL value.                         */
@@ -245,7 +241,7 @@ enum esDbgMsgNum {
 /**@brief       Debug C object information structure
  * @notapi
  */
-struct dbgCobj_ {
+struct debugCobject_ {
 
 /**@brief       Debug module information structure
  * @notapi
@@ -274,7 +270,7 @@ struct esDbgReport {
     const PORT_C_ROM char * expr;                                               /**< @brief C expression                                    */
     const PORT_C_ROM char * msgText;                                            /**< @brief Additional text                                 */
     uint16_t            line;                                                   /**< @brief Source code line where exception occurred       */
-    enum esDbgMsgNum    msgNum;                                                 /**< @brief Number associated with additional text          */
+    enum esDebugMessageNo    msgNum;                                                 /**< @brief Number associated with additional text          */
 };
 
 /**@} *//*--------------------------------------------------------------------*/
@@ -298,7 +294,7 @@ struct esDbgReport {
  *              error.
  * @pre         1) `NULL != cObj`
  * @pre         2) `NULL != expr`
- * @note        1) This function is called only if @ref CFG_DBG_API_VALIDATION
+ * @note        1) This function is called only if @ref CONFIG_DEBUG_API_VALIDATION
  *              is active.
  * @details     Function will prepare the information which was given by the
  *              macros and pass the information to userAssert() function for
@@ -306,9 +302,9 @@ struct esDbgReport {
  * @notapi
  */
 PORT_C_NORETURN void dbgAssert(
-    const PORT_C_ROM struct dbgCobj_ * cObj,
+    const PORT_C_ROM struct debugCobject_ * cObj,
     const PORT_C_ROM char * expr,
-    enum esDbgMsgNum    msg);
+    enum esDebugMessageNo    msg);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Debug hook functions
@@ -321,7 +317,7 @@ PORT_C_NORETURN void dbgAssert(
  *              Debug report: is pointer to the debug report created by
  *              dbgAssert() function.
  * @pre         1) `NULL != dbgReport`
- * @note        1) This function is called only if @ref CFG_DBG_ENABLE is active.
+ * @note        1) This function is called only if @ref CONFIG_DEBUG is active.
  * @note        2) The function is called with interrupts disabled.
  * @details     Function will just print the information which was given by the
  *              macros.
@@ -336,6 +332,6 @@ extern void userAssert(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of dbg.h
+ * END of debug.h
  ******************************************************************************/
-#endif /* DBG_H__ */
+#endif /* DEBUG_H__ */
