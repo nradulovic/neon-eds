@@ -38,6 +38,9 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/**@brief       Error table
+ * @details     This table defines error enumerators, number and associated text
+ */
 #define ES_ERROR_TABLE_(entry)                                                  \
     entry(ES_ERROR_NONE,                0u,     "no error")                     \
     entry(ES_ERROR_OBJECT_NFOUND,       100u,   "object not found")             \
@@ -52,20 +55,28 @@
     entry(ES_ERROR_ARG_OUT_OF_RANGE,    2001u,  "argument is out of range")     \
     entry(ES_ERROR_ARG_NULL,            2002u,  "argument is null")
 
+/**@brief       Expander for error enum
+ */
 #define ES_ERROR_ENUM_(a, b, c)                                                 \
     a = b,
 
 /*============================================================  DATA TYPES  ==*/
 
+/**@brief       Error enumeration, see the error table
+ */
 enum esError {
     ES_ERROR_TABLE_(ES_ERROR_ENUM_)
-    ES_LAST_ERROR_NUMBER
+    ES_LAST_ERROR_NUMBER                                                        /**< @brief This enum member is not used for indication     */
 };
 
+/**@brief       Error type
+ */
 typedef enum esError esError;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
+/**@brief       Error text which is associated with error number
+ */
 extern const PORT_C_ROM char * const PORT_C_ROM_VAR esGlobalErrorText[];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/

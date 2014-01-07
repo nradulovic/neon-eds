@@ -26,8 +26,8 @@
  * @brief		Configuration of system control module.
  *********************************************************************//** @{ */
 
-#if !defined(SYSCTRL_CFG_H__)
-#define SYSCTRL_CFG_H__
+#ifndef ES_SYSCTRL_CFG_H_
+#define ES_SYSCTRL_CFG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -49,4 +49,4 @@
 /** @endcond *//** @} *//******************************************************
  * END of sysctrl_cfg.h
  ******************************************************************************/
-#endif /* SYSCTRL_CFG_H__ */
+#endif /* ES_SYSCTRL_CFG_H_ */

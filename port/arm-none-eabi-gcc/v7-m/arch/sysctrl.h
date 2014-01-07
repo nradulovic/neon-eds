@@ -25,8 +25,8 @@
  * @addtogroup  arm-none-eabi-gcc-v7-m
  *********************************************************************//** @{ */
 
-#if !defined(SYSCTRL_H__)
-#define SYSCTRL_H__
+#ifndef ES_SYSCTRL_H_
+#define ES_SYSCTRL_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -310,4 +310,4 @@ static PORT_C_INLINE_ALWAYS void portSysTmrIsrDisable_(
 /** @endcond *//** @} *//******************************************************
  * END of systmr.h
  ******************************************************************************/
-#endif /* SYSCTRL_H__ */
+#endif /* ES_SYSCTRL_H_ */

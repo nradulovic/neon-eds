@@ -28,8 +28,8 @@
  * @brief       Debug support Configuration
  * @{ *//*--------------------------------------------------------------------*/
 
-#if !defined(DEBUG_CONFIG_H__)
-#define DEBUG_CONFIG_H__
+#ifndef ES_DEBUG_CONFIG_H_
+#define ES_DEBUG_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  DEFINES  ==*/
@@ -83,4 +83,4 @@
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of debug_config.h
  ******************************************************************************/
-#endif /* DEBUG_CONFIG_H__ */
+#endif /* ES_DEBUG_CONFIG_H_ */

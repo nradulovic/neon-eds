@@ -26,8 +26,8 @@
  * @brief       Interface of compiler.
  *********************************************************************//** @{ */
 
-#if !defined(COMPILER_H__)
-#define COMPILER_H__
+#ifndef ES_COMPILER_H_
+#define ES_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
@@ -136,4 +136,4 @@ typedef unsigned int esAtomic;
 /** @endcond *//** @} *//******************************************************
  * END of arm-none-eabi-gcc.h
  ******************************************************************************/
-#endif /* COMPILER_H__ */
+#endif /* ES_COMPILER_H_ */

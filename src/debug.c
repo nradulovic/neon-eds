@@ -41,20 +41,6 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-/**@brief       Definition text of debug messages
- * @note        This array needs to be in synchronization with enum esDebugMessageNo.
- */
-static const PORT_C_ROM char * const PORT_C_ROM_VAR DbgMsg[] = {
-    "Value is out of valid range.",                                             /* ES_DBG_OUT_OF_RANGE                                      */
-    "Object is not valid.",                                                     /* ES_DBG_OBJECT_NOT_VALID                                  */
-    "Pointer has NULL value.",                                                  /* ES_DBG_POINTER_NULL                                      */
-    "Object/method usage failure.",                                             /* ES_DBG_USAGE_FAILURE                                     */
-    "Not enough memory available.",                                             /* ES_DBG_NOT_ENOUGH_MEM                                    */
-    "A method is not implemented",                                              /* ES_DBG_NOT_IMPLEMENTED                                   */
-    "Unknown error."                                                            /* ES_DBG_UNKNOWN_ERROR                                     */
-};
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
