@@ -30,6 +30,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <stddef.h>
+
 #include "base/pool_mem.h"
 #include "base/critical.h"
 #include "base/bitop.h"
@@ -38,7 +40,7 @@
 
 /**@brief       Signature for pool memory manager
  */
-#define POOL_MEM_SIGNATURE              ((portReg)0xdeadbeeeu)
+#define POOL_MEM_SIGNATURE              ((esAtomic)0xdeadbeeeu)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
@@ -53,7 +55,7 @@ struct poolMemBlock {
 
 /**@brief       Module information
  */
-DECL_MODULE_INFO("PoolMem", "Pool Memory management", "Nenad Radulovic");
+static ES_MODULE_INFO("PoolMem", "Pool Memory management", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
@@ -73,12 +75,12 @@ void esPoolMemInit(
     size_t              nBlocks;
     struct poolMemBlock * block;
 
-    blockSize = ES_ALIGN_UP(blockSize, sizeof(portReg));
+    blockSize = ES_ALIGN_UP(blockSize, sizeof(esAtomic));
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != poolMem);
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != array);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != blockSize);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, blockSize <= arraySize);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, NULL != poolMem);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, NULL != array);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, 0u != blockSize);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, blockSize <= arraySize);
 
     nBlocks = arraySize / blockSize;
     poolMem->size = arraySize;
@@ -92,73 +94,80 @@ void esPoolMemInit(
     }
     block->next = NULL;
 
-    ES_DBG_API_OBLIGATION(poolMem->signature = POOL_MEM_SIGNATURE);
+    ES_DEBUG_API_OBLIGATION(poolMem->signature = POOL_MEM_SIGNATURE);
 }
 
 size_t esPoolMemComputeSize(
     size_t              blocks,
     size_t              blockSize) {
 
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != blocks);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != blockSize);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, 0u != blocks);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, 0u != blockSize);
 
-    blockSize = ES_ALIGN_UP(blockSize, sizeof(portReg));
+    blockSize = ES_ALIGN_UP(blockSize, sizeof(esAtomic));
 
     return (blocks * blockSize);
 }
 
-void * esPoolMemAllocI(
-    esPoolMem *         poolMem) {
+esError esPoolMemAllocI(
+    esPoolMem *         poolMem,
+    void **             mem) {
 
     struct poolMemBlock * block;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != poolMem);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, POOL_MEM_SIGNATURE == poolMem->signature);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, poolMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  poolMem->signature == POOL_MEM_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, mem != NULL);
 
-    block = poolMem->sentinel;
-    ES_DBG_API_ENSURE(ES_DBG_NOT_ENOUGH_MEM, NULL != block);
+    if ((block = poolMem->sentinel) == NULL) {
+
+        return (ES_ERROR_MEMORY_FULL);
+    }
     poolMem->sentinel = block->next;
+    *mem = (void *)block;
 
-    return ((void *)block);
+    return (ES_ERROR_NONE);
 }
 
-void * esPoolMemAlloc(
-    esPoolMem *         poolMem) {
+esError esPoolMemAlloc(
+    esPoolMem *         poolMem,
+    void **             mem) {
 
-    portReg             intCtx;
-    void *              mem;
+    esError             error;
+    esAtomic             intCtx;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);
-    mem = esPoolMemAllocI(
-        poolMem);
+    error = esPoolMemAllocI(
+        poolMem,
+        mem);
     ES_CRITICAL_LOCK_EXIT(intCtx);
 
-    return (mem);
+    return (error);
 }
 
-void esPoolMemDeAllocI(
+void esPoolMemFreeI(
     esPoolMem *         poolMem,
     void *              mem) {
 
     struct poolMemBlock * block;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != poolMem);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, POOL_MEM_SIGNATURE == poolMem->signature);
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != mem);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, poolMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  poolMem->signature == POOL_MEM_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, mem != NULL);
 
     block = (struct poolMemBlock *)mem;
     block->next = poolMem->sentinel;
     poolMem->sentinel = block;
 }
 
-void esPoolMemDeAlloc(
+void esPoolMemFree(
     esPoolMem *    handle,
     void *              mem) {
 
-    portReg           intCtx;
+    esAtomic           intCtx;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);
-    esPoolMemDeAllocI(
+    esPoolMemFreeI(
         handle,
         mem);
     ES_CRITICAL_LOCK_EXIT(intCtx);

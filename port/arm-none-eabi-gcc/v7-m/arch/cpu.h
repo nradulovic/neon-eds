@@ -99,7 +99,7 @@ extern "C" {
  * @inline
  */
 static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFLS_(
-    portReg       value) {
+    esAtomic       value) {
 
     uint_fast8_t    clz;
 

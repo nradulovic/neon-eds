@@ -121,7 +121,7 @@
  *              align: 00000100 = 4
  *              Result is 148.
  */
-#define ES_ALIGN(num, align)                                                \
+#define ES_ALIGN(num, align)                                                    \
     ((num) & ~((align) - 1u))
 
 /**@brief       Vrsi poravnjanje @a num promenjive sa granicama specificarane
@@ -135,7 +135,7 @@
  *              align: 00000100 = 4
  *              Result is 152.
  */
-#define ES_ALIGN_UP(num, align)                                             \
+#define ES_ALIGN_UP(num, align)                                                 \
     (((num) + (align) - 1u) & ~((align) - 1u))
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -215,6 +215,11 @@
     do {                                                                        \
         var &= ~ES_BIT_MASK_MSB(var);                                           \
     } while (0)
+
+#define max(a, b)                                                               \
+   ({ __typeof__ (a) _a = (a); \
+      __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

@@ -48,7 +48,7 @@
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Enter critical code section
- * @param       inteCtx
+ * @param       intrCtx
  *              Interrupt context, pointer to portable type variable which will
  *              hold the interrupt context state during the critical code
  *              section.
@@ -64,7 +64,7 @@
 #define ES_CRITICAL_LOCK_EXIT(intrCtx)                                          \
     PORT_INTR_MASK_SET(intrCtx)
 
-/**@} *//**@} *//*--------------------------------------  C++ extern begin  --*/
+/**@} *//*----------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif

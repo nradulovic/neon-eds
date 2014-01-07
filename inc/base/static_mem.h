@@ -54,11 +54,11 @@ extern "C" {
  * @api
  */
 struct esStaticMem {
-    portReg *           base;                                                   /**<@brief Pointer to the base of static memory        */
-    portReg             free;                                                   /**<@brief Current index of managed memory                  */
+    esAtomic *          base;                                                   /**<@brief Pointer to the base of static memory        */
+    esAtomic            free;                                                   /**<@brief Current index of managed memory                  */
     size_t              size;                                                   /**<@brief The size of static memory                        */
 #if (1U == CONFIG_DEBUG_API_VALIDATION) || defined(__DOXYGEN__)
-    portReg             signature;                                              /**<@brief Structure signature, used during development only*/
+    esAtomic            signature;                                              /**<@brief Structure signature, used during development only*/
 #endif
 };
 

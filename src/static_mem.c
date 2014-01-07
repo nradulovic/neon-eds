@@ -44,7 +44,7 @@
 
 /**@brief       Signature for static memory manager
  */
-#define SMEM_SIGNATURE                  ((portReg)0xDEADBEEDU)
+#define STATIC_MEM_SIGNATURE            ((esAtomic)0xDEADBEEDU)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -52,7 +52,7 @@
 
 /**@brief       Module information
  */
-DECL_MODULE_INFO("StaticMem", "Static Memory management", "Nenad Radulovic");
+static ES_MODULE_INFO("StaticMem", "Static Memory management", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
@@ -63,19 +63,19 @@ esStaticMem esGlobalStaticMem;
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 void esStaticMemInit(
-    esStaticMem *    handle,
+    esStaticMem *       staticMem,
     void *              storage,
     size_t              storageSize) {
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != storage);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != storageSize);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, NULL != staticMem);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, NULL != storage);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, 0u != storageSize);
 
-    handle->base = storage;
-    handle->free = ES_ALIGN(storageSize, sizeof(portReg));
-    handle->size = ES_ALIGN(storageSize, sizeof(portReg));
+    staticMem->base = storage;
+    staticMem->size = ES_ALIGN(storageSize, sizeof(esAtomic));
+    staticMem->free = staticMem->size;
 
-    ES_DBG_API_OBLIGATION(handle->signature = SMEM_SIGNATURE);
+    ES_DEBUG_API_OBLIGATION(staticMem->signature = STATIC_MEM_SIGNATURE);
 }
 
 void * esStaticMemAllocI(
@@ -84,11 +84,11 @@ void * esStaticMemAllocI(
 
     void *              mem;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, SMEM_SIGNATURE == handle->signature);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != size);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, NULL != handle);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT, STATIC_MEM_SIGNATURE == handle->signature);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE, 0u != size);
 
-    size = ES_DIVISION_ROUNDUP(size, sizeof(portReg));
+    size = ES_DIVISION_ROUNDUP(size, sizeof(esAtomic));
 
     if (size > handle->free)
     {
@@ -104,7 +104,7 @@ void * esStaticMemAlloc(
     esStaticMem *    handle,
     size_t              size) {
 
-    portReg           intCtx;
+    esAtomic           intCtx;
     void *              mem;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);

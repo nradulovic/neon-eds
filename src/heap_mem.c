@@ -40,29 +40,25 @@
 
 /**@brief       Signature for dynamic memory manager
  */
-#define DMEM_SIGNATURE                  ((portReg)0xDEADBEEFU)
+#define HEAP_MEM_SIGNATURE              ((esAtomic)0xdeadbeefu)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Dynamic allocator memory block header structure
  */
-struct PORT_C_ALIGN(PORT_DEF_DATA_ALIGNMENT) dMemBlock {
+struct PORT_C_ALIGN(PORT_DEF_DATA_ALIGNMENT) heapMemBlock {
     size_t              phySize;                                                /**<@brief Block size (including header)                    */
-    struct dMemBlock *  phyPrev;                                                /**<@brief Previous block in linked list                    */
-    struct dMemBlock *  freeNext;                                               /**<@brief Next free block in linked list                   */
-    struct dMemBlock *  freePrev;                                               /**<@brief Previous free block in linked list               */
+    struct heapMemBlock *  phyPrev;                                                /**<@brief Previous block in linked list                    */
+    struct heapMemBlock *  freeNext;                                               /**<@brief Next free block in linked list                   */
+    struct heapMemBlock *  freePrev;                                               /**<@brief Previous free block in linked list               */
 };
-
-/**@brief       Dynamic allocator memory block header type
- */
-typedef struct dMemBlock dMemBlock_T;
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 /**@brief       Module information
  */
-static DECL_MODULE_INFO("HeapMem", "Heap Memory management", "Nenad Radulovic");
+static ES_MODULE_INFO("HeapMem", "Heap Memory management", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
@@ -72,54 +68,72 @@ esHeapMem esGlobalHeapMem;
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void esHeapMemInit(
-    esHeapMem *    handle,
+esError esHeapMemInit(
+    esHeapMem *         heapMem,
     void *              storage,
     size_t              storageSize) {
 
-    dMemBlock_T *       begin;
+    struct heapMemBlock * begin;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != storage);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != storageSize);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, heapMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  heapMem->signature != HEAP_MEM_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, storage != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_RANGE,   storageSize != 0u);
 
-    storageSize = ES_ALIGN(storageSize, sizeof(portReg));
-    handle->sentinel = (dMemBlock_T *)((uint8_t *)storage + storageSize) - 1u;  /* Sentinel is the last element of the storage              */
-    begin = (dMemBlock_T *)storage;
-    begin->phySize = storageSize - sizeof(dMemBlock_T);
-    begin->phyPrev = handle->sentinel;
-    begin->freeNext = handle->sentinel;
-    begin->freePrev = handle->sentinel;
-    handle->sentinel->phySize = 0u;
-    handle->sentinel->phyPrev = begin;
-    handle->sentinel->freeNext = begin;
-    handle->sentinel->freePrev = begin;
+    storageSize = ES_ALIGN(storageSize, sizeof(esAtomic));
+    heapMem->sentinel =
+        (struct heapMemBlock *)((uint8_t *)storage + storageSize) - 1;          /* Sentinel is the last element of the storage              */
+    begin = (struct heapMemBlock *)storage;
+    begin->phySize = storageSize - sizeof(struct heapMemBlock);
+    begin->phyPrev = heapMem->sentinel;
+    begin->freeNext = heapMem->sentinel;
+    begin->freePrev = heapMem->sentinel;
+    heapMem->sentinel->phySize = 0u;
+    heapMem->sentinel->phyPrev = begin;
+    heapMem->sentinel->freeNext = begin;
+    heapMem->sentinel->freePrev = begin;
 
-    ES_DBG_API_OBLIGATION(handle->signature = DMEM_SIGNATURE);
+    ES_DEBUG_API_OBLIGATION(heapMem->signature = HEAP_MEM_SIGNATURE);
+
+    return (ES_ERROR_NONE);
+}
+
+esError esHeapMemTerm(
+    esHeapMem *         heapMem) {
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, heapMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  heapMem->signature == HEAP_MEM_SIGNATURE);
+
+    heapMem->sentinel = NULL;
+
+    ES_DEBUG_API_OBLIGATION(heapMem->signature = ~HEAP_MEM_SIGNATURE);
+
+    return (ES_ERROR_NONE);
 }
 
 esError esHeapMemAllocI(
-    void **             mem,
-    esHeapMem *         handle,
-    size_t              size) {
+    esHeapMem *         heapMem,
+    size_t              size,
+    void **             mem) {
 
-    dMemBlock_T *       curr;
+    struct heapMemBlock * curr;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, DMEM_SIGNATURE == handle->signature);
-    ES_DBG_API_REQUIRE(ES_DBG_OUT_OF_RANGE, 0u != size);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, heapMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  heapMem->signature == HEAP_MEM_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_USAGE,   size != 0u);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, mem != NULL);
 
-    size = ES_ALIGN_UP(size, sizeof(portReg)) + sizeof(dMemBlock_T);
-    curr = handle->sentinel->freeNext;
+    size = ES_ALIGN_UP(size, sizeof(esAtomic));
+    curr = heapMem->sentinel->freeNext;
 
-    while (curr != handle->sentinel) {
+    while (curr != heapMem->sentinel) {
 
         if (curr->phySize >= size) {
 
-            if (curr->phySize > size + sizeof(dMemBlock_T)) {
-                dMemBlock_T * tmp;
+            if (curr->phySize > (size + sizeof(struct heapMemBlock))) {
+                struct heapMemBlock * tmp;
 
-                tmp = (dMemBlock_T *)((uint8_t *)curr + size);
+                tmp = (struct heapMemBlock *)((uint8_t *)curr + size);
                 tmp->phySize = curr->phySize - size;
                 tmp->phyPrev = curr;
                 tmp->freeNext = curr->freeNext;
@@ -127,16 +141,14 @@ esError esHeapMemAllocI(
                 tmp->freeNext->freePrev = tmp;
                 tmp->freePrev->freeNext = tmp;
                 curr->freeNext = NULL;                                          /* Mark block as allocated                                  */
-                curr++;
-                *mem = (void *)curr;
+                *mem = (void *)(curr + 1);
 
                 return (ES_ERROR_NONE);
             } else {
                 curr->freeNext->freePrev = curr->freePrev;
                 curr->freePrev->freeNext = curr->freeNext;
                 curr->freeNext = NULL;                                          /* Mark block as allocated                                  */
-                curr++;
-                *mem = (void *)curr;
+                *mem = (void *)(curr + 1);
 
                 return (ES_ERROR_NONE);
             }
@@ -148,73 +160,79 @@ esError esHeapMemAllocI(
 }
 
 esError esHeapMemAlloc(
-    void **             mem,
-    esHeapMem *         handle,
-    size_t              size) {
+    esHeapMem *         heapMem,
+    size_t              size,
+    void **             mem) {
 
-    esError             retval;
-    portReg             intCtx;
+    esError             error;
+    esAtomic            intCtx;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);
-    retval = esHeapMemAllocI(
-        mem,
-        handle,
-        size);
+    error = esHeapMemAllocI(
+        heapMem,
+        size,
+        mem);
     ES_CRITICAL_LOCK_EXIT(intCtx);
 
-    return (retval);
+    return (error);
 }
 
-void esHeapMemReclaimI(
-    esHeapMem *    handle,
+esError esHeapMemFreeI(
+    esHeapMem *         heapMem,
     void *              mem) {
 
-    dMemBlock_T *       curr;
-    dMemBlock_T *       tmp;
+    struct heapMemBlock * curr;
+    struct heapMemBlock * tmp;
 
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, DMEM_SIGNATURE == handle->signature);
-    ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != mem);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, heapMem != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  heapMem->signature == HEAP_MEM_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, mem != NULL);
 
-    curr = (dMemBlock_T *)mem - 1u;
-    tmp = (dMemBlock_T *)((uint8_t *)curr + curr->phySize);
+    curr = (struct heapMemBlock *)mem - 1;
+    tmp  = (struct heapMemBlock *)((uint8_t *)curr + curr->phySize);
 
-    if ((NULL != curr->phyPrev->freeNext) && (NULL == tmp->freeNext)) {         /* Previous block is free                                   */
+    if ((curr->phyPrev->freeNext != NULL) && (tmp->freeNext == NULL)) {         /* Previous block is free                                   */
         curr->phyPrev->phySize += curr->phySize;
         tmp->phyPrev = curr->phyPrev;
-    } else if ((NULL == curr->phyPrev->freeNext) && (NULL != tmp->freeNext)) {  /* Next block is free                                     */
+    } else if ((curr->phyPrev->freeNext == NULL) && (tmp->freeNext != NULL)) {  /* Next block is free                                     */
         curr->freeNext = tmp->freeNext;
         curr->freePrev = tmp->freePrev;
         curr->freePrev->freeNext = curr;
         curr->freeNext->freePrev = curr;
         curr->phySize += tmp->phySize;
-        tmp = (dMemBlock_T *)((uint8_t *)curr + curr->phySize);
+        tmp = (struct heapMemBlock *)((uint8_t *)curr + curr->phySize);
         tmp->phyPrev = curr;
-    } else if ((NULL != curr->phyPrev->freeNext) && (NULL != tmp->freeNext)) {  /* Previous and next blocks are free                      */
+    } else if ((curr->phyPrev->freeNext != NULL) && (tmp->freeNext != NULL)) {  /* Previous and next blocks are free                      */
         tmp->freePrev->freeNext = tmp->freeNext;
         tmp->freeNext->freePrev = tmp->freePrev;
         curr->phyPrev->phySize += curr->phySize + tmp->phySize;
-        tmp = (dMemBlock_T *)((uint8_t *)curr->phyPrev + curr->phyPrev->phySize);
+        tmp = (struct heapMemBlock *)
+            ((uint8_t *)curr->phyPrev + curr->phyPrev->phySize);
         tmp->phyPrev = curr->phyPrev;
     } else {                                                                    /* Previous and next blocks are allocated                   */
-        curr->freeNext = handle->sentinel->freeNext;
-        curr->freePrev = handle->sentinel;
+        curr->freeNext = heapMem->sentinel->freeNext;
+        curr->freePrev = heapMem->sentinel;
         curr->freePrev->freeNext = curr;
         curr->freeNext->freePrev = curr;
     }
+
+    return (ES_ERROR_NONE);
 }
 
-void esHeapMemReclaim(
-    esHeapMem *    handle,
+esError esHeapMemFree(
+    esHeapMem *         heapMem,
     void *              mem) {
 
-    portReg           intCtx;
+    esError             error;
+    esAtomic            intCtx;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);
-    esHeapMemReclaimI(
-        handle,
+    error = esHeapMemFreeI(
+        heapMem,
         mem);
     ES_CRITICAL_LOCK_EXIT(intCtx);
+
+    return (error);
 }
 
 #if 0
@@ -225,10 +243,10 @@ void esDMemUpdateStatusI(
     size_t              size;
     size_t              freeTotal;
     size_t              freeAvailable;
-    dMemBlock_T *       curr;
+    struct heapMemBlock *       curr;
 
     ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != handle);
-    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, DMEM_SIGNATURE == handle->signature);
+    ES_DBG_API_REQUIRE(ES_DBG_OBJECT_NOT_VALID, HEAP_MEM_SIGNATURE == handle->signature);
     ES_DBG_API_REQUIRE(ES_DBG_POINTER_NULL, NULL != status);
 
     size          = 0u;
@@ -242,7 +260,7 @@ void esDMemUpdateStatusI(
         if (NULL != curr->freeNext) {
             size_t freeSize;
 
-            freeSize = curr->phySize - sizeof(dMemBlock_T);
+            freeSize = curr->phySize - sizeof(struct heapMemBlock);
             freeTotal += freeSize;
 
             if (freeSize > freeAvailable) {
@@ -260,7 +278,7 @@ void esDMemUpdateStatus(
     esHeapMem *    handle,
     esMemStatus_T *     status) {
 
-    portReg           intCtx;
+    esAtomic           intCtx;
 
     ES_CRITICAL_LOCK_ENTER(&intCtx);
     esDMemUpdateStatusI(

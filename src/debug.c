@@ -64,29 +64,24 @@ static const PORT_C_ROM char * const PORT_C_ROM_VAR DbgMsg[] = {
  *          interrupts to execute which can trigger another assert causing a
  *          very confusing situation of why it failed.
  */
-PORT_C_NORETURN void dbgAssert(
-    const PORT_C_ROM struct debugCobject_ * cObj,
+PORT_C_NORETURN void debugAssert(
+    const PORT_C_ROM struct debugCobject_ * cObject,
     const PORT_C_ROM char * expr,
-    enum esDebugMessageNo    msg) {
+    const PORT_C_ROM char * msg) {
 
-    struct esDbgReport  dbgReport;
+    struct esDebugReport debugReport;
 
     PORT_INTR_DISABLE();
-
-    if (ES_DBG_UNKNOWN_ERROR > msg) {
-        msg = ES_DBG_UNKNOWN_ERROR;
-    }
-    dbgReport.modName   = cObj->mod->name;
-    dbgReport.modDesc   = cObj->mod->desc;
-    dbgReport.modAuthor = cObj->mod->auth;
-    dbgReport.modFile   = cObj->mod->file;
-    dbgReport.fnName    = cObj->fn;
-    dbgReport.expr      = expr;
-    dbgReport.msgText   = DbgMsg[msg];
-    dbgReport.line      = cObj->line;
-    dbgReport.msgNum    = msg;
+    debugReport.modName   = cObject->mod->name;
+    debugReport.modDesc   = cObject->mod->desc;
+    debugReport.modAuthor = cObject->mod->auth;
+    debugReport.modFile   = cObject->mod->file;
+    debugReport.fnName    = cObject->fn;
+    debugReport.expr      = expr;
+    debugReport.msg       = msg;
+    debugReport.line      = cObject->line;
     userAssert(
-        &dbgReport);
+        &debugReport);
     PORT_CPU_TERM();
 
     while (true);

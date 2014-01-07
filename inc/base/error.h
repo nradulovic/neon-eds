@@ -47,6 +47,7 @@
     entry(ES_ERROR_MEMORY_FULL,         300u,   "memory is full")               \
     entry(ES_ERROR_NOT_IMPLEMENTED,     1000u,  "operation not implemented")    \
     entry(ES_ERROR_NOT_PERMITTED,       1001u,  "operation not permitted")      \
+    entry(ES_ERROR_NOT_FOUND,           1002u,  "item not found")               \
     entry(ES_ERROR_ARG_INVALID,         2000u,  "argument is invalid")          \
     entry(ES_ERROR_ARG_OUT_OF_RANGE,    2001u,  "argument is out of range")     \
     entry(ES_ERROR_ARG_NULL,            2002u,  "argument is null")

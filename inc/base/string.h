@@ -35,8 +35,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "arch/compiler.h"
+#include "base/debug.h"
 #include "base/error.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -61,9 +63,11 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 
 struct esString {
-    size_t              size;
-    uint8_t             attrib;
-    char                data[1];
+    size_t              length;
+    char *              text;
+#if (CONFIG_DEBUG_API_VALIDATION == 1) || defined(__DOXYGEN__)
+    esAtomic             signature;
+#endif
 };
 
 typedef struct esString esString;
@@ -71,25 +75,35 @@ typedef struct esString esString;
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 esError esStringCreate(
-    esString **         string,
-    const char *        data);
+    const char *        text,
+    esString **         string);
 
-static inline const char * esStringGetData(
-    const esString *    string) {
+esError esStringCopy(
+    esString *          destination,
+    const esString *    source);
 
-    return (string->data);
-}
+esError esStringFindChar(
+    const esString *    string,
+    char                find,
+    size_t *            position);
 
-static inline size_t esStringGetSize(
-    const esString *    string) {
+esError esStringAreEqual(
+    const esString *    string1,
+    const esString *    string2,
+    bool *              areEqual);
 
-    return (string->size);
-}
+esError esStringFindSubString(
+    const esString *    string,
+    const esString *    find,
+    size_t *            position);
 
-size_t esStringCopy(esString * destination, const esString * source);
-uint32_t esStringFindChar(const esString * string, char find);
-uint32_t esStringFindSubString(const esString * string, const esString * find);
+esError esStringGetText(
+    const esString *    string,
+    char **             text);
 
+esError esStringGetLength(
+    const esString *    string,
+    size_t *            length);
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 

@@ -41,7 +41,7 @@
  *              - 1 - Debug options can be enabled individually
  */
 #if !defined(CONFIG_DEBUG)
-# define CONFIG_DEBUG                   0
+# define CONFIG_DEBUG                   1
 #endif
 
 /**@brief       Enable/disable API arguments validation

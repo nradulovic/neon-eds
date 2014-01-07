@@ -56,9 +56,9 @@ extern "C" {
  * @api
  */
 struct esHeapMem {
-    struct dMemBlock *  sentinel;                                               /**<@brief Pointer to the memory sentinel                   */
+    struct heapMemBlock * sentinel;                                             /**<@brief Pointer to the memory sentinel                   */
 #if (1U == CONFIG_DEBUG_API_VALIDATION) || defined(__DOXYGEN__)
-    portReg             signature;                                              /**<@brief Structure signature, used during development only*/
+    esAtomic             signature;                                              /**<@brief Structure signature, used during development only*/
 #endif
 };
 
@@ -97,10 +97,13 @@ extern esHeapMem esGlobalHeapMem;
  *              u ovom slucaju ce to biti 316.
  * @api
  */
-void esHeapMemInit(
-    esHeapMem *         handle,
+esError esHeapMemInit(
+    esHeapMem *         heapMem,
     void *              storage,
     size_t              storageSize);
+
+esError esHeapMemTerm(
+    esHeapMem *         heapMem);
 
 /**
  * @brief       Dodeljuje memorijski prostor velicine @c size
@@ -117,9 +120,9 @@ void esHeapMemInit(
  * @iclass
  */
 esError esHeapMemAllocI(
-    void **             mem,
     esHeapMem *         handle,
-    size_t              size);
+    size_t              size,
+    void **             mem);
 
 /**
  * @brief       Dodeljuje memorijski prostor velicine @c size
@@ -139,9 +142,9 @@ esError esHeapMemAllocI(
  * @api
  */
 esError esHeapMemAlloc(
-    void **             mem,
-    esHeapMem *         handle,
-    size_t              size);
+    esHeapMem *         heapMem,
+    size_t              size,
+    void **             mem);
 
 /**
  * @brief       Reciklira memorijski prostor na koji pokazije @c mem
@@ -151,8 +154,8 @@ esError esHeapMemAlloc(
  *                                      memorijski prostor.
  * @iclass
  */
-void esHeapMemReclaimI(
-    esHeapMem *         handle,
+esError esHeapMemFreeI(
+    esHeapMem *         heapMem,
     void *              mem);
 
 /**
@@ -166,8 +169,8 @@ void esHeapMemReclaimI(
  *              pristupa.
  * @api
  */
-void esHeapMemReclaim(
-    esHeapMem *         handle,
+esError esHeapMemFree(
+    esHeapMem *         heapMem,
     void *              mem);
 
 /*--------------------------------------------------------  C++ extern end  --*/

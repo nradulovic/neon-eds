@@ -127,7 +127,7 @@ static PORT_C_INLINE_ALWAYS void portIntrDisable_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
-    portReg           state) {
+    esAtomic            state) {
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -148,9 +148,9 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
-    portReg *         state) {
+    esAtomic *          state) {
 
-    portReg           tmp;
+    esAtomic            tmp;
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -169,10 +169,10 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
-    portReg *         old,
-    portReg           new) {
+    esAtomic *          old,
+    esAtomic            new) {
 
-    portReg           tmp;
+    esAtomic            tmp;
 
 #if (0 != PORT_CFG_MAX_ISR_PRIO)
     __asm __volatile__ (
@@ -199,7 +199,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
  */
 static PORT_C_INLINE_ALWAYS void intrPrioSet_(
     enum IntrNum        intrNum,
-    portReg           prio) {
+    esAtomic            prio) {
 
     SYS_SCB->shp[((uint32_t)(intrNum) & 0x0ful) - 4u] = prio;
 }

@@ -100,7 +100,7 @@
  */
 #define PORT_HWREG_SET(reg, mask, val)                                          \
     do {                                                                        \
-        portReg tmp;                                                          \
+        esAtomic tmp;                                                           \
         tmp = (reg);                                                            \
         tmp &= ~(mask);                                                         \
         tmp |= ((mask) & (val));                                                \
@@ -121,7 +121,7 @@ extern "C" {
 
 /**@brief General purpose registers are 32bit wide.
  */
-typedef unsigned int portReg;
+typedef unsigned int esAtomic;
 
 /** @} *//*-------------------------------------------------------------------*/
 

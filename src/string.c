@@ -22,7 +22,7 @@
  * e-mail  :    blueskyniss@gmail.com
  *//***********************************************************************//**
  * @file
- * @author      nenad
+ * @author      Nenad Radulovic
  * @brief       Short desciption of file
  * @addtogroup  module_impl
  *********************************************************************//** @{ */
@@ -33,7 +33,13 @@
 #include "base/heap_mem.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+#define STRING_SIGNATURE                ((esAtomic)0xdeadbeaeu)
+
 /*======================================================  LOCAL DATA TYPES  ==*/
+
+ES_MODULE_INFO("String", "String operations", "Nenad Radulovic");
+
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -42,35 +48,164 @@
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 esError esStringCreate(
-    esString **         string,
-    const char *        data) {
+    const char *        text,
+    esString **         string) {
 
-    esString *          ret;
-    esError             retval;
-    size_t              size;
+    esError             error;
+    size_t              length;
 
-    size = 0u;
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, text != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string != NULL);
 
-    while (data[size] != '\0') {
-        size++;
+    error = esHeapMemAlloc(&esGlobalHeapMem, sizeof(esString), (void **)string);
+
+    if (error != ES_ERROR_NONE) {
+        goto UNDO_MEM_ALLOC_STRING;
     }
-    retval = esHeapMemAlloc(
-        &ret,
-        &esGlobalHeapMem,
-        size + sizeof(esString));
+    length = 0u;
 
-    if (retval == ES_ERROR_MEMORY_FULL) {
-
-        return (retval);
+    while (text[length] != '\0') {
+        length++;
     }
-    ret->size   = size;
-    ret->attrib = 0u;
-    *string = ret;
+    (*string)->length = length;
+    error = esHeapMemAlloc(&esGlobalHeapMem, length, (void **)&(*string)->text);
 
-    while (size != 0u) {
-        size--;
-        (*string)->data[size] = data[size];
+    if (error != ES_ERROR_NONE) {
+        goto UNDO_MEM_ALLOC_TEXT;
     }
+
+    while (length != 0u) {
+        length--;
+        (*string)->text[length] = text[length];
+    }
+    ES_DEBUG_API_OBLIGATION((*string)->signature = STRING_SIGNATURE);
+
+    return (ES_ERROR_NONE);
+
+UNDO_MEM_ALLOC_TEXT:
+    (void)esHeapMemFree(&esGlobalHeapMem, string);
+
+UNDO_MEM_ALLOC_STRING:
+
+    return (error);
+}
+
+esError esStringCopy(
+    esString *          destination,
+    const esString *    source) {
+
+    esError             error;
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, destination != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  destination->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, source != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  source->signature == STRING_SIGNATURE);
+
+    if (destination->length != source->length) {
+        char *          text;
+
+        error = esHeapMemAlloc(&esGlobalHeapMem, source->length, (void **)&text);
+
+        if (error != ES_ERROR_NONE) {
+            goto UNDO_MEM_ALLOC_TEXT;
+        }
+        (void)esHeapMemFree(&esGlobalHeapMem, destination->text);
+        destination->text   = text;
+    }
+    destination->length = 0u;
+
+    while (destination->length < source->length) {
+        destination->text[destination->length] = source->text[destination->length   ];
+        destination->length++;
+    }
+
+    return (ES_ERROR_NONE);
+
+UNDO_MEM_ALLOC_TEXT:
+
+    return (error);
+}
+
+esError esStringFindChar(
+    const esString *    string,
+    char                find,
+    size_t *            position) {
+
+    size_t              cnt;
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  string->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, position != NULL);
+
+    cnt = 0u;
+
+    while (cnt < string->length) {
+
+        if (string->text[cnt] == find) {
+            *position = cnt;
+
+            return (ES_ERROR_NONE);
+        }
+        cnt++;
+    }
+
+    return (ES_ERROR_NOT_FOUND);
+}
+
+esError esStringAreEqual(
+    const esString *    string1,
+    const esString *    string2,
+    bool *              areEqual) {
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string1 != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  string1->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string2 != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  string2->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, areEqual != NULL);
+
+    *areEqual = false;
+
+    if (string1->length == string2->length) {
+        size_t          length;
+
+        length = string1->length;
+
+        while (length != 0) {
+            length--;
+
+            if (string1->text[length] != string2->text[length]) {
+
+                return (ES_ERROR_NONE);
+            }
+        }
+        *areEqual = true;
+    }
+
+    return (ES_ERROR_NONE);
+}
+
+esError esStringGetText(
+    const esString *    string,
+    char **             text) {
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  string->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, text != NULL);
+
+    *text = string->text;
+
+    return (ES_ERROR_NONE);
+}
+
+esError esStringGetLength(
+    const esString *    string,
+    size_t *            length) {
+
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, string != NULL);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_OBJECT,  string->signature == STRING_SIGNATURE);
+    ES_DEBUG_API_REQUIRE(ES_DEBUG_POINTER, length != NULL);
+
+    *length = string->length;
 
     return (ES_ERROR_NONE);
 }

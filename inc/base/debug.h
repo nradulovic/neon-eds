@@ -55,8 +55,8 @@
  *              Module author : string
  * @api
  */
-#define DECL_MODULE_INFO(modName, modDesc, modAuth)                             \
-    PORT_C_UNUSED const PORT_C_ROM struct dbgModInfo_ ModInfo_ = {              \
+#define ES_MODULE_INFO(modName, modDesc, modAuth)                             \
+    PORT_C_UNUSED const PORT_C_ROM struct debugModInfo_ ModInfo_ = {            \
         modName,                                                                \
         modDesc,                                                                \
         modAuth,                                                                \
@@ -99,12 +99,12 @@
 # define ES_DBG_ASSERT(msg, expr)                                               \
     do {                                                                        \
         if (!(expr)) {                                                          \
-            const PORT_C_ROM struct debugCobject_ thisObj = {                        \
+            const PORT_C_ROM struct debugCobject_ thisObject = {                \
                 &ModInfo_,                                                      \
                 PORT_C_FUNC,                                                    \
                 PORT_C_LINE                                                     \
             };                                                                  \
-            dbgAssert(&thisObj, #expr, msg);                                    \
+            debugAssert(&thisObject, #expr, msg);                                 \
         }                                                                       \
     } while (0u)
 #else
@@ -128,7 +128,7 @@
             PORT_C_FUNC,                                                        \
             PORT_C_LINE                                                         \
         };                                                                      \
-        dbgAssert(PORT_C_FUNC, text, msg);                                      \
+        debugAssert(PORT_C_FUNC, text, msg);                                      \
     } while (0u)
 #else
 # define ES_DBG_ASSERT_ALWAYS(msg, text)                                        \
@@ -170,10 +170,10 @@
  * @api
  */
 #if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
-# define ES_DBG_API_OBLIGATION(expr)                                            \
+# define ES_DEBUG_API_OBLIGATION(expr)                                          \
     expr
 #else
-# define ES_DBG_API_OBLIGATION(expr)                                            \
+# define ES_DEBUG_API_OBLIGATION(expr)                                          \
     (void)0
 #endif
 
@@ -186,10 +186,10 @@
  * @api
  */
 #if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
-# define ES_DBG_API_REQUIRE(msg, expr)                                          \
+# define ES_DEBUG_API_REQUIRE(msg, expr)                                        \
     ES_DBG_ASSERT(msg, expr)
 #else
-# define ES_DBG_API_REQUIRE(msg, expr)                                          \
+# define ES_DEBUG_API_REQUIRE(msg, expr)                                        \
     (void)0
 #endif
 
@@ -210,6 +210,11 @@
     (void)0
 #endif
 
+#define ES_DEBUG_RANGE                  "Value is out of valid range."
+#define ES_DEBUG_OBJECT                 "Object is not valid."
+#define ES_DEBUG_POINTER                "Pointer has null value."
+#define ES_DEBUG_USAGE                  "Object/method usage failure."
+
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -221,23 +226,6 @@ extern "C" {
  * @name        Object and error source information
  * @{ *//*--------------------------------------------------------------------*/
 
-
-/**@brief       Debug messages
- * @details     This enumeration specifies which kind of error/failure have has
- *              occurred.
- * @api
- */
-enum esDebugMessageNo
-{
-    ES_DBG_OUT_OF_RANGE,                                                        /**< @brief Value is out of valid range.                    */
-    ES_DBG_OBJECT_NOT_VALID,                                                    /**< @brief Object is not valid.                            */
-    ES_DBG_POINTER_NULL,                                                        /**< @brief Pointer has NULL value.                         */
-    ES_DBG_USAGE_FAILURE,                                                       /**< @brief Object usage failure.                           */
-    ES_DBG_NOT_ENOUGH_MEM,                                                      /**< @brief Not enough memory available.                    */
-    ES_DBG_NOT_IMPLEMENTED,                                                     /**< @brief A method is not implemented                     */
-    ES_DBG_UNKNOWN_ERROR                                                        /**< @brief Unknown error.                                  */
-};
-
 /**@brief       Debug C object information structure
  * @notapi
  */
@@ -246,7 +234,7 @@ struct debugCobject_ {
 /**@brief       Debug module information structure
  * @notapi
  */
-    const PORT_C_ROM struct dbgModInfo_ {
+    const PORT_C_ROM struct debugModInfo_ {
         const PORT_C_ROM char * const PORT_C_ROM_VAR name;                      /**< @brief Module name                                     */
         const PORT_C_ROM char * const PORT_C_ROM_VAR desc;                      /**< @brief Module description                              */
         const PORT_C_ROM char * const PORT_C_ROM_VAR auth;                      /**< @brief Module author                                   */
@@ -257,20 +245,19 @@ struct debugCobject_ {
 };
 
 /**@brief       Debug report structure
- * @details     This detailed debug report prepared by dbgAssert() function. Use
+ * @details     This detailed debug report prepared by debugAssert() function. Use
  *              this structure to present the report to the user.
  * @api
  */
-struct esDbgReport {
+struct esDebugReport {
     const PORT_C_ROM char * modName;                                            /**< @brief Module name                                     */
     const PORT_C_ROM char * modDesc;                                            /**< @brief Module description                              */
     const PORT_C_ROM char * modAuthor;                                          /**< @brief Module author                                   */
     const PORT_C_ROM char * modFile;                                            /**< @brief Module source file                              */
     const PORT_C_ROM char * fnName;                                             /**< @brief Function name                                   */
     const PORT_C_ROM char * expr;                                               /**< @brief C expression                                    */
-    const PORT_C_ROM char * msgText;                                            /**< @brief Additional text                                 */
+    const PORT_C_ROM char * msg;                                                /**< @brief Additional text                                 */
     uint16_t            line;                                                   /**< @brief Source code line where exception occurred       */
-    enum esDebugMessageNo    msgNum;                                                 /**< @brief Number associated with additional text          */
 };
 
 /**@} *//*--------------------------------------------------------------------*/
@@ -301,10 +288,10 @@ struct esDbgReport {
  *              presentation.
  * @notapi
  */
-PORT_C_NORETURN void dbgAssert(
+PORT_C_NORETURN void debugAssert(
     const PORT_C_ROM struct debugCobject_ * cObj,
     const PORT_C_ROM char * expr,
-    enum esDebugMessageNo    msg);
+    const PORT_C_ROM char * msg);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Debug hook functions
@@ -315,7 +302,7 @@ PORT_C_NORETURN void dbgAssert(
  *              about failed assertion.
  * @param       dbgReport
  *              Debug report: is pointer to the debug report created by
- *              dbgAssert() function.
+ *              debugAssert() function.
  * @pre         1) `NULL != dbgReport`
  * @note        1) This function is called only if @ref CONFIG_DEBUG is active.
  * @note        2) The function is called with interrupts disabled.
@@ -323,7 +310,7 @@ PORT_C_NORETURN void dbgAssert(
  *              macros.
  */
 extern void userAssert(
-    const struct esDbgReport * dbgReport);
+    const struct esDebugReport * dbgReport);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

@@ -39,6 +39,7 @@
 
 #include "arch/compiler.h"
 #include "base/debug.h"
+#include "base/error.h"
 
 /*===============================================================  MACRO's  ==*/
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -61,7 +62,7 @@ struct esPoolMem {
     size_t              size;                                                   /**<@brief The size of pool memory                          */
     size_t              blockSize;                                              /**<@brief Size of one block                                */
 #if (1U == CONFIG_DEBUG_API_VALIDATION) || defined(__DOXYGEN__)
-    portReg             signature;                                              /**<@brief Structure signature, used during development only*/
+    esAtomic             signature;                                              /**<@brief Structure signature, used during development only*/
 #endif
 };
 
@@ -119,8 +120,9 @@ size_t esPoolMemComputeSize(
  * @return      Pointer to requested block.
  * @iclass
  */
-void * esPoolMemAllocI(
-    esPoolMem *         poolMem);
+esError esPoolMemAllocI(
+    esPoolMem *         poolMem,
+    void **             mem);
 
 /**@brief       Allocate one block from memory pool
  * @param       poolMem
@@ -128,8 +130,9 @@ void * esPoolMemAllocI(
  * @return      Pointer to requested block.
  * @api
  */
-void * esPoolMemAlloc(
-    esPoolMem *         poolMem);
+esError esPoolMemAlloc(
+    esPoolMem *         poolMem,
+    void **             mem);
 
 /**
  * @brief       Oslobadja prethodno alocirani blok
@@ -137,7 +140,7 @@ void * esPoolMemAlloc(
  * @param       [in] mem                Prethodno alociran blok memorije
  * @iclass
  */
-void esPoolMemDeAllocI(
+void esPoolMemFreeI(
     esPoolMem *         poolMem,
     void *              mem);
 
@@ -150,7 +153,7 @@ void esPoolMemDeAllocI(
  *              pristupa.
  * @api
  */
-void esPoolMemDeAlloc(
+void esPoolMemFree(
     esPoolMem *         poolMem,
     void *              mem);
 
