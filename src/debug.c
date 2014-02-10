@@ -31,8 +31,9 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
+#include <stddef.h>
 
-#include "arch/compiler.h"
+#include "plat/compiler.h"
 #include "arch/cpu.h"
 #include "arch/intr.h"
 #include "base/debug.h"
@@ -57,18 +58,26 @@ PORT_C_NORETURN void debugAssert(
 
     struct esDebugReport debugReport;
 
-    PORT_INTR_DISABLE();
-    debugReport.modName   = cObject->mod->name;
-    debugReport.modDesc   = cObject->mod->desc;
-    debugReport.modAuthor = cObject->mod->auth;
-    debugReport.modFile   = cObject->mod->file;
+    ES_INTR_DISABLE();
+
+    if (cObject->mod != NULL) {
+        debugReport.modName   = cObject->mod->name;
+        debugReport.modDesc   = cObject->mod->desc;
+        debugReport.modAuthor = cObject->mod->auth;
+        debugReport.modFile   = cObject->mod->file;
+    } else {
+        debugReport.modName   = "Unnamed";
+        debugReport.modDesc   = "not specified";
+        debugReport.modAuthor = "not specified";
+        debugReport.modFile   = "not specified";
+    }
     debugReport.fnName    = cObject->fn;
     debugReport.expr      = expr;
     debugReport.msg       = msg;
     debugReport.line      = cObject->line;
     userAssert(
         &debugReport);
-    PORT_CPU_TERM();
+    ES_CPU_TERM();
 
     while (true);
 }

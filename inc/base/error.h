@@ -34,7 +34,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/compiler.h"
+#include "plat/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -47,9 +47,13 @@
     entry(ES_ERROR_OBJECT_INVALID,      101u,   "object is invalid")            \
     entry(ES_ERROR_DEVICE_FAIL,         201u,   "device failure")               \
     entry(ES_ERROR_DEVICE_BUSY,         202u,   "device is busy")               \
-    entry(ES_ERROR_MEMORY_FULL,         300u,   "memory is full")               \
+    entry(ES_ERROR_NO_DEVICE,           203u,   "no free device")               \
+    entry(ES_ERROR_NO_MEMORY,           300u,   "no free memory")               \
+    entry(ES_ERROR_NO_RESOURCE,         301u,   "no free resource")             \
+    entry(ES_ERROR_NO_REFERENCE,        302u,   "no free reference slot")       \
     entry(ES_ERROR_NOT_IMPLEMENTED,     1000u,  "operation not implemented")    \
     entry(ES_ERROR_NOT_PERMITTED,       1001u,  "operation not permitted")      \
+    entry(ES_ERROR_NOT_ENABLED,         1002u,  "operation not enabled")        \
     entry(ES_ERROR_NOT_FOUND,           1002u,  "item not found")               \
     entry(ES_ERROR_ARG_INVALID,         2000u,  "argument is invalid")          \
     entry(ES_ERROR_ARG_OUT_OF_RANGE,    2001u,  "argument is out of range")     \

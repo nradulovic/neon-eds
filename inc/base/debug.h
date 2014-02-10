@@ -36,7 +36,8 @@
 
 #include <stdint.h>
 
-#include "arch/compiler.h"
+#include "plat/compiler.h"
+#include "base/base.h"
 #include "base/debug_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -46,22 +47,7 @@
  * @brief       This describes the free object file and error source
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Declare a module information card
- * @param       modName
- *              Module name : string
- * @param       modDesc
- *              Module description : string
- * @param       modAuth
- *              Module author : string
- * @api
- */
-#define ES_MODULE_INFO(modName, modDesc, modAuth)                             \
-    PORT_C_UNUSED const PORT_C_ROM struct debugModInfo_ ModInfo_ = {            \
-        modName,                                                                \
-        modDesc,                                                                \
-        modAuth,                                                                \
-        PORT_C_FILE                                                             \
-    }
+
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Error checking
@@ -81,9 +67,9 @@
  * @api
  */
 #if defined(PORT_C_STATIC_ASSERT)
-# define ES_DBG_STATIC_ASSERT(msg, expr)     PORT_C_STATIC_ASSERT(expr)
+# define ES_ASSERT_STATIC(msg, expr)     PORT_C_STATIC_ASSERT(expr)
 #else
-# define ES_DBG_STATIC_ASSERT(msg, expr)                                        \
+# define ES_ASSERT_STATIC(msg, expr)                                            \
     extern char ES_DBG_STATIC_ASSERT_has_failed_##msg[(expr) ? 1 : -1]
 #endif
 
@@ -96,19 +82,44 @@
  * @api
  */
 #if (1 == CONFIG_DEBUG)
-# define ES_DBG_ASSERT(msg, expr)                                               \
+# define ES_ASSERT(msg, expr)                                                   \
     do {                                                                        \
         if (!(expr)) {                                                          \
-            const PORT_C_ROM struct debugCobject_ thisObject = {                \
-                &ModInfo_,                                                      \
+            static const PORT_C_ROM struct debugCobject_ thisObject = {         \
+                &LocalModuleInfo,                                               \
                 PORT_C_FUNC,                                                    \
                 PORT_C_LINE                                                     \
             };                                                                  \
-            debugAssert(&thisObject, #expr, msg);                                 \
+            debugAssert(&thisObject, #expr, msg);                               \
         }                                                                       \
     } while (0u)
 #else
-# define ES_DBG_ASSERT(msg, expr)                                               \
+# define ES_ASSERT(msg, expr)                                                   \
+    (void)0
+#endif
+
+/**@brief       Generic assert macro (anonymous).
+ * @param       msg
+ *              Message : enum esDebugMessageNo : enumerated debug message.
+ * @param       expr
+ *              Expression : C expression : condition expression which must be
+ *              TRUE.
+ * @api
+ */
+#if (1 == CONFIG_DEBUG)
+# define ES_UNNAMED_ASSERT(msg, expr)                                           \
+    do {                                                                        \
+        if (!(expr)) {                                                          \
+            static const PORT_C_ROM struct debugCobject_ thisObject = {         \
+                &GlobalUnnamedModule,                                           \
+                PORT_C_FUNC,                                                    \
+                PORT_C_LINE                                                     \
+            };                                                                  \
+            debugAssert(&thisObject, #expr, msg);                               \
+        }                                                                       \
+    } while (0u)
+#else
+# define ES_ASSERT(msg, expr)                                                   \
     (void)0
 #endif
 
@@ -121,17 +132,17 @@
  * @api
  */
 #if (1 == CONFIG_DEBUG)
-# define ES_DBG_ASSERT_ALWAYS(msg, text)                                        \
+# define ES_ASSERT_ALWAYS(msg, text)                                            \
     do {                                                                        \
-        const PORT_C_ROM struct debugCobject_ thisObj = {                            \
-            &ModInfo_,                                                          \
+        static const PORT_C_ROM struct debugCobject_ thisObj = {                \
+            &LocalModuleInfo,                                                   \
             PORT_C_FUNC,                                                        \
             PORT_C_LINE                                                         \
         };                                                                      \
-        debugAssert(PORT_C_FUNC, text, msg);                                      \
+        debugAssert(PORT_C_FUNC, text, msg);                                    \
     } while (0u)
 #else
-# define ES_DBG_ASSERT_ALWAYS(msg, text)                                        \
+# define ES_ASSERT_ALWAYS(msg, text)                                            \
     (void)0
 #endif
 
@@ -149,11 +160,11 @@
  *              satisfied
  * @api
  */
-#if (1 == CONFIG_DEBUG_INTERNAL_CHECK) && (1 == CONFIG_DEBUG)
-# define ES_DBG_INTERNAL(msg, expr)                                             \
-    ES_DBG_ASSERT(msg, expr)
+#if (1 == CONFIG_ASSERT_INTERNAL)
+# define ES_ASSERT_INTERNAL(msg, expr)                                          \
+    ES_ASSERT(msg, expr)
 #else
-# define ES_DBG_INTERNAL(msg, expr)                                             \
+# define ES_ASSERT_INTERNAL(msg, expr)                                          \
     (void)0
 #endif
 
@@ -169,11 +180,11 @@
  *              contracts need to be validated.
  * @api
  */
-#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
-# define ES_DEBUG_API_OBLIGATION(expr)                                          \
+#if (1 == CONFIG_API_VALIDATION)
+# define ES_API_OBLIGATION(expr)                                                \
     expr
 #else
-# define ES_DEBUG_API_OBLIGATION(expr)                                          \
+# define ES_API_OBLIGATION(expr)                                                \
     (void)0
 #endif
 
@@ -185,15 +196,16 @@
  *              satisfied
  * @api
  */
-#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
-# define ES_DEBUG_API_REQUIRE(msg, expr)                                        \
-    ES_DBG_ASSERT(msg, expr)
+#if (1 == CONFIG_API_VALIDATION)
+# define ES_API_REQUIRE(msg, expr)                                              \
+    ES_ASSERT(msg, expr)
 #else
-# define ES_DEBUG_API_REQUIRE(msg, expr)                                        \
+# define ES_API_REQUIRE(msg, expr)                                              \
     (void)0
 #endif
 
-/**@brief       Make sure the callee has fulfilled all contract postconditions
+/**@brief       Make sure the caller has fulfilled all contract preconditions
+ *              (anonymous)
  * @param       msg
  *              Message : enum esDebugMessageNo : enumerated debug message.
  * @param       expr
@@ -201,19 +213,67 @@
  *              satisfied
  * @api
  */
-#if (1 == CONFIG_DEBUG_API_VALIDATION) && (1 == CONFIG_DEBUG)
-# define ES_DBG_API_ENSURE(msg, expr)                                           \
-    ES_DBG_ASSERT(msg, expr)
-
+#if (1 == CONFIG_API_VALIDATION)
+# define ES_API_REQUIRE_A(msg, expr)                                            \
+    ES_UNNAMED_ASSERT(msg, expr)
 #else
-# define ES_DBG_API_ENSURE(msg, expr)                                           \
+# define ES_API_REQUIRE_A(msg, expr)                                            \
     (void)0
 #endif
 
-#define ES_DEBUG_RANGE                  "Value is out of valid range."
-#define ES_DEBUG_OBJECT                 "Object is not valid."
-#define ES_DEBUG_POINTER                "Pointer has null value."
-#define ES_DEBUG_USAGE                  "Object/method usage failure."
+/**@brief       Make sure the callee has fulfilled all contract postconditions
+ * @param       expr
+ *              Expression : C expression : condition expression which must be
+ *              satisfied
+ * @api
+ */
+#if (1 == CONFIG_API_VALIDATION)
+# define ES_API_ENSURE(expr)                                                    \
+    do {                                                                        \
+        if ((expr) != ES_ERROR_NONE) {                                          \
+            static const PORT_C_ROM struct debugCobject_ thisObject = {         \
+                &LocalModuleInfo,                                               \
+                PORT_C_FUNC,                                                    \
+                PORT_C_LINE                                                     \
+            };                                                                  \
+            debugAssert(&thisObject, #expr, ES_API_CALL);                       \
+        }                                                                       \
+    } while (0u)
+
+#else
+# define ES_API_ENSURE(expr)                                                    \
+    expr
+#endif
+
+/**@brief       Make sure the callee has fulfilled all contract postconditions
+ * @param       expr
+ *              Expression : C expression : condition expression which must be
+ *              satisfied
+ * @api
+ */
+#if (1 == CONFIG_ASSERT_INTERNAL) && (1 == CONFIG_API_VALIDATION)
+# define ES_API_ENSURE_INTERNAL(expr)                                           \
+    do {                                                                        \
+        if ((expr) != ES_ERROR_NONE) {                                          \
+            static const PORT_C_ROM struct debugCobject_ thisObject = {         \
+                &LocalModuleInfo,                                               \
+                PORT_C_FUNC,                                                    \
+                PORT_C_LINE                                                     \
+            };                                                                  \
+            debugAssert(&thisObject, #expr, ES_API_CALL);                       \
+        }                                                                       \
+    } while (0u)
+
+#else
+# define ES_API_ENSURE_INTERNAL(expr)                                           \
+    expr
+#endif
+
+#define ES_API_RANGE                    "Value is out of valid range."
+#define ES_API_OBJECT                   "Object is not valid."
+#define ES_API_POINTER                  "Pointer has null value."
+#define ES_API_USAGE                    "Object/method usage failure."
+#define ES_API_CALL                     "An API method call has failed."
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -234,12 +294,7 @@ struct debugCobject_ {
 /**@brief       Debug module information structure
  * @notapi
  */
-    const PORT_C_ROM struct debugModInfo_ {
-        const PORT_C_ROM char * const PORT_C_ROM_VAR name;                      /**< @brief Module name                                     */
-        const PORT_C_ROM char * const PORT_C_ROM_VAR desc;                      /**< @brief Module description                              */
-        const PORT_C_ROM char * const PORT_C_ROM_VAR auth;                      /**< @brief Module author                                   */
-        const PORT_C_ROM char * const PORT_C_ROM_VAR file;                      /**< @brief Module source file                              */
-    } * const PORT_C_ROM_VAR mod;                                               /**< @brief Module information                              */
+    const PORT_C_ROM struct esModuleInfo * const PORT_C_ROM_VAR mod;            /**< @brief Module information                              */
     const PORT_C_ROM char * const PORT_C_ROM_VAR fn;                            /**< @brief Function name                                   */
     uint16_t            line;                                                   /**< @brief Code line reference                             */
 };

@@ -41,7 +41,7 @@
  *              - 1 - Debug options can be enabled individually
  */
 #if !defined(CONFIG_DEBUG)
-# define CONFIG_DEBUG                   1
+# define CONFIG_DEBUG                  1
 #endif
 
 /**@brief       Enable/disable API arguments validation
@@ -51,8 +51,8 @@
  *
  * @note        This option is enabled only if @ref CONFIG_DEBUG is enabled, too.
  */
-#if !defined(CONFIG_DEBUG_API_VALIDATION)
-# define CONFIG_DEBUG_API_VALIDATION    1
+#if !defined(CONFIG_API_VALIDATION)
+# define CONFIG_API_VALIDATION          1
 #endif
 
 /**@brief       Enable/disable internal checks
@@ -62,8 +62,8 @@
  *
  * @note        This option is enabled only if @ref CONFIG_DEBUG is enabled, too.
  */
-#if !defined(CONFIG_DEBUG_INTERNAL_CHECK)
-# define CONFIG_DEBUG_INTERNAL_CHECK    1
+#if !defined(CONFIG_ASSERT_INTERNAL)
+# define CONFIG_ASSERT_INTERNAL         1
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
@@ -72,12 +72,19 @@
 # error "eSolid RT Kernel: Configuration option CONFIG_DEBUG is out of range."
 #endif
 
-#if ((CONFIG_DEBUG_API_VALIDATION != 1) && (CONFIG_DEBUG_API_VALIDATION != 0))
+#if ((CONFIG_API_VALIDATION != 1) && (CONFIG_API_VALIDATION != 0))
 # error "eSolid RT Kernel: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range."
 #endif
 
-#if ((CONFIG_DEBUG_INTERNAL_CHECK != 1) && (CONFIG_DEBUG_INTERNAL_CHECK != 0))
+#if ((CONFIG_ASSERT_INTERNAL != 1) && (CONFIG_ASSERT_INTERNAL != 0))
 # error "eSolid RT Kernel: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range."
+#endif
+
+#if (CONFIG_DEBUG == 0)
+# undef  CONFIG_API_VALIDATION
+# define CONFIG_API_VALIDATION          0
+# undef  CONFIG_ASSERT_INTERNAL
+# define CONFIG_ASSERT_INTERNAL         0
 #endif
 
 /** @endcond *//** @} *//** @} *//*********************************************

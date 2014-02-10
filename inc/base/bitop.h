@@ -142,20 +142,12 @@
  * @name        Log and power of 2 macros
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Helper macro: calculate 2^pwr expression
- * @param       pwr
- *              Power : portReg, value which will be used in calculation
- * @details     Some ports may want to use look up tables instead of shifting
- *              operation
- */
-#define ES_POWER_OF_2(pwr)              PORT_CPU_PWR2(pwr)
-
 /**@brief       Da li je @c expr jednak nekom stepenu dvojke?
  * @details     Makro vraca TRUE kada je vrednost @c expr izraza jednaka nekom
  *              stepenu dvojke, inace, vraca FALSE.
  * @mseffect
  */
-#define ES_IS_POWER_OF_2(num)                                                   \
+#define ES_IS_PWR2(num)                                                   \
     (!((num) & ((num) - 1)))
 
 /**@brief       Calculate log2 for value @c x during the compilation
@@ -169,21 +161,6 @@
         ((x) <  32u ? 4u :                                                      \
          ((x) <  64u ? 5u :                                                     \
           ((x) < 128u ? 6u : 7u)))))))
-
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Counting bits
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Find last set bit in a word
- * @param       val
- *              Value : portReg, value which needs to be evaluated
- * @return      The position of the last set bit in a value
- * @details     This function is used by the scheduler to efficiently determine
- *              the highest priority of thread ready for execution. For similar
- *              algorithm details see:
- *              http://en.wikipedia.org/wiki/Find_first_set.
- */
-#define ES_FIND_LAST_SET_BIT(val)       PORT_CPU_FLS(val)
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Simple bit operations
@@ -215,11 +192,6 @@
     do {                                                                        \
         var &= ~ES_BIT_MASK_MSB(var);                                           \
     } while (0)
-
-#define max(a, b)                                                               \
-   ({ __typeof__ (a) _a = (a); \
-      __typeof__ (b) _b = (b); \
-     _a > _b ? _a : _b; })
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

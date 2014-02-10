@@ -31,7 +31,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
-#include "arch/compiler.h"
+#include "plat/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -39,29 +39,29 @@
  * @name        Port constants
  * @{ *//*--------------------------------------------------------------------*/
 
-#define PORT_DEF_DATA_WIDTH             32u
+#define ES_CPU_DEF_DATA_WIDTH           32u
 
-#define PORT_DEF_DATA_ALIGNMENT         4u
+#define ES_CPU_DEF_DATA_ALIGNMENT       4u
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Bit operations
  * @{ *//*--------------------------------------------------------------------*/
 
-#define PORT_CPU_FLS(val)               portCpuFLS_(val)
+#define ES_CPU_FLS(val)                 portCpuFLS_(val)
 
-#define PORT_CPU_PWR2(pwr)              (0x01u << (pwr))
+#define ES_CPU_PWR2(pwr)                (0x01u << (pwr))
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Generic port macros
  * @{ *//*--------------------------------------------------------------------*/
 
-#define PORT_CPU_INIT_EARLY()           (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_CPU_INIT_EARLY()             (void)0                                 /**< @brief This port does not need this function call      */
 
-#define PORT_CPU_INIT()                 portCpuInit()
+#define ES_CPU_INIT()                   portCpuInit()
 
-#define PORT_CPU_INIT_LATE()            (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_CPU_INIT_LATE()              (void)0                                 /**< @brief This port does not need this function call      */
 
-#define PORT_CPU_TERM()                 portCpuTerm()
+#define ES_CPU_TERM()                   portCpuTerm()
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        CPU register descriptions
@@ -69,18 +69,21 @@
 
 /**@brief       PSR Thumb state: Position.
  */
-#define CPU_PSR_THUMB_STATE_Pos         (24u)
+#define PORT_PSR_THUMB_STATE_Pos        (24u)
 
 /**@brief       PSR Thumb state: Mask.
  */
-#define CPU_PSR_THUMB_STATE_Msk         (0x01ul << CPU_PSR_THUMB_STATE_Pos)
+#define PORT_PSR_THUMB_STATE_Msk        (0x01ul << PORT_PSR_THUMB_STATE_Pos)
 
-/** @} *//*---------------------------------------------  C++ extern base  --*/
+/**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
+
+typedef unsigned int esCpuReg;
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
@@ -99,9 +102,9 @@ extern "C" {
  * @inline
  */
 static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFLS_(
-    esAtomic       value) {
+    esAtomic            value) {
 
-    uint_fast8_t    clz;
+    uint_fast8_t        clz;
 
     __asm__ __volatile__ (
         "   clz    %0, %1                                   \n"

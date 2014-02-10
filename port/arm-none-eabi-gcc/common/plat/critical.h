@@ -21,14 +21,12 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of Critical code section locking management.
- * @defgroup    base_critical Critical code section locking management
- * @brief       These methods are used to protect concurrent access to a shared
- *              resource.
+ * @brief       Interface of ARM Cortex-M3 critical port.
+ * @addtogroup  arm-none-eabi-gcc-v7-m
  *********************************************************************//** @{ */
 
-#ifndef ES_CRITICAL_H_
-#define ES_CRITICAL_H_
+#ifndef ES_ARCH_CRITICAL_H_
+#define ES_ARCH_CRITICAL_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -48,21 +46,21 @@
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Enter critical code section
- * @param       intrCtx
+ * @param       lockCtx
  *              Interrupt context, pointer to portable type variable which will
  *              hold the interrupt context state during the critical code
  *              section.
  */
-#define ES_CRITICAL_LOCK_ENTER(intrCtx)                                         \
-    PORT_INTR_MASK_REPLACE(intrCtx, PORT_DEF_MAX_ISR_PRIO)
+#define ES_CRITICAL_LOCK_ENTER(lockCtx)                                         \
+    ES_INTR_MASK_REPLACE(lockCtx, ES_INTR_PRIO_TO_CODE(CONFIG_INTR_MAX_ISR_PRIO))
 
 /**@brief       Exit critical code section
- * @param       intrCtx
+ * @param       lockCtx
  *              Interrupt context, portable type variable which is holding a
  *              previously saved interrupt context state.
  */
-#define ES_CRITICAL_LOCK_EXIT(intrCtx)                                          \
-    PORT_INTR_MASK_SET(intrCtx)
+#define ES_CRITICAL_LOCK_EXIT(lockCtx)                                          \
+    ES_INTR_MASK_SET(lockCtx)
 
 /**@} *//*----------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
@@ -70,6 +68,9 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
+
+typedef esIntrCtx esLockCtx;
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/
@@ -81,4 +82,4 @@ extern "C" {
 /** @endcond *//** @} *//******************************************************
  * END of critical.h
  ******************************************************************************/
-#endif /* ES_CRITICAL_H_ */
+#endif /* ES_ARCH_CRITICAL_H_ */

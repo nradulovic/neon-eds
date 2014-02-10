@@ -21,32 +21,27 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief   	Configuration of system control module.
- * @addtogroup  arm-none-eabi-gcc-v7-m_cfg
- * @brief		Configuration of system control module.
+ * @brief       Priority queue configuration
+ * @defgroup    base_prio_queue Priority queue configuration
+ * @brief       Priority queue configuration
  *********************************************************************//** @{ */
+/**@defgroup    base_prio_queue_cfg Configuration
+ * @brief       Priority queue configuration
+ * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_SYSCTRL_CFG_H_
-#define ES_SYSCTRL_CFG_H_
+#ifndef ES_PRIO_QUEUE_CONFIG_H_
+#define ES_PRIO_QUEUE_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "family/profile.h"
-
 /*===============================================================  DEFINES  ==*/
 /*==============================================================  SETTINGS  ==*/
 
-/**@brief       The frequency of clock which is used for the system timer
- * @details     System timer SysTick uses core clock (sometimes referred to as
- *              HCLK) for counting. Specify here the core clock so the OS can
- *              properly manage system tick event generation.
- */
-#if !defined(PORT_CFG_SYSTMR_CLOCK_FREQ)
-# define PORT_CFG_SYSTMR_CLOCK_FREQ     24000000ul
+#if !defined(CONFIG_PQ_PRIORITY_LEVELS)
+#define CONFIG_PQ_PRIORITY_LEVELS             33u
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
- * END of sysctrl_cfg.h
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of prio_queue_config.h
  ******************************************************************************/
-#endif /* ES_SYSCTRL_CFG_H_ */
+#endif /* ES_PRIO_QUEUE_CONFIG_H_ */

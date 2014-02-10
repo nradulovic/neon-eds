@@ -21,55 +21,60 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of ARM Cortex-M3 interrupt port.
+ * @brief       Interrupt module header
  * @addtogroup  arm-none-eabi-gcc-v7-m
  *********************************************************************//** @{ */
+/**@defgroup    arm-none-eabi-gcc-v7-m_intr Interrupt module
+ * @brief       Interrupt module
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef ES_INTR_H_
 #define ES_INTR_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/compiler.h"
-#include "arch/cpu.h"
-#include "arch/sysctrl.h"
-#include "arch/intr_cfg.h"
+#include "plat/compiler.h"
+#include "family/profile.h"
+#include "arch/intr_config.h"
 
 /*===============================================================  MACRO's  ==*/
 
 /*------------------------------------------------------------------------*//**
- * @name        Port constants
- * @{ *//*--------------------------------------------------------------------*/
-
-#define PORT_DEF_MAX_ISR_PRIO                                                   \
-    (((PORT_CFG_MAX_ISR_PRIO) << (8u - CPU_DEF_ISR_PRIO_BITS)) & 0xfful)
-
-/**@} *//*----------------------------------------------------------------*//**
  * @name        Interrupt management
  * @{ *//*--------------------------------------------------------------------*/
 
-#define PORT_INTR_ENABLE()              portIntrEnable_()
+#define ES_INTR_ENABLE()                portIntrEnable_()
 
-#define PORT_INTR_DISABLE()             portIntrDisable_()
+#define ES_INTR_DISABLE()               portIntrDisable_()
 
-#define PORT_INTR_MASK_SET(mask)        portIntrMaskSet_(mask)
+#define ES_INTR_MASK_SET(mask)          portIntrMaskSet_(mask)
 
-#define PORT_INTR_MASK_GET(mask)        portIntrMaskGet_(mask)
+#define ES_INTR_MASK_GET(mask)          portIntrMaskGet_(mask)
 
-#define PORT_INTR_MASK_REPLACE(oldPrio, newPrio)                                \
+#define ES_INTR_MASK_REPLACE(oldPrio, newPrio)                                  \
     portIntrMaskReplace_(oldPrio, newPrio)
+
+#define ES_INTR_PRIO_TO_CODE(prio)                                              \
+    (((prio) << (8u - PORT_ISR_PRIO_BITS)) & 0xfful)
+
+#define ES_INTR_CODE_TO_PRIO(code)                                              \
+    (((code) & 0xfful) >> (8u - PORT_ISR_PRIO_BITS))
+
+#define ES_INTR_PRIO_SET(intrNum, prio) intrPrioSet_(intrNum, prio)
+
+#define ES_INTR_PRIO_GET(intrNum, prio) intrPrioGet_(intrNum, prio)
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Generic port macros
  * @{ *//*--------------------------------------------------------------------*/
 
-#define PORT_INTR_INIT_EARLY()          (void)0                                /**< @brief This port does not need this function call      */
+#define ES_INTR_INIT_EARLY()            (void)0                                 /**< @brief This port does not need this function call      */
 
-#define PORT_INTR_INIT()                portIntrInit()
+#define ES_INTR_INIT()                  portIntrInit()
 
-#define PORT_INTR_INIT_LATE()           (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_INTR_INIT_LATE()             (void)0                                 /**< @brief This port does not need this function call      */
 
-#define PORT_INTR_TERM()                portIntrTerm()
+#define ES_INTR_TERM()                  portIntrTerm()
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -81,15 +86,17 @@ extern "C" {
 /**@brief       Interrupt Number Definition
  * @details     Cortex-M3 Processor Exceptions Numbers
  */
-enum IntrNum {
-    NONMASKABLEINT_IRQN   = -14,                                                /**< @brief 2 Non Maskable Interrupt                        */
-    MEMORYMANAGEMENT_IRQN = -12,                                                /**< @brief 4 Cortex-M3 Memory Management Interrupt         */
-    BUSFAULT_IRQN         = -11,                                                /**< @brief 5 Cortex-M3 Bus Fault Interrupt                 */
-    USAGEFAULT_IRQN       = -10,                                                /**< @brief 6 Cortex-M3 Usage Fault Interrupt               */
-    SVCALL_IRQN           = -5,                                                 /**< @brief 11 Cortex-M3 SV Call Interrupt                  */
-    PENDSV_IRQN           = -2,                                                 /**< @brief 14 Cortex-M3 Pend SV Interrupt                  */
-    SYST_IRQN             = -1                                                  /**< @brief 15 Cortex-M3 System Tick Interrupt              */
+enum esIntrN {
+    NONMASKABLEINT_IRQN   = -14,                                                /**< @brief 2 Non Maskable Interrupt                        *///!< NONMASKABLEINT_IRQN
+    MEMORYMANAGEMENT_IRQN = -12,                                                /**< @brief 4 Cortex-M3 Memory Management Interrupt         *///!< MEMORYMANAGEMENT_IRQN
+    BUSFAULT_IRQN         = -11,                                                /**< @brief 5 Cortex-M3 Bus Fault Interrupt                 *///!< BUSFAULT_IRQN
+    USAGEFAULT_IRQN       = -10,                                                /**< @brief 6 Cortex-M3 Usage Fault Interrupt               *///!< USAGEFAULT_IRQN
+    SVCALL_IRQN           = -5,                                                 /**< @brief 11 Cortex-M3 SV Call Interrupt                  *///!< SVCALL_IRQN
+    PENDSV_IRQN           = -2,                                                 /**< @brief 14 Cortex-M3 Pend SV Interrupt                  *///!< PENDSV_IRQN
+    ES_SYSTEM_IRQN             = -1                                             /**< @brief 15 Cortex-M3 System Tick Interrupt              *///!< ES_SYSTEM_IRQN
 };
+
+typedef unsigned int esIntrCtx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -121,24 +128,24 @@ static PORT_C_INLINE_ALWAYS void portIntrDisable_(
 /**@brief       Set the new interrupt priority state
  * @param       state
  *              New interrupt priority mask or new state of interrupts
- * @note        Depending on @ref PORT_CFG_MAX_ISR_PRIO setting this function will
+ * @note        Depending on @ref CONFIG_INTR_MAX_ISR_PRIO setting this function will
  *              either set the new priority of allowed interrupts or just
  *              disable/enable all interrupts.
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
-    esAtomic            state) {
+    esIntrCtx           intrCtx) {
 
-#if (0 != PORT_CFG_MAX_ISR_PRIO)
+#if (0 != CONFIG_INTR_MAX_ISR_PRIO)
     __asm __volatile__ (
         "   msr    basepri, %0                              \n"
         :
-        : "r"(state));
+        : "r"(intrCtx));
 #else
     __asm __volatile__ (
         "   msr    primask, %0                              \n"
         :
-        : "r"(state));
+        : "r"(intrCtx));
 #endif
 }
 
@@ -148,11 +155,11 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
-    esAtomic *          state) {
+    esIntrCtx *         intrCtx) {
 
-    esAtomic            tmp;
+    esIntrCtx           tmp;
 
-#if (0 != PORT_CFG_MAX_ISR_PRIO)
+#if (0 != CONFIG_INTR_MAX_ISR_PRIO)
     __asm __volatile__ (
         "   mrs     %0, basepri                             \n"
         : "=r"(tmp));
@@ -161,7 +168,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
         "   mrs     %0, primask                             \n"
         : "=r"(tmp));
 #endif
-    *state = tmp;
+    *intrCtx = tmp;
 }
 
 /**@brief       Get free and set new interrupt priority mask
@@ -169,12 +176,12 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
-    esAtomic *          old,
-    esAtomic            new) {
+    esIntrCtx *         old,
+    esIntrCtx           new) {
 
-    esAtomic            tmp;
+    esIntrCtx           tmp;
 
-#if (0 != PORT_CFG_MAX_ISR_PRIO)
+#if (0 != CONFIG_INTR_MAX_ISR_PRIO)
     __asm __volatile__ (
         "   mrs     %0, basepri                             \n"
         "   msr     basepri, %1                             \n"
@@ -193,15 +200,31 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
 /**@brief       Set Priority for Cortex-M  System Interrupts
  * @param       intrNum
  *              Interrupt number
- * @param       prio
- *              The priority of specified interrupt source
+ * @param       priority
+ *              The priority of specified interrupt source. The parameter
+ *              priority must be encoded with @ref ES_INTR_PRIO_TO_CODE.
  * @inline
  */
 static PORT_C_INLINE_ALWAYS void intrPrioSet_(
-    enum IntrNum        intrNum,
-    esAtomic            prio) {
+    enum esIntrN        intrN,
+    uint32_t            priority) {
 
-    SYS_SCB->shp[((uint32_t)(intrNum) & 0x0ful) - 4u] = prio;
+    PORT_SCB->SHP[((uint32_t)(intrN) & 0x0ful) - 4u] = (uint8_t)priority;
+}
+
+/**@brief       Get Priority for Cortex-M  System Interrupts
+ * @param       intrNum
+ *              Interrupt number
+ * @param       priority
+ *              The priority of specified interrupt source. The parameter
+ *              priority must be decoded with @ref ES_INTR_CODE_TO_PRIO.
+ * @inline
+ */
+static PORT_C_INLINE_ALWAYS void intrPrioGet_(
+    enum esIntrN        intrN,
+    uint32_t *          priority) {
+
+    *priority = PORT_SCB->SHP[((uint32_t)(intrN) & 0x0ful) - 4u];
 }
 
 /** @} *//*---------------------------------------------------------------*//**
@@ -226,7 +249,7 @@ void portIntrTerm(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of intr.h
  ******************************************************************************/
 #endif /* ES_INTR_H_ */

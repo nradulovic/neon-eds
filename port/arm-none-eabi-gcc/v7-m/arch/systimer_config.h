@@ -21,13 +21,13 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief   	Configuration of interrupt module.
- * @addtogroup  arm-none-eabi-gcc-v7-m_intr_cfg
- * @brief		Configuration of interrupt module.
+ * @brief   	Configuration of system timer module.
+ * @addtogroup  arm-none-eabi-gcc-v7-m_cfg
+ * @brief		Configuration of system timer module.
  *********************************************************************//** @{ */
 
-#ifndef ES_INTR_CFG_H_
-#define ES_INTR_CFG_H_
+#ifndef ES_ARCH_SYSTIMER_CFG_H_
+#define ES_ARCH_SYSTIMER_CFG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -36,30 +36,25 @@
 /*===============================================================  DEFINES  ==*/
 /*==============================================================  SETTINGS  ==*/
 
-/**@brief       Priority of critical sections in kernel
- * @details     Specify the priority in range: <code>0</code>\f$\leq\f$
- *              <code>PORT_CFG_MAX_ISR_PRIO</code> \f$\leq\f$ <code>15</code>.
- *              The lower the number the higher the priority.
- * @note        When priority is set to @b 0 then critical code section will not
- *              use priority levels but instead it will just disable interrupts
- *              on entry and enable interrupts on exit.
+/**@brief       The frequency of clock which is used for the system timer
+ * @details     System timer SysTick uses core clock (sometimes referred to as
+ *              HCLK) for counting. Specify here the core clock so the OS can
+ *              properly manage system tick event generation.
  */
-#if !defined(PORT_CFG_MAX_ISR_PRIO)
-# define PORT_CFG_MAX_ISR_PRIO          7u
+#if !defined(CONFIG_SYSTIMER_CLOCK_FREQ)
+# define CONFIG_SYSTIMER_CLOCK_FREQ     24000000ul
 #endif
 
-/**@brief       This field determines the split of group priority from
- *              subpriority.
- * @warning     Change this value only if you are familiar with Cortex interrupt
- *              priority system and how kernel protects its critical code
- *              sections.
+/**@brief       The frequency of system timer tick event
+ * @note        This setting is valid only if configuration option
+ *              @ref CONFIG_SYSTIMER_CLOCK_FREQ is properly set.
  */
-#if !defined(INTR_CFG_SCB_AIRCR_PRIGROUP)
-# define INTR_CFG_SCB_AIRCR_PRIGROUP    0u
+#if !defined(CONFIG_SYSTIMER_EVENT_FREQ)
+# define CONFIG_SYSTIMER_EVENT_FREQ     100ul
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of intr_cfg.h
+ * END of systimer_config.h
  ******************************************************************************/
-#endif /* ES_INTR_CFG_H_ */
+#endif /* ES_ARCH_SYSTIMER_CFG_H_ */

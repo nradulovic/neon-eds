@@ -30,8 +30,10 @@
 #define ES_PROFILE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-/*===============================================================  DEFINES  ==*/
-/*==============================================================  SETTINGS  ==*/
+
+#include "arch/cortex_m3.h"
+
+/*===============================================================  MACRO's  ==*/
 
 /*------------------------------------------------------------------------*//**
  * @name        ST-Microelectronics STM32F10x
@@ -42,15 +44,51 @@
  *              assigned as being preemption priority bits, and none as sub
  *              priority bits
  */
-#define CPU_DEF_ISR_PRIO_BITS           4u
+#define PORT_ISR_PRIO_BITS              4u
 
 /**@brief       System timer maximum value
  * @details     STM32F10x family has 24-bit wide system tick register
  */
-#define PORT_DEF_SYSTMR_MAX_VAL         0xfffffful
+#define ES_PROFILE_MAX_SYSTIMER_VAL     0xfffffful
+
+/**@brief       Maximum RAM size for this family
+ * @details     This define is used to choose optimal algorithm for this family
+ *              of micro-controllers.
+ */
+#define ES_PROFILE_MAX_RAM_SIZE         8192u
+
+/**@} *//*-----------------------------------------------  C++ extern base  --*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*============================================================  DATA TYPES  ==*/
+
+/*------------------------------------------------------------------------*//**
+ * @name        ST-Microelectronics STM32F10x
+ * @{ *//*--------------------------------------------------------------------*/
+
+#if !defined(ES_OPTIMIZE_FOR_SPEED)
+#define ES_RAM_SIZE_MAX                 65535
+#define ES_RAM_SSIZE_MAX                32767
+#define ES_RAM_SSIZE_MIN                -32768
+typedef unsigned short int esRamSize;
+typedef signed   short int esRamSSize;
+#else
+#define ES_RAM_SIZE_MAX                 4294967295ul
+#define ES_RAM_SSIZE_MAX                2147483647l
+#define ES_RAM_SSIZE_MIN                -2147483648l
+typedef unsigned int       esRamSize;
+typedef signed   int       esRamSSize;
+#endif /* !ES_OPTIMIZE_FOR_SPEED */
 
 /**@} *//*--------------------------------------------------------------------*/
-
+/*======================================================  GLOBAL VARIABLES  ==*/
+/*===================================================  FUNCTION PROTOTYPES  ==*/
+/*--------------------------------------------------------  C++ extern end  --*/
+#ifdef __cplusplus
+}
+#endif
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
  * END of profile.h
