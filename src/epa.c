@@ -106,7 +106,7 @@ static bool eventQIsFull(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static ES_MODULE_INFO_CREATE("EPA", "Event Processing Agent", "Nenad Radulovic");
+static const ES_MODULE_INFO_CREATE("EPA", "Event Processing Agent", "Nenad Radulovic");
 static struct epaKernel GlobalEpaKernel;
 
 /*======================================================  GLOBAL VARIABLES  ==*/

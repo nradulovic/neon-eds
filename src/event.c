@@ -31,8 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "plat/critical.h"
-#include "mem/heap.h"
-#include "mem/pool.h"
 #include "eds/event.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
@@ -42,12 +40,13 @@
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_POOL)
-struct evtPools {
-    struct esPoolMem *  handle[CONFIG_EVENT_STORAGE_NPOOLS];
+struct evtStorage {
+    struct storageInstance {
+        struct esMem *      handle;
+        size_t              blockSize;
+    }                   mem[CONFIG_EVENT_STORAGE_NPOOLS];
     uint_fast8_t        nPools;
 };
-#endif
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
@@ -78,21 +77,14 @@ static PORT_C_INLINE esError eventCreateI(
     size_t              size,
     struct esEvent **   event);
 
-static PORT_C_INLINE void eventDestroyI(
+static PORT_C_INLINE esError eventDestroyI(
     struct esEvent *    event);
-
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_POOL)
-static PORT_C_INLINE struct esPoolMem * poolFindI(
-    size_t              size);
-#endif
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-ES_MODULE_INFO_CREATE("EVT", "Event management", "Nenad Radulovic");
+static const ES_MODULE_INFO_CREATE("EVT", "Event management", "Nenad Radulovic");
 
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_POOL)
-static struct evtPools GlobalEvtStorage;
-#endif
+static struct evtStorage GlobalEvtStorage;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
@@ -136,161 +128,108 @@ static PORT_C_INLINE esError eventCreateI(
     size_t              size,
     struct esEvent **   event) {
 
+    esError             error;
+    uint_fast8_t        cnt;
+
     ES_API_REQUIRE(ES_API_RANGE, size >= sizeof(struct esEvent));
     ES_API_REQUIRE(ES_API_POINTER, event != NULL);
-
-#if   (CONFIG_EVENT_STORAGE == EVENT_STORAGE_HEAP)
-    {
-        esError         error;
-
-        error = esHeapMemAllocI(
-            CONFIG_EVENT_STORAGE_HEAP,
-            size,
-            (void **)event);
-
-        if (error != ES_ERROR_NONE) {
-
-            return (ES_ERROR_NO_MEMORY);
-        }
-    }
-#else
-    {
-        esError         error;
-        struct esPoolMem * pool;
-
-        if ((pool = poolFindI(size)) == NULL) {
-
-            return (ES_ERROR_NO_RESOURCE);
-        }
-
-        if ((error = esPoolMemAllocI(pool, (void **)event)) != ES_ERROR_NONE) {
-
-            return (ES_ERROR_NO_MEMORY);
-        }
-    }
-#endif
-    return (ES_ERROR_NONE);
-}
-
-static PORT_C_INLINE void eventDestroyI(
-    struct esEvent *    event) {
-
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_HEAP)
-    esHeapMemFreeI(
-        CONFIG_EVENT_STORAGE_HEAP,
-        event);
-#else
-    esPoolMemFreeI(
-        event->poolMem,
-        event);
-#endif
-}
-
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_POOL)
-static PORT_C_INLINE struct esPoolMem * poolFindI(
-    size_t              size) {
-
-    uint_fast8_t        cnt;
 
     cnt = 0u;
 
     while (cnt < GlobalEvtStorage.nPools) {
-        size_t          currSize;
 
-        esPoolMemGetBlockSizeI(
-            GlobalEvtStorage.handle[cnt],
-            &currSize);
+        if (GlobalEvtStorage.mem[cnt].blockSize >= size) {
+            struct esMem *      mem;
 
-        if (currSize >= size) {
+            mem = GlobalEvtStorage.mem[cnt].handle;
 
-            return (GlobalEvtStorage.handle[cnt]);
+            if ((error = esMemAllocI(mem, size, (void **)event)) != ES_ERROR_NONE) {
+
+                return (ES_ERROR_NO_MEMORY);
+            }
+            (*event)->mem = mem;
+            
+            return (ES_ERROR_NONE);
         }
         cnt++;
     }
-
-    return (NULL);
+    
+    return (ES_ERROR_NO_RESOURCE);
 }
-#endif
+
+static PORT_C_INLINE esError eventDestroyI(
+    struct esEvent *    event) {
+
+    esError             error;
+    
+    ES_API_ENSURE_INTERNAL(
+        error = esMemFreeI(
+            event->mem,
+            event));
+
+    return (error);
+}
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esEventPoolRegister(
-    struct esPoolMem *  poolMem) {
+esError esEventRegisterMem(
+    struct esMem *      mem) {
 
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_HEAP)
-    ES_API_REQUIRE(ES_API_USAGE, CONFIG_EVENT_STORAGE == 1);
-
-    (void)poolMem;
-
-    return (ES_ERROR_NONE);
-#else
     esLockCtx           lockCtx;
     uint_fast8_t        cnt;
     size_t              size;
 
-    ES_API_REQUIRE(ES_API_USAGE, GlobalEvtStorage.nPools != CONFIG_EVENT_STORAGE_NPOOLS);
+    ES_API_REQUIRE(ES_API_POINTER, mem != NULL);
 
-    esPoolMemGetBlockSizeI(
-        poolMem,
-        &size);
     ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    cnt  = GlobalEvtStorage.nPools;
+    ES_API_ENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
+    cnt = GlobalEvtStorage.nPools;
 
     while (0u < cnt) {
-        size_t          currSize;
+        GlobalEvtStorage.mem[cnt].handle    = GlobalEvtStorage.mem[cnt - 1].handle;
+        GlobalEvtStorage.mem[cnt].blockSize = GlobalEvtStorage.mem[cnt - 1].blockSize;
 
-        GlobalEvtStorage.handle[cnt] = GlobalEvtStorage.handle[cnt - 1];
-        esPoolMemGetBlockSizeI(
-            GlobalEvtStorage.handle[cnt],
-            &currSize);
-
-        if (currSize <= size) {
+        if (GlobalEvtStorage.mem[cnt].blockSize <= size) {
 
             break;
         }
         cnt--;
     }
-    GlobalEvtStorage.handle[cnt] = poolMem;
+    GlobalEvtStorage.mem[cnt].handle    = mem;
+    GlobalEvtStorage.mem[cnt].blockSize = size;
     GlobalEvtStorage.nPools++;
     ES_CRITICAL_LOCK_EXIT(lockCtx);
 
     return (ES_ERROR_NONE);
-#endif
 }
 
-esError esEventPoolUnregister(
-    struct esPoolMem *  poolMem) {
+esError esEventUnregisterMem(
+    struct esMem *      mem) {
 
-#if (CONFIG_EVENT_STORAGE == EVENT_STORAGE_HEAP)
-    ES_API_REQUIRE(ES_API_USAGE, CONFIG_EVENT_STORAGE == 1);
-
-    (void)poolMem;
-
-    return (ES_ERROR_NONE);
-#else
     esLockCtx           lockCtx;
     uint_fast8_t        cnt;
 
     ES_CRITICAL_LOCK_ENTER(&lockCtx);
     cnt = GlobalEvtStorage.nPools;
 
-    while ((0u < cnt) && (poolMem != GlobalEvtStorage.handle[cnt])) {
+    while ((0u < cnt) && (mem != GlobalEvtStorage.mem[cnt].handle)) {
         cnt--;
     }
     GlobalEvtStorage.nPools--;
 
-    ES_API_REQUIRE(ES_API_RANGE, poolMem == GlobalEvtStorage.handle[cnt]);
+    ES_API_REQUIRE(ES_API_RANGE, mem == GlobalEvtStorage.mem[cnt].handle);
 
     while (cnt < GlobalEvtStorage.nPools) {
-        GlobalEvtStorage.handle[cnt] = GlobalEvtStorage.handle[cnt + 1];
+        GlobalEvtStorage.mem[cnt].handle    = GlobalEvtStorage.mem[cnt + 1].handle;
+        GlobalEvtStorage.mem[cnt].blockSize = GlobalEvtStorage.mem[cnt + 1].blockSize;
         cnt++;
     }
-    GlobalEvtStorage.handle[GlobalEvtStorage.nPools - 1] = NULL;
+    GlobalEvtStorage.mem[GlobalEvtStorage.nPools - 1].handle    = NULL;
+    GlobalEvtStorage.mem[GlobalEvtStorage.nPools - 1].blockSize = 0;
     ES_CRITICAL_LOCK_EXIT(lockCtx);
 
     return (ES_ERROR_NONE);
-#endif
 }
 
 
@@ -381,20 +320,23 @@ esError esEventDestroy(
 esError esEventDestroyI(
     struct esEvent *    event) {
 
+    esError             error;
+
     ES_API_REQUIRE(ES_API_POINTER, event);
     ES_API_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
 
+    error = ES_ERROR_NONE;
     esEventReferenceDown(
         event);
 
     if (esEventRefGet(event) == 0u) {
         eventTerm(
             event);
-        eventDestroyI(
+        error = eventDestroyI(
             event);
     }
 
-    return (ES_ERROR_NONE);
+    return (error);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

@@ -39,7 +39,7 @@
 #include "plat/compiler.h"
 #include "arch/systimer.h"
 #include "base/debug.h"
-#include "mem/pool.h"
+#include "mem/mem_class.h"
 #include "eds/event_config.h"
 
 /*===============================================================  DEFINES  ==*/
@@ -99,12 +99,10 @@ extern "C" {
  *              directives for this structure.
  * @api
  */
-CONFIG_EVENT_STRUCT_ATTRIBUTE struct esEvent {
+struct CONFIG_EVENT_STRUCT_ATTRIBUTE esEvent {
     uint16_t            id;                                                     /**<@brief Event ID number                                  */
     uint16_t            attrib;                                                 /**<@brief Event dynamic attributes                         */
-#if (CONFIG_EVENT_STORAGE == 1)        || defined(__DOXYGEN__)
-    struct esPoolMem *  poolMem;                                                /**<@brief Event pool storage                               */
-#endif
+    struct esMem *      mem;                                                    /**<@brief Event storage                                    */
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
     struct esEpa *      producer;                                               /**<@brief Event producer                                   */
 #endif
@@ -138,8 +136,8 @@ typedef struct esEvent esEvent;
  *              - @ref ES_ERROR_NONE
  * @api
  */
-esError esEventPoolRegister(
-    struct esPoolMem *  esPoolMem);
+esError esEventRegisterMem(
+    struct esMem *      mem);
 
 /**@brief       Unregister a memory pool
  * @param       esPoolMem
@@ -148,8 +146,8 @@ esError esEventPoolRegister(
  *              - @ref ES_ERROR_NONE
  * @api
  */
-esError esEventPoolUnregister(
-    struct esPoolMem *  esPoolMem);
+esError esEventUnregisterMem(
+    struct esMem *      mem);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
@@ -250,7 +248,7 @@ void esEventUnReserve(
  * @param       event
  *              Pointer to event structure
  */
-static PORT_C_INLINE_ALWAYS void esEventRefUp(
+static PORT_C_INLINE void esEventRefUp(
     struct esEvent *    event) {
 
     if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {
@@ -268,7 +266,7 @@ static PORT_C_INLINE_ALWAYS void esEventRefUp(
  * @param       event
  *              Pointer to event structure
  */
-static PORT_C_INLINE_ALWAYS void esEventReferenceDown(
+static PORT_C_INLINE void esEventReferenceDown(
     struct esEvent *    event) {
 
     if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {

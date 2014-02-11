@@ -96,45 +96,15 @@
  *              vremenskom markeru)
  */
 #if !defined(OPT_EVT_USE_TIMESTAMP)
-# define CONFIG_EVENT_TIMESTAMP          1
+# define CONFIG_EVENT_TIMESTAMP         1
 #endif
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Event storage settings
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Specifies the event storage method
- * @details     eSolid provides several options for memory management like
- *              memory pools and dynamic memory management.
- *              - 0 - use heap memory
- *              - 1 - use pool memory
- *
- * @note        Default: 0 (use heap memory)
- */
-#if !defined(CONFIG_EVENT_STORAGE)
-# define CONFIG_EVENT_STORAGE           0
-#endif
-
-/**@brief       Specifies the number of event pool used
- * @details     When pool memory is being used for storage this setting can be
- *              used to set the maximum number of different pools being used.
- * @note        Default: 4 (use up to 4 pools)
- */
 #if !defined(CONFIG_EVENT_STORAGE_NPOOLS)
-# define CONFIG_EVENT_STORAGE_NPOOLS     4
+# define CONFIG_EVENT_STORAGE_NPOOLS    2
 #endif
-
-#if !defined(CONFIG_EVENT_STORAGE_HEAP)
-# define CONFIG_EVENT_STORAGE_HEAP      &esGlobalHeapMem
-#endif
-
 /**@} *//*--------------------------------------------------------------------*/
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-
-#if (CONFIG_EVENT_STORAGE > 1)
-# error "eSolid Event: Invalid settings for CONFIG_EVENT_STORAGE"
-#endif
 
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of event_config.h

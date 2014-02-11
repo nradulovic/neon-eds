@@ -45,8 +45,6 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-static ES_MODULE_INFO_CREATE("SMP", "State Machine Processor", "Nenad Radulovic");
-
 struct esSm {
     struct esMem * mem;
     const struct esSmTable * table;
@@ -80,6 +78,9 @@ static PORT_C_INLINE void smPathExit(
 #endif
 
 /*=======================================================  LOCAL VARIABLES  ==*/
+
+static const ES_MODULE_INFO_CREATE("SMP", "State Machine Processor", "Nenad Radulovic");
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 const PORT_C_ROM struct esEvent esGlobalSmEvents[] = {
