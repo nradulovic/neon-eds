@@ -42,7 +42,7 @@
 #include "mem/mem_class.h"
 #include "eds/event_config.h"
 
-/*===============================================================  DEFINES  ==*/
+/*===============================================================  MACRO's  ==*/
 
 /**@brief       Bit mask which defines a reserved event
  * @details     When the bits defined in this bit mask are set the given event
@@ -58,7 +58,8 @@
 /**@brief       Bit mask which defines a constant event
  * @details     When the bits defined in this bit mask are set the given event
  *              is marked as constant. In this case EDS will never try to delete
- *              it. Once the event is marked as constant it never can be deleted.
+ *              it. Once the event is marked as constant it never can be
+deleted.
  * @api
  */
 #define ES_EVENT_CONST_Msk              ((uint16_t)(0x01u << 14))
@@ -67,21 +68,11 @@
  * @details     An event must have ID which is below this limit.
  * @api
  */
-#define ES_EVENT_REF_LIMIT               (ES_EVENT_CONST_Msk - (uint16_t)1u)
+#define ES_EVENT_REF_LIMIT              (ES_EVENT_CONST_Msk - (uint16_t)1u)
 
-#define ES_EVENT_SIGNATURE                 ((esAtomic)0xdeadfeedul)
-
-/*===============================================================  MACRO's  ==*/
-
-/**@brief       Helper macro to create new event
- * @param       type
- *              Type of event to create
- * @param       id
- *              Event identification
- * @api
+/**@brief       Event object API signature
  */
-#define ES_EVENT_CREATE(type, id)                                               \
-    (type)esEventCreate(sizeof(type), (uint16_t)id)
+#define ES_EVENT_SIGNATURE              ((esAtomic)0xdeadfeedul)
 
 /*------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -100,20 +91,27 @@ extern "C" {
  * @api
  */
 struct CONFIG_EVENT_STRUCT_ATTRIBUTE esEvent {
-    uint16_t            id;                                                     /**<@brief Event ID number                                  */
-    uint16_t            attrib;                                                 /**<@brief Event dynamic attributes                         */
-    struct esMem *      mem;                                                    /**<@brief Event storage                                    */
-#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
-    struct esEpa *      producer;                                               /**<@brief Event producer                                   */
+    uint16_t            id;
+/**<@brief Event ID number                                  */
+    uint16_t            attrib;
+/**<@brief Event dynamic attributes                         */
+    struct esMem *      mem;
+/**<@brief Event storage                                    */
+#if (CONFIG_EVENT_PRODUCER == 1)  || defined(__DOXYGEN__)
+    struct esEpa *      producer;
+/**<@brief Event producer                                   */
 #endif
-#if (CONFIG_EVENT_TIMESTAMP == 1)      || defined(__DOXYGEN__)
-    esSysTimerTick      timestamp;                                              /**<@brief Event creation time-stamp                        */
+#if (CONFIG_EVENT_TIMESTAMP == 1) || defined(__DOXYGEN__)
+    esSysTimerTick      timestamp;
+/**<@brief Event creation time-stamp                        */
 #endif
-#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-    size_t              size;                                                   /**<@brief Event size in bytes                              */
+#if (CONFIG_EVENT_SIZE == 1)      || defined(__DOXYGEN__)
+    size_t              size;
+/**<@brief Event size in bytes                              */
 #endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-    esAtomic            signature;                                              /**<@brief Structure signature, used during development only*/
+#if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
+    esAtomic            signature;
+/**<@brief Structure signature, used during development only*/
 #endif
 };
 
@@ -126,22 +124,24 @@ typedef struct esEvent esEvent;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 /*------------------------------------------------------------------------*//**
- * @name        Event pools
+ * @name        Event storage
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Register a pool to be used for event storage
- * @param       esPoolMem
- *              Pool memory handle
+/**@brief       Register a memory object to be used for event storage
+ * @param       mem
+ *              Memory object
  * @return      eSolid standard error:
  *              - @ref ES_ERROR_NONE
+ * @details     Event module can accept up to @ref CONFIG_EVENT_STORAGE_NPOOLS
+ *              memory handles for event storage.
  * @api
  */
 esError esEventRegisterMem(
     struct esMem *      mem);
 
-/**@brief       Unregister a memory pool
+/**@brief       Unregister a memory object
  * @param       esPoolMem
- *              Pool memory handle
+ *              Memory object
  * @return      eSolid standard error:
  *              - @ref ES_ERROR_NONE
  * @api
@@ -158,11 +158,12 @@ esError esEventUnregisterMem(
  *              The size of event
  * @param       id
  *              Event identification
- * @param       Pointer to event holder
- *              This pointer will hold the address of newly created event.
+ * @param       event
+ *              Pointer to event holder. This pointer will hold the address of
+ *              newly created event.
  * @return      eSolid standard error:
- *              - @ref ES_ERROR_NONE
- *              - @ref ES_ERROR_NO_RESOURCE - No memory handles available
+ *              - @ref ES_ERROR_NONE - No error occurred
+ *              - @ref ES_ERROR_NO_REFERENCE - No memory handles available
  *              - @reg ES_ERROR_NO_MEMORY - No available memory storage
  * @api
  */
@@ -176,11 +177,12 @@ esError esEventCreate(
  *              The size of event
  * @param       id
  *              Event identification
- * @param       Pointer to event holder
- *              This pointer will hold the address of newly created event.
+ * @param       event
+ *              Pointer to event holder. This pointer will hold the address of
+ *              newly created event.
  * @return      eSolid standard error:
- *              - @ref ES_ERROR_NONE
- *              - @ref ES_ERROR_NO_RESOURCE - No memory handles available
+ *              - @ref ES_ERROR_NONE - No error occurred
+ *              - @ref ES_ERROR_NO_REFERENCE - No memory handles available
  *              - @reg ES_ERROR_NO_MEMORY - No available memory storage
  * @iclass
  */
@@ -189,44 +191,36 @@ esError esEventCreateI(
     uint16_t            id,
     struct esEvent **   event);
 
-/**@brief       Unistava dogadjaj.
+/**@brief       Destroy an event
  * @param       event
- *              Pokazivac na dogadjaj koji treba da se unisti.
- * @details     Ukoliko dati @c event dogadjaj nema vise ni jednog korisnika,
- *              onda ce memorijski prostor koji on zauzima biti recikliran, u
- *              suprotnom, dogadjaj nastavlja da postoji.
+ *              Pointer to the event.
+ * @details     Recycles the given event. In case there are no users who are
+ *              referencing this event then it will be deleted.
  * @api
  */
 esError esEventDestroy(
     struct esEvent *    evt);
 
-/**@brief       Unistava dogadjaj.
+/**@brief       Destroy an event
  * @param       event
- *              Pokazivac na dogadjaj koji treba da se unisti.
- * @details     Ukoliko dati @c event dogadjaj nema vise ni jednog korisnika,
- *              onda ce memorijski prostor koji on zauzima biti recikliran, u
- *              suprotnom, dogadjaj nastavlja da postoji.
+ *              Pointer to the event.
+ * @details     Recycles the given event. In case there are no users who are
+ *              referencing this event then it will be deleted.
  * @iclass
  */
 esError esEventDestroyI(
     struct esEvent *    event);
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        Rad sa staticnim dogadjajima
+ * @name        Event reservation
+ * @brief       Event reservation provides methods to freeze events after their
+ *              creation. This can be used to speed up the application since
+ *              the destroy the event after it has been used.
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Rezervise dogadjaj @c event.
+/**@brief       Reserve the event
  * @param       event
- *              Pokazivac na dogadjaj koji se rezervise.
- * @pre         Dogadjaj mora da bude kreiran funkcijom esEventCreate().
- * @details     Rezervise @c event dogadjaj cime se onemogucava eSolid-u da
- *              izvrsi recikliranje memorijskog prostora ovog dogadjaja.
- *              Uglavnom se rezervacija dogadjaja vrsi kada je potrebno iz neke
- *              prekidne rutine brzo poslati dogadjaj nekom aktivnom EPA objektu.
- *              Prethodnim kreiranjem dogadjaja i njegovom rezervacijom se vrsi
- *              alociranje memorije, tako da u kriticnim trenucima nije potrebno
- *              ponovo izvrsiti alociranje memorije, vec se spreman dogadjaj
- *              odmah koristi.
+ *              Pointer to the event.
  * @api
  */
 void esEventReserve(
@@ -246,7 +240,7 @@ void esEventUnReserve(
 
 /**@brief       Increments the event reference counter
  * @param       event
- *              Pointer to event structure
+ *              Pointer to event
  */
 static PORT_C_INLINE void esEventRefUp(
     struct esEvent *    event) {
@@ -264,7 +258,7 @@ static PORT_C_INLINE void esEventRefUp(
 
 /**@brief       Decrements the event reference counter
  * @param       event
- *              Pointer to event structure
+ *              Pointer to event
  */
 static PORT_C_INLINE void esEventReferenceDown(
     struct esEvent *    event) {
@@ -280,12 +274,15 @@ static PORT_C_INLINE void esEventReferenceDown(
     }
 }
 
+/**@brief       Returns the event reference counter
+ * @param       event
+ *              Pointer to event
+ */
 static PORT_C_INLINE uint_fast16_t esEventRefGet(
     const struct esEvent * event) {
 
     return (event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk);
 }
-
 
 extern struct esEpa * appEvtGeneratorGet(void);
 
