@@ -163,7 +163,7 @@ static PORT_C_INLINE bool bitmapIsEmpty(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static ES_MODULE_INFO_CREATE("Prio queue", "Priority ordered queue", "Nenad Radulovic");
+static const ES_MODULE_INFO_CREATE("Prio queue", "Priority ordered queue", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
