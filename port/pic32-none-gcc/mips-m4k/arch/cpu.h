@@ -21,9 +21,12 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of ARM Cortex-M3 CPU port.
- * @addtogroup  arm-none-eabi-gcc-v7-m
+ * @brief       Interface of PIC32 CPU module port.
+ * @addtogroup  pic32-none-gcc
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-cpu CPU module
+ * @brief       CPU module
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef ES_CPU_H_
 #define ES_CPU_H_
@@ -39,27 +42,36 @@
  * @name        Port constants
  * @{ *//*--------------------------------------------------------------------*/
 
+/**@brief       Specifies bit-width of general purpose registers
+ */
 #define ES_CPU_DEF_DATA_WIDTH           32u
 
+/**@brief       Specifies data alignment for optimal performance
+ */
 #define ES_CPU_DEF_DATA_ALIGNMENT       4u
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Bit operations
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_CPU_FLS(val)                 portCpuFLS_(val)
+/**@brief       Find Last Set bit in a word
+ */
+#define ES_CPU_FLS(val)                 portCpuFls_(val)
 
+/**@brief       Compute power of 2
+ */
 #define ES_CPU_PWR2(pwr)                (0x01u << (pwr))
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Generic port macros
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_CPU_INIT_EARLY()             (void)0                                 /**< @brief This port does not need this function call      */
+
+#define ES_CPU_INIT_EARLY()             (void)0
 
 #define ES_CPU_INIT()                   portCpuInit()
 
-#define ES_CPU_INIT_LATE()              (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_CPU_INIT_LATE()              (void)0
 
 #define ES_CPU_TERM()                   portCpuTerm()
 
@@ -70,6 +82,8 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/**@brief       General purpose registers are 32bit wide.
+ */
 typedef unsigned int esCpuReg;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -83,20 +97,16 @@ typedef unsigned int esCpuReg;
  * @brief       Find last set bit in a word
  * @param       value
  *              32 bit value which will be evaluated
- * @return      Last set bit in a word
+ * @return      Last set bit position in a word
  * @details     This implementation uses @c clz instruction and then it computes
  *              the result using the following expression:
  *              <code>fls(x) = w - clz(x)</code>.
  * @inline
  */
-static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFLS_(
+static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFls_(
     esAtomic            value) {
 
-    uint_fast8_t        clz;
-
-    clz = __builtin_clz(value);
-    
-    return (ES_CPU_DEF_DATA_WIDTH - clz - 1u);
+    return (ES_CPU_DEF_DATA_WIDTH - __builtin_clz(value) - 1u);
 }
 
 /** @} *//*---------------------------------------------------------------*//**
@@ -119,7 +129,7 @@ void portCpuTerm(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of cpu.h
  ******************************************************************************/
 #endif /* ES_CPU_H_ */

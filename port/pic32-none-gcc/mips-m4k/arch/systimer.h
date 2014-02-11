@@ -21,18 +21,20 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of ARM Cortex-M3 System Timer port.
- * @addtogroup  arm-none-eabi-gcc-v7-m
+ * @brief       Interface of System timer module port.
+ * @addtogroup  pic32-none-gcc
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-systmr System timer module
+ * @brief       System timer module
+ * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_ARCH_SYSTIMER_H_
-#define ES_ARCH_SYSTIMER_H_
+#ifndef ES_SYSTIMER_H_
+#define ES_SYSTIMER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
 
-#include "plat/compiler.h"
 #include "arch/systimer_config.h"
 #include "family/profile.h"
 
@@ -56,23 +58,23 @@
  * @name        System timer management
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_SYSTIMER_INIT(val)           portSysTimerInit_(val)
+#define ES_SYSTIMER_INIT(val)
 
-#define ES_SYSTIMER_TERM()              portSysTimerTerm_()
+#define ES_SYSTIMER_TERM()
 
-#define ES_SYSTIMER_GET_RVAL()          portSysTimerGetRVal_()
+#define ES_SYSTIMER_GET_RVAL()
 
-#define ES_SYSTIMER_GET_CVAL()          0
+#define ES_SYSTIMER_GET_CVAL()
 
-#define ES_SYSTIMER_RELOAD(val)         portSysTimerReload_(val)
+#define ES_SYSTIMER_RELOAD(val)
 
-#define ES_SYSTIMER_ENABLE()            portSysTimerEnable_()
+#define ES_SYSTIMER_ENABLE()
 
-#define ES_SYSTIMER_DISABLE()           portSysTimerDisable_()
+#define ES_SYSTIMER_DISABLE()
 
-#define ES_SYSTIMER_ISR_ENABLE()        portSysTimerIsrEnable_()
+#define ES_SYSTIMER_ISR_ENABLE()
 
-#define ES_SYSTIMER_ISR_DISABLE()       portSysTimerIsrDisable_()
+#define ES_SYSTIMER_ISR_DISABLE()
 
 /** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -95,7 +97,7 @@ typedef unsigned int esSysTimerTick;
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of systimer.h
  ******************************************************************************/
-#endif /* ES_ARCH_SYSTIMER_H_ */
+#endif /* ES_SYSTIMER_H_ */

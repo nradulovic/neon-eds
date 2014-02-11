@@ -21,10 +21,10 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interrupt module header
- * @addtogroup  arm-none-eabi-gcc-v7-m
+ * @brief       Interface of Interrupt module port.
+ * @addtogroup  pic32-none-gcc
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-v7-m_intr Interrupt module
+/**@defgroup    pic32-none-gcc-intr Interrupt module
  * @brief       Interrupt module
  * @{ *//*--------------------------------------------------------------------*/
 
@@ -36,7 +36,6 @@
 #include <peripheral/int.h>
 
 #include "plat/compiler.h"
-#include "family/profile.h"
 #include "arch/intr_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -90,6 +89,10 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/**@brief       Interrupt context type
+ * @details     This type is used to declare variable type which will hold
+ *              interrupt context data.
+ */
 typedef unsigned int esIntrCtx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/

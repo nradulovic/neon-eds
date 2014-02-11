@@ -21,20 +21,18 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of compiler
- * @addtogroup  arm-none-eabi-gcc-v7-m_impl
- * @brief       Interface of compiler.
+ * @brief       Interface of ARM Cortex compiler port.
+ * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
+/**@defgroup    arm-none-eabi-gcc-compiler Compiler support
+ * @brief       Compiler support
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef ES_COMPILER_H_
 #define ES_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Compiler provided macros
- * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       C extension - make a function inline
  */
@@ -107,23 +105,16 @@
         (reg) = tmp;                                                            \
     } while (0u)
 
-/** @} *//*---------------------------------------------  C++ extern base  --*/
+/*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Compiler provided data types
- * @brief       All required data types are found in @c stdint.h and @c stddef.h
- * @{ *//*--------------------------------------------------------------------*/
-
 /**@brief General purpose registers are 32bit wide.
  */
 typedef unsigned int esAtomic;
-
-/** @} *//*-------------------------------------------------------------------*/
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -133,7 +124,7 @@ typedef unsigned int esAtomic;
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
- * END of arm-none-eabi-gcc.h
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of compiler.h
  ******************************************************************************/
 #endif /* ES_COMPILER_H_ */

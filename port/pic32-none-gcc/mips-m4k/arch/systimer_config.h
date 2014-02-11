@@ -21,13 +21,15 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief   	Configuration of system timer module.
- * @addtogroup  arm-none-eabi-gcc-v7-m_cfg
- * @brief		Configuration of system timer module.
+ * @brief   	Configuration of System timer module port.
+ * @addtogroup  pic32-none-gcc-systmr
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-systmr System timer module configuration
+ * @brief       System timer module configuration
+ * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_ARCH_SYSTIMER_CFG_H_
-#define ES_ARCH_SYSTIMER_CFG_H_
+#ifndef ES_SYSTIMER_CONFIG_H_
+#define ES_SYSTIMER_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -57,4 +59,4 @@
 /** @endcond *//** @} *//******************************************************
  * END of systimer_config.h
  ******************************************************************************/
-#endif /* ES_ARCH_SYSTIMER_CFG_H_ */
+#endif /* ES_SYSTIMER_CONFIG_H_ */

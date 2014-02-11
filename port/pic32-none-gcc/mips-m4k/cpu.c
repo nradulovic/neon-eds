@@ -21,15 +21,17 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Implementation of ARM Cortex-M3 CPU port.
- * @addtogroup  arm-none-eabi-gcc-v7-m_impl
+ * @brief       Implementation of PIC32 CPU port.
+ * @addtogroup  pic32-none-gcc-cpu_impl
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-cpu_impl CPU module Implementation
+ * @brief       CPU module Implementation
+ * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <peripheral/system.h>
 
-#include "plat/compiler.h"
 #include "arch/cpu.h"
 #include "family/profile.h"
 
@@ -57,6 +59,6 @@ void portCpuTerm(
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of cpu.c
  ******************************************************************************/

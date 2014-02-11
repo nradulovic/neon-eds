@@ -22,9 +22,9 @@
  * @file
  * @author  	Nenad Radulovic
  * @brief       Interrupt module header
- * @addtogroup  arm-none-eabi-gcc-v7-m
+ * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-v7-m_intr Interrupt module
+/**@defgroup    arm-none-eabi-gcc-v7-m-intr ARM Cortex M3/M4 Interrupt module
  * @brief       Interrupt module
  * @{ *//*--------------------------------------------------------------------*/
 
@@ -96,6 +96,10 @@ enum esIntrN {
     ES_SYSTEM_IRQN             = -1                                             /**< @brief 15 Cortex-M3 System Tick Interrupt              *///!< ES_SYSTEM_IRQN
 };
 
+/**@brief       Interrupt context type
+ * @details     This type is used to declare variable type which will hold
+ *              interrupt context data.
+ */
 typedef unsigned int esIntrCtx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/

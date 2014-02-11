@@ -21,12 +21,11 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief   	Configuration of interrupt module header.
- * @addtogroup  arm-none-eabi-gcc-v7-m_intr
- * @brief		Configuration of interrupt module
+ * @brief   	Configuration of Interrupt module port.
+ * @addtogroup  pic32-none-gcc-intr
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-v7-m_intr_cfg Configuration
- * @brief       Configuration of Interrupt module
+/**@defgroup    pic32-none-gcc-intr_cfg Interrupt module configuration
+ * @brief       Interrupt module configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef ES_INTR_CONFIG_H_
@@ -41,8 +40,8 @@
 
 /**@brief       Priority of critical sections in kernel
  * @details     Specify the priority in range: <code>0</code>\f$\leq\f$
- *              <code>CONFIG_INTR_MAX_ISR_PRIO</code> \f$\leq\f$ <code>15</code>.
- *              The lower the number the higher the priority.
+ *              <code>CONFIG_INTR_MAX_ISR_PRIO</code> \f$\leq\f$ <code>7</code>.
+ *              The higher the number the higher the priority.
  * @note        When priority is set to @b 0 then critical code section will not
  *              use priority levels but instead it will just disable interrupts
  *              on entry and enable interrupts on exit.

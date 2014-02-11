@@ -21,13 +21,12 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Implementation of ARM Cortex-M3 interrupt port.
- * @addtogroup  arm-none-eabi-gcc-v7-m_impl
+ * @brief       Implementation of PIC32 interrupt port.
+ * @addtogroup  pic32-none-gcc-intr_impl
  *********************************************************************//** @{ */
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/compiler.h"
 #include "arch/intr.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/

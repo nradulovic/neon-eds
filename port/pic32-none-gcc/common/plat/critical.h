@@ -21,9 +21,12 @@
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of ARM Cortex-M3 critical port.
- * @addtogroup  arm-none-eabi-gcc-v7-m
+ * @brief       Interface of PIC32 critical code section port.
+ * @addtogroup  pic32-none-gcc
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-critical Critical code section
+ * @brief       Critical code section
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef ES_ARCH_CRITICAL_H_
 #define ES_ARCH_CRITICAL_H_
@@ -38,7 +41,7 @@
  * @name        Critical code lock management
  * @brief       Disable/enable interrupts by preserving the interrupt context
  * @details     Generally speaking these macros would store the interrupt
- *              context in the local variable of @ref portReg type and then
+ *              context in the local variable of @ref esLockCtx type and then
  *              disable interrupts. Local variable is allocated in all of eSolid
  *              functions that need to disable interrupts. Macros would restore
  *              the interrupt context by copying back the allocated variable
@@ -69,6 +72,10 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/**@brief       Lock context type
+ * @details     This type is used to declare variable type which will hold lock
+ *              context data.
+ */
 typedef esIntrCtx esLockCtx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -79,7 +86,7 @@ typedef esIntrCtx esLockCtx;
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of critical.h
  ******************************************************************************/
 #endif /* ES_ARCH_CRITICAL_H_ */
