@@ -47,7 +47,7 @@
 void portCpuInit(
     void) {
 
-    SYSTEMConfigPerformance(PORT_PROFILE_MAX_CPU_CLOCK);
+    SYSTEMConfigPerformance(ES_PROFILE_MAX_CPU_CLOCK);
 }
 
 void portCpuTerm(
