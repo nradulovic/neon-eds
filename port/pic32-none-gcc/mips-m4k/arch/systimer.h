@@ -64,7 +64,7 @@
 
 #define ES_SYSTIMER_GET_RVAL()
 
-#define ES_SYSTIMER_GET_CVAL()
+#define ES_SYSTIMER_GET_CVAL()          0
 
 #define ES_SYSTIMER_RELOAD(val)
 
@@ -76,7 +76,7 @@
 
 #define ES_SYSTIMER_ISR_DISABLE()
 
-/** @} *//*---------------------------------------------  C++ extern base  --*/
+/**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
