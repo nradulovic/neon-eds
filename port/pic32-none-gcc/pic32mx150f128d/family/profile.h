@@ -43,9 +43,9 @@
 #define ES_PROFILE_MAX_CPU_CLOCK        50000000ul
 
 /**@brief       System timer maximum value
- * @details     PIC32 family has 24-bit wide system tick register
+ * @details     PIC32 family has 32-bit wide system tick register
  */
-#define ES_PROFILE_MAX_SYSTIMER_VAL     0xfffffful
+#define ES_PROFILE_MAX_SYSTIMER_VAL     0xfffffffful
 
 /**@brief       Maximum RAM size for this family
  * @details     This define is used to choose optimal algorithm for this family

@@ -33,6 +33,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <xc.h>
 #include <peripheral/int.h>
 
 #include "plat/compiler.h"
@@ -44,24 +45,22 @@
  * @name        Interrupt management
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_INTR_ENABLE()                INTEnableInterrupts()
+#define ES_INTR_ENABLE()                portIntrEnable_()
 
-#define ES_INTR_DISABLE()               INTDisableInterrupts()
+#define ES_INTR_DISABLE()               portIntrDisable_()
 
-#define ES_INTR_MASK_SET(mask)          INTRestoreInterrupts(mask)
+#define ES_INTR_MASK_SET(mask)          portIntrMaskSet_(mask)
 
-#define ES_INTR_MASK_GET(mask)          *(mask) = 0
+#define ES_INTR_MASK_GET(mask)          portIntrMaskGet_(mask)
 
 #define ES_INTR_MASK_REPLACE(oldPrio, newPrio)                                  \
-    do {                                                                        \
-        *(oldPrio) = INTDisableInterrupts();                                    \
-    } while (0)
+    portIntrMaskReplace_(oldPrio, newPrio)
 
 #define ES_INTR_PRIO_TO_CODE(prio)                                              \
-    ((prio))
+    (((esIntrCtx)(prio) << PORT_STATUS_IPL_Pos) & PORT_STATUS_IPL_Msk)
 
 #define ES_INTR_CODE_TO_PRIO(code)                                              \
-    ((code))
+    (((esIntrCtx)(code) & PORT_STATUS_IPL_Msk) >> PORT_STATUS_IPL_Pos)
 
 #define ES_INTR_PRIO_SET(intrNum, prio) INTSetVectorPriority(intrNum, prio)
 
@@ -82,6 +81,14 @@
 
 #define ES_INTR_TERM()                  portIntrTerm()
 
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        Specific port macros
+ * @{ *//*--------------------------------------------------------------------*/
+
+#define PORT_STATUS_IPL_Pos             10
+
+#define PORT_STATUS_IPL_Msk             (0x7u << PORT_STATUS_IPL_Pos)
+
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -101,6 +108,53 @@ typedef unsigned int esIntrCtx;
 /*------------------------------------------------------------------------*//**
  * @name        Generic port functions
  * @{ *//*--------------------------------------------------------------------*/
+
+static PORT_C_INLINE_ALWAYS void __attribute__((nomips16)) portIntrEnable_(
+    void) {
+    __asm __volatile__(
+        "   ei                                              \n");
+}
+
+static PORT_C_INLINE_ALWAYS void __attribute__((nomips16)) portIntrDisable_(
+    void) {
+    __asm __volatile__(
+        "   di                                              \n");
+}
+
+/* NOTE: This is some very bad design right here. You must apply R-M-W operation
+ *       on a register to set up new ISR priority level. The R-M-W operation is
+ *       not atomic so there is a possibility to scramble status register in
+ *       some cases.
+ */
+static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
+    esIntrCtx           intrCtx) {
+    esIntrCtx           statusReg;
+
+    statusReg  = _CP0_GET_STATUS();
+    statusReg &= PORT_STATUS_IPL_Msk;
+    statusReg |= intrCtx & PORT_STATUS_IPL_Msk;
+    _CP0_SET_STATUS(statusReg);
+}
+
+static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
+    esIntrCtx *         intrCtx) {
+
+    *intrCtx = _CP0_GET_STATUS();
+}
+
+/* NOTE: See notes for portIntrMaskSet_()
+ */
+static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
+    esIntrCtx *         oldMask,
+    esIntrCtx           newMask) {
+    
+    esIntrCtx           statusReg;
+
+    statusReg  = *oldMask = _CP0_GET_STATUS();
+    statusReg &= PORT_STATUS_IPL_Msk;
+    statusReg |= newMask & PORT_STATUS_IPL_Msk;
+    _CP0_SET_STATUS(statusReg);
+}
 
 /**@brief       Initialize port
  * @details     Function will set up sub-priority bits to zero and handlers
