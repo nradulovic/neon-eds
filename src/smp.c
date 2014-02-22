@@ -87,9 +87,7 @@ const PORT_C_ROM struct esEvent esGlobalSmEvents[] = {
     {
          ES_ENTRY,
          ES_EVENT_CONST_Msk,
-#if (CONFIG_EVENT_STORAGE == 1)        || defined(__DOXYGEN__)
          NULL,
-#endif
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
@@ -106,9 +104,7 @@ const PORT_C_ROM struct esEvent esGlobalSmEvents[] = {
     {
          ES_EXIT,
          ES_EVENT_CONST_Msk,
-#if (CONFIG_EVENT_STORAGE == 1)        || defined(__DOXYGEN__)
          NULL,
-#endif
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
@@ -125,9 +121,7 @@ const PORT_C_ROM struct esEvent esGlobalSmEvents[] = {
     {
          ES_INIT,
          ES_EVENT_CONST_Msk,
-#if (CONFIG_EVENT_STORAGE == 1)        || defined(__DOXYGEN__)
          NULL,
-#endif
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
@@ -454,6 +448,7 @@ esError esSmDispatch(
 #if (CONFIG_SMP_HSM == 1)
     uint_fast8_t        count;
     esAction            ret;
+    esAction            id;
 
     ES_API_REQUIRE(ES_API_POINTER, sm != NULL);
     ES_API_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
@@ -462,7 +457,7 @@ esError esSmDispatch(
     count = 0u;
 
     do {
-        esAction        id;
+        
 
         id = sm->src[count++];
         sm->src[count] = sm->table[id].super;
@@ -473,7 +468,7 @@ esError esSmDispatch(
              (ret == ES_ACTION_IGNORED) ||
              (ret == ES_ACTION_HANDLED) ||
              (ret == ES_ACTION_DEFFERED));
-    } while (ret == ES_ACTION_IGNORED);
+    } while ((ret == ES_ACTION_IGNORED) && (sm->table[id].super != 0));
     count--;
 
     while (ret > ES_ACTION_TOP) {
