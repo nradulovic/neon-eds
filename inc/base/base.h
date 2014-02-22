@@ -35,6 +35,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "plat/compiler.h"
+#include "base/error.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -63,10 +64,10 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 
 struct esModuleInfo {
-    const PORT_C_ROM char * const PORT_C_ROM_VAR name;                      /**< @brief Module name                                     */
-    const PORT_C_ROM char * const PORT_C_ROM_VAR desc;                      /**< @brief Module description                              */
-    const PORT_C_ROM char * const PORT_C_ROM_VAR auth;                      /**< @brief Module author                                   */
-    const PORT_C_ROM char * const PORT_C_ROM_VAR file;                      /**< @brief Module source file                              */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR name;                          /**< @brief Module name                                     */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR desc;                          /**< @brief Module description                              */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR auth;                          /**< @brief Module author                                   */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR file;                          /**< @brief Module source file                              */
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -75,12 +76,12 @@ extern PORT_C_UNUSED const PORT_C_ROM struct esModuleInfo GlobalUnnamedModule;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Function group
- * @brief       brief description
- * @{ *//*--------------------------------------------------------------------*/
+esError esBaseInit(
+    void);
 
-/** @} *//*-------------------------------------------------------------------*/
+esError esBaseTerm(
+    void);
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

@@ -21,49 +21,87 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Implementation of PIC32 interrupt port.
- * @addtogroup  pic32-none-gcc-intr_impl
+ * @brief       Implementation of PIC32 System Timer port.
+ * @addtogroup  pic32-none-gcc-systimer
  *********************************************************************//** @{ */
+/**@defgroup    pic32-none-gcc-systimer_impl System Timer module Implementation
+ * @brief       System Timer module Implementation
+ * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <xc.h>
 
+#include "arch/systimer.h"
 #include "arch/intr.h"
-#include "arch/cpu.h"
+#include "base/bitop.h"
+#include "base/debug.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
+
+static ES_MODULE_INFO_CREATE("systimer", "System Timer (port)", "Nenad Radulovic");
+
+static void (* GlobalSysTimerHandler[4])(void);
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portModuleIntrInit(
+void portModuleSysTimerInit(
     void) {
-    esCpuReg            cause;
-    esCpuReg            status;
 
-    ES_INTR_DISABLE();
-    /*--  Use vectored interrupt table  --------------------------------------*/
-    cause   = _CP0_GET_CAUSE();
-    cause  |= _CP0_CAUSE_IV_MASK;
-    _CP0_SET_CAUSE(cause);
-    status  = _CP0_GET_STATUS();
-    status &= ~_CP0_STATUS_BEV_MASK;
-    _CP0_SET_STATUS(status);
-    INTCONSET = _INTCON_MVEC_MASK;
+    ES_SYSTIMER_DISABLE();
+    IFS0CLR = IFS0_CT_BIT;
+    IEC0CLR = IEC0_CT_BIT;
+    IPC0CLR = 0x7u << IPC0_CTIP_SHIFT;
+    IPC0SET = (ES_INTR_DEFAULT_ISR_PRIO << IPC0_CTIP_SHIFT) & IPC0_MASK;
 }
 
-void portModuleIntrTerm(
+void portModuleSysTimerTerm(
     void) {
 
-    ES_INTR_DISABLE();
+    ES_SYSTIMER_DISABLE();
+    IFS0CLR = IFS0_CT_BIT;
+    IEC0CLR = IEC0_CT_BIT;
+}
+
+void portSysTimerSetHandler(
+    void             (* handler)(void),
+    uint_fast8_t        level) {
+
+    ES_API_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
+
+    GlobalSysTimerHandler[level] = handler;
+}
+#define CONCAT_(a, b)                   a ## b
+#define CONCAT(a, b)                    CONCAT_(a, b)
+
+void __ISR(_CORE_TIMER_VECTOR, CONCAT(CONCAT(IPL, ES_INTR_DEFAULT_ISR_PRIO), SOFT)) sysTimerHandler(
+    void) {
+
+    uint_fast8_t        count;
+    esCpuReg            compare;
+
+    ES_SYSTIMER_DISABLE();
+    compare = _CP0_GET_COMPARE();
+    _CP0_SET_COUNT(0u);
+    _CP0_SET_COMPARE(compare);
+    ES_SYSTIMER_ENABLE();
+
+    for (count = 0; count < ES_ARRAY_DIMENSION(GlobalSysTimerHandler); count++) {
+        if (GlobalSysTimerHandler[count] != NULL) {
+            GlobalSysTimerHandler[count]();
+        }
+    }
+    IFS0CLR = IFS0_CT_BIT;
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
- * END of intr.c
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of cpu.c
  ******************************************************************************/
+

@@ -44,13 +44,15 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portCpuInit(
+void portModuleCpuInit(
     void) {
 
-    SYSTEMConfigPerformance(ES_PROFILE_MAX_CPU_CLOCK);
+    /*
+     * TODO: Do CPU related initialization here
+     */
 }
 
-void portCpuTerm(
+void portModuleCpuTerm(
     void) {
 
     /*

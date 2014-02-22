@@ -69,11 +69,11 @@
 
 #define ES_CPU_INIT_EARLY()             (void)0
 
-#define ES_CPU_INIT()                   portCpuInit()
+#define ES_CPU_INIT()                   portModuleCpuInit()
 
 #define ES_CPU_INIT_LATE()              (void)0
 
-#define ES_CPU_TERM()                   portCpuTerm()
+#define ES_CPU_TERM()                   portModuleCpuTerm()
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -113,14 +113,14 @@ static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFls_(
  * @name        Generic port functions
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Initialize port
+/**@brief       Initialize CPU port module
  */
-void portCpuInit(
+void portModuleCpuInit(
     void);
 
-/**@brief       Terminate port
+/**@brief       Terminate CPU port module
  */
-void portCpuTerm(
+void portModuleCpuTerm(
     void);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

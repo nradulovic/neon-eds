@@ -41,6 +41,12 @@
 
 /*===============================================================  MACRO's  ==*/
 
+#if (CONFIG_INTR_MAX_ISR_PRIO == 0)
+#define ES_INTR_DEFAULT_ISR_PRIO        1
+#else
+#define ES_INTR_DEFAULT_ISR_PRIO        CONFIG_INTR_MAX_ISR_PRIO
+#endif
+
 /*------------------------------------------------------------------------*//**
  * @name        Interrupt management
  * @{ *//*--------------------------------------------------------------------*/
@@ -57,10 +63,10 @@
     portIntrMaskReplace_(oldPrio, newPrio)
 
 #define ES_INTR_PRIO_TO_CODE(prio)                                              \
-    (((esIntrCtx)(prio) << PORT_STATUS_IPL_Pos) & PORT_STATUS_IPL_Msk)
+    (((esIntrCtx)(prio) << _CP0_STATUS_IPL_POSITION) & _CP0_STATUS_IPL_MASK)
 
 #define ES_INTR_CODE_TO_PRIO(code)                                              \
-    (((esIntrCtx)(code) & PORT_STATUS_IPL_Msk) >> PORT_STATUS_IPL_Pos)
+    (((esIntrCtx)(code) & _CP0_STATUS_IPL_MASK) >> _CP0_STATUS_IPL_POSITION)
 
 #define ES_INTR_PRIO_SET(intrNum, prio) INTSetVectorPriority(intrNum, prio)
 
@@ -75,19 +81,11 @@
 
 #define ES_INTR_INIT_EARLY()            (void)0                                 /**< @brief This port does not need this function call      */
 
-#define ES_INTR_INIT()                  portIntrInit()
+#define ES_INTR_INIT()                  portModuleIntrInit()
 
 #define ES_INTR_INIT_LATE()             (void)0                                 /**< @brief This port does not need this function call      */
 
-#define ES_INTR_TERM()                  portIntrTerm()
-
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Specific port macros
- * @{ *//*--------------------------------------------------------------------*/
-
-#define PORT_STATUS_IPL_Pos             10
-
-#define PORT_STATUS_IPL_Msk             (0x7u << PORT_STATUS_IPL_Pos)
+#define ES_INTR_TERM()                  portModuleIntrTerm()
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -130,16 +128,31 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
     esIntrCtx           intrCtx) {
     esIntrCtx           statusReg;
 
+#if (CONFIG_INTR_MAX_ISR_PRIO == 0)
+    
+    if (intrCtx == 0u) {
+        __asm __volatile__(
+            "   di                                              \n");
+    } else {
+        __asm __volatile__(
+            "   ei                                              \n");
+    }
+#else
     statusReg  = _CP0_GET_STATUS();
-    statusReg &= PORT_STATUS_IPL_Msk;
-    statusReg |= intrCtx & PORT_STATUS_IPL_Msk;
+    statusReg &= _CP0_STATUS_IPL_MASK;
+    statusReg |= intrCtx & _CP0_STATUS_IPL_MASK;
     _CP0_SET_STATUS(statusReg);
+#endif
 }
 
 static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
     esIntrCtx *         intrCtx) {
 
-    *intrCtx = _CP0_GET_STATUS();
+#if (CONFIG_INTR_MAX_ISR_PRIO == 0)
+    *intrCtx = _CP0_GET_STATUS() & _CP0_STATUS_IE_MASK;
+#else
+    *intrCtx = _CP0_GET_STATUS() & _CP0_STATUS_IPL_MASK;
+#endif
 }
 
 /* NOTE: See notes for portIntrMaskSet_()
@@ -147,25 +160,40 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
 static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
     esIntrCtx *         oldMask,
     esIntrCtx           newMask) {
-    
+
+#if (CONFIG_INTR_MAX_ISR_PRIO == 0)
+    esIntrCtx           status;
+
+    if (newMask == 0u) {
+        __asm __volatile__(
+            "   di      %0                                      \n"
+            : "=r"(status));
+    } else {
+        __asm __volatile__(
+            "   ei      %0                                      \n"
+            : "=r"(status));
+    }
+    *oldMask = status;
+#else
     esIntrCtx           statusReg;
 
     statusReg  = *oldMask = _CP0_GET_STATUS();
-    statusReg &= PORT_STATUS_IPL_Msk;
-    statusReg |= newMask & PORT_STATUS_IPL_Msk;
+    statusReg &= _CP0_STATUS_IPL_MASK;
+    statusReg |= newMask & _CP0_STATUS_IPL_MASK;
     _CP0_SET_STATUS(statusReg);
+#endif
 }
 
 /**@brief       Initialize port
  * @details     Function will set up sub-priority bits to zero and handlers
  *              interrupt priority.
  */
-void portIntrInit(
+void portModuleIntrInit(
     void);
 
 /**@brief       Terminate port
  */
-void portIntrTerm(
+void portModuleIntrTerm(
     void);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

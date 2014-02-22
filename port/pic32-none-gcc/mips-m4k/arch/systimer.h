@@ -35,8 +35,10 @@
 
 #include <stdint.h>
 
+#include "plat/compiler.h"
 #include "arch/systimer_config.h"
 #include "family/profile.h"
+#include "cpu.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -58,23 +60,26 @@
  * @name        System timer management
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_SYSTIMER_INIT(val)
+#define ES_SYSTIMER_INIT(val)           portSysTimerInit_(val)
 
-#define ES_SYSTIMER_TERM()
+#define ES_SYSTIMER_TERM()              portSysTimerTerm_()
 
-#define ES_SYSTIMER_GET_RVAL()
+#define ES_SYSTIMER_GET_RVAL()          portSysTimerGetRVal_()
 
-#define ES_SYSTIMER_GET_CVAL()          0
+#define ES_SYSTIMER_GET_CVAL()          portSysTimerGetCVal_()
 
-#define ES_SYSTIMER_RELOAD(val)
+#define ES_SYSTIMER_RELOAD(val)         portSysTimerReload_(val)
 
-#define ES_SYSTIMER_ENABLE()
+#define ES_SYSTIMER_ENABLE()            portSysTimerEnable_()
 
-#define ES_SYSTIMER_DISABLE()
+#define ES_SYSTIMER_DISABLE()           portSysTimerDisable_()
 
-#define ES_SYSTIMER_ISR_ENABLE()
+#define ES_SYSTIMER_ISR_ENABLE()        portSysTimerIsrEnable_()
 
-#define ES_SYSTIMER_ISR_DISABLE()
+#define ES_SYSTIMER_ISR_DISABLE()       portSysTimerIsrDisable_()
+
+#define ES_SYSTIMER_SET_HANDLER(handler, level)                                 \
+    esGlobalSysTimerHandler[(level) & 0x3u] = (handler)
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -90,6 +95,94 @@ typedef unsigned int esSysTimerTick;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
+static PORT_C_INLINE void portSysTimerInit_(
+    esSysTimerTick      tick) {
+
+    esCpuReg            cause;
+
+    cause  = _CP0_GET_CAUSE();
+    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+    _CP0_SET_COUNT(0u);
+    _CP0_SET_COMPARE(tick);
+    _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
+}
+
+static PORT_C_INLINE void portSysTimerTerm_(
+    void) {
+
+    esCpuReg            cause;
+
+    cause  = _CP0_GET_CAUSE();
+    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+}
+
+static PORT_C_INLINE esSysTimerTick portSysTimerGetRVal_(
+    void) {
+
+    return (_CP0_GET_COMPARE());
+}
+
+static PORT_C_INLINE esSysTimerTick portSysTimerGetCVal_(
+    void) {
+
+    return (_CP0_GET_COMPARE() - _CP0_GET_COUNT());
+}
+
+static PORT_C_INLINE void portSysTimerReload_(
+    esSysTimerTick      tick) {
+
+    esCpuReg            cause;
+
+    cause  = _CP0_GET_CAUSE();
+    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+    _CP0_SET_COUNT(0u);
+    _CP0_SET_COMPARE(tick);
+    _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
+}
+
+static PORT_C_INLINE void portSysTimerEnable_(
+    void) {
+
+    esCpuReg            cause;
+
+    cause  = _CP0_GET_CAUSE();
+    cause &= ~_CP0_CAUSE_DC_MASK;
+    _CP0_SET_CAUSE(cause);
+}
+
+
+static PORT_C_INLINE void portSysTimerDisable_(
+    void) {
+
+    esCpuReg            cause;
+
+    cause  = _CP0_GET_CAUSE();
+    cause |= _CP0_CAUSE_DC_MASK;
+    _CP0_SET_CAUSE(cause);
+}
+
+static PORT_C_INLINE void portSysTimerIsrEnable_(
+    void) {
+
+    IFS0CLR = _IFS0_CTIF_MASK;
+    IEC0SET = _IEC0_CTIE_MASK;
+}
+
+static PORT_C_INLINE void portSysTimerIsrDisable_(
+    void) {
+
+    IEC0CLR = _IEC0_CTIE_MASK;
+}
+
+void portModuleSysTimerInit(
+    void);
+
+void portModuleSysTimerTerm(
+    void);
+
+void portSysTimerSetHandler(
+    void             (* handler)(void),
+    uint_fast8_t        level);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

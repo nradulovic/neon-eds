@@ -30,6 +30,9 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "base/base.h"
+#include "arch/cpu.h"
+#include "arch/intr.h"
+#include "arch/systimer.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -47,6 +50,27 @@ PORT_C_UNUSED const PORT_C_ROM struct esModuleInfo GlobalUnnamedModule = {
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+
+esError esBaseInit(
+    void) {
+
+    portModuleCpuInit();
+    portModuleIntrInit();
+    portModuleSysTimerInit();
+
+    return (ES_ERROR_NONE);
+}
+
+esError esBaseTerm(
+    void) {
+
+    portModuleSysTimerTerm();
+    portModuleIntrTerm();
+    portModuleCpuTerm();
+
+    return (ES_ERROR_NONE);
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
  * END of base.c

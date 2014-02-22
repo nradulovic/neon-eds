@@ -47,7 +47,7 @@
  *              on entry and enable interrupts on exit.
  */
 #if !defined(CONFIG_INTR_MAX_ISR_PRIO)
-# define CONFIG_INTR_MAX_ISR_PRIO       7u
+# define CONFIG_INTR_MAX_ISR_PRIO       6
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
