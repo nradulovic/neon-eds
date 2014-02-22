@@ -92,7 +92,7 @@ esError esEpaKernelGetIdle(
 esError esEpaCreate(
     const struct esEpaDefine * epaDefine,
     const struct esSmDefine * smDefine,
-    struct esMem * mem,
+    struct esMem *      mem,
     struct esEpa **     epa);
 
 esError esEpaDestroy(
