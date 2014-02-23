@@ -33,24 +33,20 @@
 /*=========================================================  LOCAL DEFINES  ==*/
 
 /**
- * @brief       Konstanta za potpis SM objekta
- * @details     Konstanta se koristi prilikom debag procesa kako bi funkcije
- *              koje prihvate pokazivac na SM objekat bile sigurne da je SM
- *              objekat validan. SM objekti koji su obrisani nemaju ovaj potpis.
- * @pre         Opcija @ref OPT_KERNEL_DBG mora da bude aktivna kako bi bila
- *              omogucena provera pokazivaca.
+ * @brief       State machine signature
+ * @details     This signature is used only during the debugging process
  */
-#define SM_SIGNATURE                   UINT16_C(0xDAAF)
+#define SM_SIGNATURE                   ((esAtomic)0xdaafu)
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 struct esSm {
-    struct esMem * mem;
+    struct esMem *      mem;
     const struct esSmTable * table;
     void *              wspace;
-    esAction *         src;
-    esAction *         dst;
+    esAction *          src;
+    esAction *          dst;
 #if (CONFIG_API_VALIDATION == 1)
     esAtomic            signature;
 #endif
@@ -64,6 +60,14 @@ static uint_fast8_t smFindDepth(
 #endif
 
 #if (CONFIG_SMP_HSM == 1)
+/**@brief       Finds transition path
+ * @param       sm
+ *              State machine
+ * @param       srcCount
+ *              Index for source starting position
+ * @return      Index for destination starting position
+ * @notapi
+ */
 static uint_fast8_t smFindPath(
     struct esSm *       sm,
     uint_fast8_t        srcCount);
@@ -177,13 +181,7 @@ static uint_fast8_t smFindDepth(
 #endif
 
 #if (CONFIG_SMP_HSM == 1)
-/**@brief       Pronalazi putanju od izvorista do odredista
- * @param       [in,out] sm             Pokazivac na automat
- * @param       [in,out] exit           Pokazivac na pocetak reda stanja za izlaz
- * @param       [in,out] entry          Pokazivac na kraj reda stanja za ulaz
- * @return      Pokazivac na pocetak reda stanja za ulaz.
- * @notapi
- */
+
 static uint_fast8_t smFindPath(
     struct esSm *       sm,
     uint_fast8_t        srcCount) {
@@ -282,7 +280,7 @@ static PORT_C_INLINE esAction smPathEnter(
     ret = ES_ACTION_HANDLED;
 
     while (*entry != 0) {
-        ret = (*sm->table[*entry].state)(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
+        ret = sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
         ES_API_REQUIRE(ES_API_USAGE, (ret == ES_ACTION_IGNORED) || (ret == ES_ACTION_HANDLED));
         --entry;
     }
@@ -292,13 +290,13 @@ static PORT_C_INLINE esAction smPathEnter(
 
 static PORT_C_INLINE void smPathExit(
     struct esSm *       sm,
-    esAction *         exit) {
+    esAction *          exit) {
 
     while (*exit != 0) {
 #if (CONFIG_API_VALIDATION == 1)
         esAction        ret;
 
-        ret = (*sm->table[*exit].state)(sm->wspace, ES_SMP_EVENT(ES_EXIT));
+        ret = sm->table[*exit].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
         ES_API_REQUIRE(
             ES_API_USAGE,
             ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
@@ -442,7 +440,7 @@ ERROR_FREE_LEVELS:
 
 esError esSmDispatch(
     struct esSm *       sm,
-    const struct esEvent * event,
+    struct esEvent *    event,
     esAction *          action) {
 
 #if (CONFIG_SMP_HSM == 1)
@@ -457,11 +455,9 @@ esError esSmDispatch(
     count = 0u;
 
     do {
-        
-
         id = sm->src[count++];
         sm->src[count] = sm->table[id].super;
-        ret = (*sm->table[id].state)(sm->wspace, (struct esEvent *)event);
+        ret = sm->table[id].state(sm->wspace, event);
         ES_API_REQUIRE(
             ES_API_USAGE,
             ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
@@ -478,12 +474,12 @@ esError esSmDispatch(
         ret = smPathEnter(sm, &sm->dst[count]);
 
         if (ret < ES_ACTION_TOP) {
-            ret = (*sm->table[sm->dst[1]].state)(sm->wspace, ES_SMP_EVENT(ES_INIT));
-                ES_API_REQUIRE(
-                    ES_API_USAGE,
-                    ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-                     (ret == ES_ACTION_IGNORED) ||
-                     (ret == ES_ACTION_HANDLED));
+            ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
+            ES_API_REQUIRE(
+                ES_API_USAGE,
+                ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
+                 (ret == ES_ACTION_IGNORED) ||
+                 (ret == ES_ACTION_HANDLED));
         }
         sm->src[0] = sm->dst[1];
         count = 0u;

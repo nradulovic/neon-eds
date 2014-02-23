@@ -39,7 +39,6 @@
 #include "eds/event.h"
 #include "eds/smp_config.h"
 
-/*===============================================================  DEFINES  ==*/
 /*===============================================================  MACRO's  ==*/
 
 #define ES_STATE_ID(state)                                                      \
@@ -49,7 +48,7 @@
     ES_STATE_ID(state),
 
 #define ES_EXPAND_STATE_SUPER(state, super)                                     \
-    { ES_STATE_ID(super), &state },
+    { ES_STATE_ID(super), (esState)&state },
 
 #define ES_STATE_ID_INIT(table)                                                 \
     table##_FIRST_STATE,                                                        \
@@ -147,7 +146,7 @@ esError esSmDestroy(
 
 esError esSmDispatch(
     struct esSm *       sm,
-    const struct esEvent * event,
+    struct esEvent *    event,
     esAction *          action);
 
 /*--------------------------------------------------------  C++ extern end  --*/
