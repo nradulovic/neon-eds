@@ -113,13 +113,13 @@ void esPqAdd(
 void esPqRm(
     struct esPqElem *   element);
 
-static PORT_C_INLINE struct esPq * esPqGetContainer(
+static PORT_C_INLINE struct esPq * esPqGetContainer_(
     const struct esPqElem * element) {
 
     return (element->queue);
 }
 
-static PORT_C_INLINE uint_fast8_t esPqGetPriority(
+static PORT_C_INLINE uint_fast8_t esPqGetPriority_(
     const struct esPqElem * element) {
 
     return (element->priority);
