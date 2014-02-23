@@ -89,6 +89,9 @@ esError esEpaKernelSetIdle(
 esError esEpaKernelGetIdle(
     void (** idle)(void));
 
+esError esEpaKernelGetCurrent(
+    struct esEpa **     epa);
+
 esError esEpaCreate(
     const struct esEpaDefine * epaDefine,
     const struct esSmDefine * smDefine,

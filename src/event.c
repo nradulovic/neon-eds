@@ -97,13 +97,13 @@ static PORT_C_INLINE void eventInit(
     ES_API_REQUIRE(ES_API_OBJECT, event->signature != ES_EVENT_SIGNATURE);
 
     event->id     = id;
-    event->attrib = 0u;                                                           /* Dogadjaj je dinamican, sa 0 korisnika.                   */
+    event->attrib = 0u;                                                         /* Dogadjaj je dinamican, sa 0 korisnika.                   */
 
 #if (CONFIG_EVENT_TIMESTAMP == 1)
     event->timestamp = ES_SYSTIMER_GET_CVAL();
 #endif
 #if (CONFIG_EVENT_PRODUCER == 1)
-    event->producer = appEvtGeneratorGet();
+    CONFIG_GET_CURRENT_EPA(event->producer);
 #endif
 #if (CONFIG_EVENT_SIZE == 1)
     event->size = size;
@@ -142,8 +142,9 @@ static PORT_C_INLINE esError eventCreateI(
             struct esMem *      mem;
 
             mem = GlobalEvtStorage.mem[cnt].handle;
+            error = esMemAllocI(mem, size, (void **)event);
 
-            if ((error = esMemAllocI(mem, size, (void **)event)) != ES_ERROR_NONE) {
+            if (error != ES_ERROR_NONE) {
 
                 return (ES_ERROR_NO_MEMORY);
             }
@@ -187,8 +188,10 @@ esError esEventRegisterMem(
     cnt = GlobalEvtStorage.nPools;
 
     while (0u < cnt) {
-        GlobalEvtStorage.mem[cnt].handle    = GlobalEvtStorage.mem[cnt - 1].handle;
-        GlobalEvtStorage.mem[cnt].blockSize = GlobalEvtStorage.mem[cnt - 1].blockSize;
+        GlobalEvtStorage.mem[cnt].handle    =
+            GlobalEvtStorage.mem[cnt - 1].handle;
+        GlobalEvtStorage.mem[cnt].blockSize =
+            GlobalEvtStorage.mem[cnt - 1].blockSize;
 
         if (GlobalEvtStorage.mem[cnt].blockSize <= size) {
 
@@ -221,8 +224,10 @@ esError esEventUnregisterMem(
     ES_API_REQUIRE(ES_API_RANGE, mem == GlobalEvtStorage.mem[cnt].handle);
 
     while (cnt < GlobalEvtStorage.nPools) {
-        GlobalEvtStorage.mem[cnt].handle    = GlobalEvtStorage.mem[cnt + 1].handle;
-        GlobalEvtStorage.mem[cnt].blockSize = GlobalEvtStorage.mem[cnt + 1].blockSize;
+        GlobalEvtStorage.mem[cnt].handle    =
+            GlobalEvtStorage.mem[cnt + 1].handle;
+        GlobalEvtStorage.mem[cnt].blockSize =
+            GlobalEvtStorage.mem[cnt + 1].blockSize;
         cnt++;
     }
     GlobalEvtStorage.mem[GlobalEvtStorage.nPools - 1].handle    = NULL;

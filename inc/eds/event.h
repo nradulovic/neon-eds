@@ -74,6 +74,8 @@ deleted.
  */
 #define ES_EVENT_SIGNATURE              ((esAtomic)0xdeadfeedul)
 
+#define ES_EVENT_LOCAL_ID               32767u
+
 /*------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -283,8 +285,6 @@ static PORT_C_INLINE uint_fast16_t esEventRefGet(
 
     return (event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk);
 }
-
-extern struct esEpa * appEvtGeneratorGet(void);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

@@ -83,26 +83,92 @@ struct esEpa {
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void eventQInit(
+/*--  Event Queue  -----------------------------------------------------------*/
+
+static PORT_C_INLINE void eventQInit(
     struct epaEventQ *  eventQ,
     void **             buff,
     size_t              size);
 
-static void eventQTerm(
+static PORT_C_INLINE void eventQTerm(
     struct epaEventQ *  eventQ);
 
-static void eventQPutItemI(
+static PORT_C_INLINE void eventQPutItemI(
     struct epaEventQ *  eventQ,
     struct esEvent *    event);
 
-static struct esEvent * eventQGetItemI(
+static PORT_C_INLINE void eventQPutAheadItemI(
+    struct epaEventQ *  eventQ,
+    struct esEvent *    event);
+
+static PORT_C_INLINE struct esEvent * eventQGetItemI(
     struct epaEventQ *  eventQ);
 
-static bool eventQIsEmpty(
+static PORT_C_INLINE bool eventQIsEmpty(
     const struct epaEventQ * eventQ);
 
-static bool eventQIsFull(
+static PORT_C_INLINE bool eventQIsFull(
     const struct epaEventQ * eventQ);
+
+static PORT_C_INLINE void ** eventQBuff(
+    const struct epaEventQ * eventQ);
+
+/*--  Scheduler  -------------------------------------------------------------*/
+
+static PORT_C_INLINE void schedInit(
+    void);
+
+static PORT_C_INLINE void schedTerm(
+    void);
+
+static PORT_C_INLINE void schedElementInit(
+    struct epaSchedElem * elem,
+    uint_fast8_t        priority);
+
+static PORT_C_INLINE void schedElementTermI(
+    struct epaSchedElem * elem);
+
+static PORT_C_INLINE void schedReadyAddI(
+    struct epaSchedElem * elem);
+
+static PORT_C_INLINE void schedReadyRmI(
+    struct epaSchedElem * elem);
+
+static PORT_C_INLINE void schedReadyRmSafeI(
+    struct epaSchedElem * elem);
+
+static PORT_C_INLINE bool schedReadyIsEmptyI(
+    void);
+
+static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
+    void);
+
+static PORT_C_INLINE bool schedIsEmptyI(
+    void);
+
+static PORT_C_INLINE void schedSetCurrentI(
+    struct esEpa *      epa);
+
+static PORT_C_INLINE struct esEpa * schedGetHead(
+    void);
+
+/*--  EPA support  -----------------------------------------------------------*/
+
+static PORT_C_INLINE esError epaSendEventI(
+    struct esEpa *      epa,
+    struct esEvent *    event);
+
+static PORT_C_INLINE esError epaSendAheadEventI(
+    struct esEpa *      epa,
+    struct esEvent *    event);
+
+static PORT_C_INLINE struct esEvent * epaFetchEventI(
+    struct esEpa *      epa);
+
+/*--  Kernel support  --------------------------------------------------------*/
+
+static void kernelIdle(
+    void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -111,6 +177,8 @@ static struct epaKernel GlobalEpaKernel;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
+
+/*--  Event Queue  -----------------------------------------------------------*/
 
 static PORT_C_INLINE void eventQInit(
     struct epaEventQ *  eventQ,
@@ -179,6 +247,8 @@ static PORT_C_INLINE void ** eventQBuff(
     return (esQpBuff(&eventQ->qp));
 }
 
+/*--  Scheduler  -------------------------------------------------------------*/
+
 static PORT_C_INLINE void schedInit(
     void) {
 
@@ -223,7 +293,7 @@ static PORT_C_INLINE void schedReadyRmI(
 static PORT_C_INLINE void schedReadyRmSafeI(
     struct epaSchedElem * elem) {
 
-    if (esPqGetContainer(&elem->pqElem) == NULL) {
+    if (esPqGetContainer_(&elem->pqElem) == NULL) {
         esPqRm(&elem->pqElem);
     }
 }
@@ -232,6 +302,21 @@ static PORT_C_INLINE bool schedReadyIsEmptyI(
     void) {
 
     return (esPqIsEmpty(&GlobalEpaKernel.sched.ready));
+}
+
+static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
+    void) {
+
+    uint_fast8_t        prio;
+    struct esEpa *      epa;
+    struct esPqElem *   elem;
+
+    elem = esPqGetHighest(&GlobalEpaKernel.sched.ready);
+    prio = esPqGetPriority_(elem);
+    (void)esPqRotate(&GlobalEpaKernel.sched.ready, prio);
+    epa  = (struct esEpa *)((uint8_t *)elem - offsetof(struct esEpa, schedElem));
+
+    return (epa);
 }
 
 static PORT_C_INLINE bool schedIsEmptyI(
@@ -246,22 +331,8 @@ static PORT_C_INLINE void schedSetCurrentI(
     GlobalEpaKernel.sched.epa = epa;
 }
 
-static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
+static PORT_C_INLINE struct esEpa * schedGetHead(
     void) {
-
-    uint_fast8_t        prio;
-    struct esEpa *      epa;
-    struct esPqElem *   elem;
-
-    elem = esPqGetHighest(&GlobalEpaKernel.sched.ready);
-    prio = esPqGetPriority(elem);
-    (void)esPqRotate(&GlobalEpaKernel.sched.ready, prio);
-    epa  = (struct esEpa *)((uint8_t *)elem - offsetof(struct esEpa, schedElem));
-
-    return (epa);
-}
-
-static PORT_C_INLINE struct esEpa * schedGetHead(void) {
 
     struct esEpa *      epa;
 
@@ -272,6 +343,8 @@ static PORT_C_INLINE struct esEpa * schedGetHead(void) {
 
     return (epa);
 }
+
+/*--  EPA support  -----------------------------------------------------------*/
 
 static PORT_C_INLINE esError epaSendEventI(
     struct esEpa *      epa,
@@ -339,7 +412,9 @@ static PORT_C_INLINE struct esEvent * epaFetchEventI(
     return(event);
 }
 
-static void epaIdle(
+/*--  Kernel support  --------------------------------------------------------*/
+
+static void kernelIdle(
     void) {
 
 }
@@ -351,7 +426,7 @@ esError esEpaKernelInit(
     void) {
 
     schedInit();
-    GlobalEpaKernel.idle  = epaIdle;
+    GlobalEpaKernel.idle  = kernelIdle;
     GlobalEpaKernel.state = KERNEL_STOPPED;
 
     return (ES_ERROR_NONE);
@@ -424,7 +499,7 @@ esError esEpaKernelSetIdle(
     void (* idle)(void)) {
 
     if (idle == NULL) {
-        idle = epaIdle;
+        idle = kernelIdle;
     }
     GlobalEpaKernel.idle = idle;
 
@@ -436,11 +511,19 @@ esError esEpaKernelGetIdle(
 
     ES_API_REQUIRE(ES_API_POINTER, idle != NULL);
 
-    if (GlobalEpaKernel.idle == epaIdle) {
+    if (GlobalEpaKernel.idle == kernelIdle) {
         *idle = NULL;
     } else {
         *idle = GlobalEpaKernel.idle;
     }
+
+    return (ES_ERROR_NONE);
+}
+
+esError esEpaKernelGetCurrent(
+    struct esEpa **     epa) {
+
+    *epa = GlobalEpaKernel.sched.epa;
 
     return (ES_ERROR_NONE);
 }
@@ -607,12 +690,6 @@ esError esEpaSendAheadEvent(
     ES_CRITICAL_LOCK_EXIT(intrCtx);
 
     return (error);
-}
-
-struct esEpa * appEvtGeneratorGet(
-    void) {
-
-    return (GlobalEpaKernel.sched.epa);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

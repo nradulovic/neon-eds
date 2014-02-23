@@ -102,6 +102,15 @@
 #if !defined(CONFIG_EVENT_STORAGE_NPOOLS)
 # define CONFIG_EVENT_STORAGE_NPOOLS    2
 #endif
+
+#if !defined(CONFIG_GET_CURRENT_EPA)
+# define CONFIG_GET_CURRENT_EPA(epa)                                            \
+    do {                                                                        \
+        esError esEpaKernelGetCurrent(struct esEpa *);                          \
+        (void)esEpaKernelGetCurrent(epa);                                       \
+    } while (0)
+#endif
+
 /**@} *//*--------------------------------------------------------------------*/
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
