@@ -42,7 +42,7 @@
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static ES_MODULE_INFO_CREATE("systimer", "System Timer (port)", "Nenad Radulovic");
+static const ES_MODULE_INFO_CREATE("systimer", "System Timer (port)", "Nenad Radulovic");
 
 static void (* GlobalSysTimerHandler[4])(void);
 

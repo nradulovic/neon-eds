@@ -79,7 +79,7 @@
 #define ES_SYSTIMER_ISR_DISABLE()       portSysTimerIsrDisable_()
 
 #define ES_SYSTIMER_SET_HANDLER(handler, level)                                 \
-    esGlobalSysTimerHandler[(level) & 0x3u] = (handler)
+    portSysTimerSetHandler(handler, level)
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
