@@ -80,7 +80,9 @@
 # error "eSolid RT Kernel: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range."
 #endif
 
-#if (CONFIG_DEBUG == 0)
+#if (CONFIG_DEBUG == 0) || defined(NDEBUG)
+# undef  CONFIG_DEBUG
+# define CONFIG_DEBUG                   0
 # undef  CONFIG_API_VALIDATION
 # define CONFIG_API_VALIDATION          0
 # undef  CONFIG_ASSERT_INTERNAL
