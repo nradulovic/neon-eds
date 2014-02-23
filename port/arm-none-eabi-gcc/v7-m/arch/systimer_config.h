@@ -53,6 +53,10 @@
 # define CONFIG_SYSTIMER_EVENT_FREQ     100ul
 #endif
 
+#if !defined(sysTimerHandler)
+# define sysTimerHandler				SysTick_Handler
+#endif
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
  * END of systimer_config.h

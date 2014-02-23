@@ -74,6 +74,9 @@
 
 #define ES_SYSTIMER_ISR_DISABLE()       portSysTimerIsrDisable_()
 
+#define ES_SYSTIMER_SET_HANDLER(handler, level)                                 \
+    portSysTimerSetHandler(handler, level)
+
 /** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -182,6 +185,16 @@ static PORT_C_INLINE_ALWAYS void portSysTimerIsrDisable_(
     PORT_SCB->ICSR |= PORT_SCB_ICSR_PENDSTCLR_Msk;
     PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_TICKINT_Msk;
 }
+
+void portModuleSysTimerInit(
+    void);
+
+void portModuleSysTimerTerm(
+    void);
+
+void portSysTimerSetHandler(
+    void             (* handler)(void),
+    uint_fast8_t        level);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
