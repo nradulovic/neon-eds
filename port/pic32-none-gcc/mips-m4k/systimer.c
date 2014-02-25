@@ -80,7 +80,7 @@ void portSysTimerSetHandler(
 #define CONCAT_(a, b)                   a ## b
 #define CONCAT(a, b)                    CONCAT_(a, b)
 
-void __ISR(_CORE_TIMER_VECTOR, CONCAT(CONCAT(IPL, ES_INTR_DEFAULT_ISR_PRIO), SOFT)) sysTimerHandler(
+void __ISR(_CORE_TIMER_VECTOR) sysTimerHandler(
     void) {
 
     uint_fast8_t        count;
