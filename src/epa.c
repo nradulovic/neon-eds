@@ -479,7 +479,7 @@ esError esEpaKernelStart(
         }
         schedSetCurrentI(NULL);
         ES_CRITICAL_LOCK_EXIT(intrCtx);
-        (*GlobalEpaKernel.idle)();
+        GlobalEpaKernel.idle();
         ES_CRITICAL_LOCK_ENTER(&intrCtx);
     }
     ES_CRITICAL_LOCK_EXIT(intrCtx);
