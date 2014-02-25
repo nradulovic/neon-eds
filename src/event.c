@@ -237,6 +237,7 @@ esError esEventUnregisterMem(
     return (ES_ERROR_NONE);
 }
 
+static uint32_t GlobalEventCount;
 
 /*----------------------------------------------------------------------------*/
 esError esEventCreate(
@@ -248,14 +249,13 @@ esError esEventCreate(
     esLockCtx           lockCtx;
 
     ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    error = eventCreateI(
-        size,
-        event);
+    error = eventCreateI(size, event);
+    GlobalEventCount++;
     ES_CRITICAL_LOCK_EXIT(lockCtx);
-    eventInit(
-        size,
-        id,
-        *event);
+
+    if (error == ES_ERROR_NONE) {
+        eventInit(size, id, *event);
+    }
 
     return (error);
 }
@@ -268,13 +268,11 @@ esError esEventCreateI(
 
     esError             error;
 
-    error = eventCreateI(
-        size,
-        event);
-    eventInit(
-        size,
-        id,
-        *event);
+    error = eventCreateI(size, event);
+    
+    if (error == ES_ERROR_NONE) {
+        eventInit(size, id, *event);
+    }
 
     return (error);
 }
@@ -340,6 +338,7 @@ esError esEventDestroyI(
         error = eventDestroyI(
             event);
     }
+    GlobalEventCount--;
 
     return (error);
 }
