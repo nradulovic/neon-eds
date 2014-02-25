@@ -228,7 +228,7 @@
  * @api
  */
 #if (1 == CONFIG_API_VALIDATION)
-# define ES_API_ENSURE(expr)                                                    \
+# define ES_ENSURE(expr)                                                    \
     do {                                                                        \
         if ((expr) != ES_ERROR_NONE) {                                          \
             static const PORT_C_ROM struct debugCobject_ thisObject = {         \
@@ -241,7 +241,7 @@
     } while (0u)
 
 #else
-# define ES_API_ENSURE(expr)                                                    \
+# define ES_ENSURE(expr)                                                    \
     expr
 #endif
 
