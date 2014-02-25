@@ -55,6 +55,7 @@ void portModuleIntrInit(
     status &= ~_CP0_STATUS_BEV_MASK;
     _CP0_SET_STATUS(status);
     INTCONSET = _INTCON_MVEC_MASK;
+    ES_INTR_ENABLE();
 }
 
 void portModuleIntrTerm(

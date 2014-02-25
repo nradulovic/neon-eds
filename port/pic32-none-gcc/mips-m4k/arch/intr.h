@@ -139,7 +139,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskSet_(
     }
 #else
     statusReg  = _CP0_GET_STATUS();
-    statusReg &= _CP0_STATUS_IPL_MASK;
+    statusReg &= ~_CP0_STATUS_IPL_MASK;
     statusReg |= intrCtx & _CP0_STATUS_IPL_MASK;
     _CP0_SET_STATUS(statusReg);
 #endif
@@ -157,7 +157,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
 
 /* NOTE: See notes for portIntrMaskSet_()
  */
-static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
+static PORT_C_INLINE_ALWAYS __attribute__((nomips16)) void portIntrMaskReplace_(
     esIntrCtx *         oldMask,
     esIntrCtx           newMask) {
 
@@ -177,10 +177,10 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskReplace_(
 #else
     esIntrCtx           statusReg;
 
-    statusReg  = *oldMask = _CP0_GET_STATUS();
-    statusReg &= _CP0_STATUS_IPL_MASK;
-    statusReg |= newMask & _CP0_STATUS_IPL_MASK;
-    _CP0_SET_STATUS(statusReg);
+    statusReg  = _CP0_GET_STATUS();
+    *oldMask   = statusReg;
+    statusReg &= ~_CP0_STATUS_IPL_MASK;
+    _CP0_SET_STATUS(statusReg | newMask);
 #endif
 }
 
