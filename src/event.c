@@ -103,7 +103,7 @@ static PORT_C_INLINE void eventInit(
     event->timestamp = ES_SYSTIMER_GET_CVAL();
 #endif
 #if (CONFIG_EVENT_PRODUCER == 1)
-    CONFIG_GET_CURRENT_EPA(event->producer);
+    CONFIG_GET_CURRENT_EPA(&event->producer);
 #endif
 #if (CONFIG_EVENT_SIZE == 1)
     event->size = size;
