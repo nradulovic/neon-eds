@@ -34,6 +34,7 @@
 #include "base/queue.h"
 #include "base/list.h"
 #include "base/prio_queue.h"
+#include "vtimer/vtimer.h"
 #include "eds/epa.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
@@ -424,7 +425,8 @@ static void kernelIdle(
 
 esError esEpaKernelInit(
     void) {
-
+    
+    esModuleVTimerInit();
     schedInit();
     GlobalEpaKernel.idle  = kernelIdle;
     GlobalEpaKernel.state = KERNEL_STOPPED;
