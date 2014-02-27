@@ -289,7 +289,7 @@
 /*--  System Control Space Base Address  -------------------------------------*/
 #define PORT_SCS_BASE                   (0xe000e000ul)
 
-#if (__MPU_PRESENT == 1) || defined(__DOXYGEN__)
+#if defined(__MPU_PRESENT) && (__MPU_PRESENT == 1) || defined(__DOXYGEN__)
 #define PORT_MPU_BASE                   (PORT_SCS_BASE + 0x0d90ul)
 
 #define PORT_MPU                        ((struct portMPU *)PORT_MPU_BASE)
@@ -421,7 +421,7 @@
 #define PORT_SCB_ICSR_VECTACTIVE_Msk            (0x1fful << PORT_SCB_ICSR_VECTACTIVE_Pos)
 
 /*--  SCB Vector Table Offset Register Definitions  --------------------------*/
-#if (__CM3_REV < 0x0201)                   /* core r2p1 */
+#if defined(__CM3_REV) && (__CM3_REV < 0x0201)                   /* core r2p1 */
 #define PORT_SCB_VTOR_TBLBASE_Pos               29
 #define PORT_SCB_VTOR_TBLBASE_Msk               (1ul << PORT_SCB_VTOR_TBLBASE_Pos)
 
@@ -898,7 +898,7 @@ struct portTPI {
     PORT_RO uint32_t    DEVTYPE;
 };
 
-#if (__MPU_PRESENT == 1) || defined(__DOXYGEN__)
+#if defined(__MPU_PRESENT) && (__MPU_PRESENT == 1) || defined(__DOXYGEN__)
 
 /*--  Structure to access the Memory Protection Unit (MPU)  ------------------*/
 struct portMPU {

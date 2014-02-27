@@ -53,8 +53,8 @@
 # define CONFIG_SYSTIMER_EVENT_FREQ     100ul
 #endif
 
-#if !defined(sysTimerHandler)
-# define sysTimerHandler				SysTick_Handler
+#if !defined(portSysTimerHandler)
+# define portSysTimerHandler		    SysTick_Handler
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

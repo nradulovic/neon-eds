@@ -196,6 +196,9 @@ void portSysTimerSetHandler(
     void             (* handler)(void),
     uint_fast8_t        level);
 
+void portSysTimerHandler(
+    void);
+
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

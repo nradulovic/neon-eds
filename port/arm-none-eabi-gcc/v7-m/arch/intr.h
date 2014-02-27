@@ -87,13 +87,13 @@ extern "C" {
  * @details     Cortex-M3 Processor Exceptions Numbers
  */
 enum esIntrN {
-    NONMASKABLEINT_IRQN   = -14,                                                /**< @brief 2 Non Maskable Interrupt                        *///!< NONMASKABLEINT_IRQN
-    MEMORYMANAGEMENT_IRQN = -12,                                                /**< @brief 4 Cortex-M3 Memory Management Interrupt         *///!< MEMORYMANAGEMENT_IRQN
-    BUSFAULT_IRQN         = -11,                                                /**< @brief 5 Cortex-M3 Bus Fault Interrupt                 *///!< BUSFAULT_IRQN
-    USAGEFAULT_IRQN       = -10,                                                /**< @brief 6 Cortex-M3 Usage Fault Interrupt               *///!< USAGEFAULT_IRQN
-    SVCALL_IRQN           = -5,                                                 /**< @brief 11 Cortex-M3 SV Call Interrupt                  *///!< SVCALL_IRQN
-    PENDSV_IRQN           = -2,                                                 /**< @brief 14 Cortex-M3 Pend SV Interrupt                  *///!< PENDSV_IRQN
-    ES_SYSTEM_IRQN             = -1                                             /**< @brief 15 Cortex-M3 System Tick Interrupt              *///!< ES_SYSTEM_IRQN
+    NONMASKABLEINT_IRQN   = -14,                                                /**< @brief 2 Non Maskable Interrupt                        */
+    MEMORYMANAGEMENT_IRQN = -12,                                                /**< @brief 4 Cortex-M3 Memory Management Interrupt         */
+    BUSFAULT_IRQN         = -11,                                                /**< @brief 5 Cortex-M3 Bus Fault Interrupt                 */
+    USAGEFAULT_IRQN       = -10,                                                /**< @brief 6 Cortex-M3 Usage Fault Interrupt               */
+    SVCALL_IRQN           = -5,                                                 /**< @brief 11 Cortex-M3 SV Call Interrupt                  */
+    PENDSV_IRQN           = -2,                                                 /**< @brief 14 Cortex-M3 Pend SV Interrupt                  */
+    ES_SYSTEM_IRQN             = -1                                             /**< @brief 15 Cortex-M3 System Tick Interrupt              */
 };
 
 /**@brief       Interrupt context type
@@ -175,7 +175,7 @@ static PORT_C_INLINE_ALWAYS void portIntrMaskGet_(
     *intrCtx = tmp;
 }
 
-/**@brief       Get free and set new interrupt priority mask
+/**@brief       Get old and set new interrupt priority mask
  * @return      Current interrupt priority mask
  * @inline
  */
@@ -239,12 +239,12 @@ static PORT_C_INLINE_ALWAYS void intrPrioGet_(
  * @details     Function will set up sub-priority bits to zero and handlers
  *              interrupt priority.
  */
-void portIntrInit(
+void portModuleIntrInit(
     void);
 
 /**@brief       Terminate port
  */
-void portIntrTerm(
+void portModuleIntrTerm(
     void);
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

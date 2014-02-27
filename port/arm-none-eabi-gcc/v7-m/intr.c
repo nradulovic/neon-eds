@@ -66,7 +66,7 @@ static PORT_C_INLINE void intrSetPriorityGrouping(
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portIntrInit(
+void portModuleIntrInit(
     void) {
 
     portIntrDisable_();
@@ -74,7 +74,7 @@ void portIntrInit(
         PORT_CONFIG_ISR_SUBPRIORITY);                                           /* Setup priority subgroup to zero bits                     */
 }
 
-void portIntrTerm(
+void portModuleIntrTerm(
     void) {
 
     portIntrDisable_();

@@ -54,9 +54,9 @@ PORT_C_UNUSED const PORT_C_ROM struct esModuleInfo GlobalUnnamedModule = {
 esError esBaseInit(
     void) {
 
-    portModuleCpuInit();
-    portModuleIntrInit();
-    portModuleSysTimerInit();
+    ES_CPU_INIT_EARLY();
+    ES_INTR_INIT_EARLY();
+    ES_SYSTIMER_INIT_EARLY();
 
     return (ES_ERROR_NONE);
 }
@@ -64,9 +64,9 @@ esError esBaseInit(
 esError esBaseTerm(
     void) {
 
-    portModuleSysTimerTerm();
-    portModuleIntrTerm();
-    portModuleCpuTerm();
+    ES_SYSTIMER_TERM();
+    ES_INTR_TERM();
+    ES_CPU_TERM();
 
     return (ES_ERROR_NONE);
 }

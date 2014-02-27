@@ -182,7 +182,7 @@ static PORT_C_INLINE void bitmapInit(
         bitmap->bit[grp] = 0u;
     }
 #else
-    esPqBitmap->bit[0] = 0u;
+    bitmap->bit[0] = 0u;
 #endif
 }
 
@@ -200,7 +200,7 @@ static PORT_C_INLINE void bitmapSet(
     bitmap->bitGroup     |= ES_CPU_PWR2(grpIndx);
     bitmap->bit[grpIndx] |= ES_CPU_PWR2(bitIndx);
 #else
-    esPqBitmap->bit[0] |= ES_CPU_PWR2(priority);
+    bitmap->bit[0] |= ES_CPU_PWR2(priority);
 #endif
 }
 
@@ -221,7 +221,7 @@ static PORT_C_INLINE void bitmapClear(
         bitmap->bitGroup &= ~ES_CPU_PWR2(grpIndx);                             /* Yes: then clear bit list indicator, too.                */
     }
 #else
-    esPqBitmap->bit[0] &= ~ES_CPU_PWR2(priority);
+    bitmap->bit[0] &= ~ES_CPU_PWR2(priority);
 #endif
 }
 
@@ -239,7 +239,7 @@ static PORT_C_INLINE uint_fast8_t bitmapGetHighest(
 #else
     uint_fast8_t        bitIndx;
 
-    bitIndx = ES_CPU_FLS(esPqBitmap->bit[0]);
+    bitIndx = ES_CPU_FLS(bitmap->bit[0]);
 
     return (bitIndx);
 #endif
@@ -261,7 +261,7 @@ static PORT_C_INLINE bool bitmapIsEmpty(
 #else
     bool              ret;
 
-    if (esPqBitmap->bit[0] == 0u) {
+    if (bitmap->bit[0] == 0u) {
         ret = true;
     } else {
         ret = false;

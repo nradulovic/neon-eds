@@ -181,10 +181,10 @@
  * @api
  */
 #if (1 == CONFIG_API_VALIDATION)
-# define ES_API_OBLIGATION(expr)                                                \
+# define ES_OBLIGATION(expr)                                                \
     expr
 #else
-# define ES_API_OBLIGATION(expr)                                                \
+# define ES_OBLIGATION(expr)                                                \
     (void)0
 #endif
 
@@ -197,10 +197,10 @@
  * @api
  */
 #if (1 == CONFIG_API_VALIDATION)
-# define ES_API_REQUIRE(msg, expr)                                              \
+# define ES_REQUIRE(msg, expr)                                              \
     ES_ASSERT(msg, expr)
 #else
-# define ES_API_REQUIRE(msg, expr)                                              \
+# define ES_REQUIRE(msg, expr)                                              \
     (void)0
 #endif
 
@@ -252,7 +252,7 @@
  * @api
  */
 #if (1 == CONFIG_ASSERT_INTERNAL) && (1 == CONFIG_API_VALIDATION)
-# define ES_API_ENSURE_INTERNAL(expr)                                           \
+# define ES_ENSURE_INTERNAL(expr)                                           \
     do {                                                                        \
         if ((expr) != ES_ERROR_NONE) {                                          \
             static const PORT_C_ROM struct debugCobject_ thisObject = {         \
@@ -265,7 +265,7 @@
     } while (0u)
 
 #else
-# define ES_API_ENSURE_INTERNAL(expr)                                           \
+# define ES_ENSURE_INTERNAL(expr)                                           \
     expr
 #endif
 

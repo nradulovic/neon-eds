@@ -79,7 +79,9 @@ void portSysTimerSetHandler(
     GlobalSysTimerHandler[level] = handler;
 }
 
-void sysTimerHandler(
+
+
+void portSysTimerHandler(
     void) {
 
     uint_fast8_t        count;

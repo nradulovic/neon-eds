@@ -39,12 +39,12 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portCpuInit(
+void portModuleCpuInit(
     void) {
 
 }
 
-void portCpuTerm(
+void portModuleCpuTerm(
     void) {
 
     /*
