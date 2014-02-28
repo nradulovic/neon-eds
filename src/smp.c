@@ -281,7 +281,7 @@ static PORT_C_INLINE esAction smPathEnter(
 
     while (*entry != 0) {
         ret = sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
-        ES_API_REQUIRE(ES_API_USAGE, (ret == ES_ACTION_IGNORED) || (ret == ES_ACTION_HANDLED));
+        ES_REQUIRE(ES_API_USAGE, (ret == ES_ACTION_IGNORED) || (ret == ES_ACTION_HANDLED));
         --entry;
     }
 
@@ -297,7 +297,7 @@ static PORT_C_INLINE void smPathExit(
         esAction        ret;
 
         ret = sm->table[*exit].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
-        ES_API_REQUIRE(
+        ES_REQUIRE(
             ES_API_USAGE,
             ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
              (ret == ES_ACTION_IGNORED) ||
@@ -320,9 +320,9 @@ esError esSmCreate(
 
     esError             error;
 
-    ES_API_REQUIRE(ES_API_POINTER, define != NULL);
-    ES_API_REQUIRE(ES_API_POINTER, define->table != NULL);
-    ES_API_REQUIRE(ES_API_POINTER, sm != NULL);
+    ES_REQUIRE(ES_API_POINTER, define != NULL);
+    ES_REQUIRE(ES_API_POINTER, define->table != NULL);
+    ES_REQUIRE(ES_API_POINTER, sm != NULL);
 
     error = esMemAlloc(mem, sizeof(struct esSm), (void **)sm);
 
@@ -353,7 +353,7 @@ esError esSmCreate(
         esAction *      levels;
 
         depth = smFindDepth(define->table);
-        ES_API_REQUIRE(ES_API_RANGE, depth >= 2);
+        ES_REQUIRE(ES_API_RANGE, depth >= 2);
         ++depth;
         error = esMemAlloc(
             mem,
@@ -377,7 +377,7 @@ esError esSmCreate(
     {
         esAction *      levels;
 
-        ES_API_REQUIRE(ES_API_RANGE, smFindDepth(define->table) == 2);
+        ES_REQUIRE(ES_API_RANGE, smFindDepth(define->table) == 2);
 
         error = esMemAlloc(
             mem,
@@ -394,15 +394,15 @@ esError esSmCreate(
     }
     (*sm)->src[0] = define->initState;
 #endif /* (CONFIG_SMP_HSM == 1) */
-    ES_API_OBLIGATION((*sm)->signature = SM_SIGNATURE);
+    ES_OBLIGATION((*sm)->signature = SM_SIGNATURE);
 
     return (ES_ERROR_NONE);
 ERROR_ALLOC_LEVELS:
     if ((*sm)->wspace != NULL) {
-        ES_API_ENSURE_INTERNAL(esMemFree((*sm)->mem, (*sm)->wspace));
+        ES_ENSURE_INTERNAL(esMemFree((*sm)->mem, (*sm)->wspace));
     }
 ERROR_ALLOC_WSPACE:
-    ES_API_ENSURE_INTERNAL(esMemFree((*sm)->mem, *sm));
+    ES_ENSURE_INTERNAL(esMemFree((*sm)->mem, *sm));
 ERROR_ALLOC_SM:
 
     return (ES_ERROR_NO_MEMORY);
@@ -413,17 +413,17 @@ esError esSmDestroy(
 
     esError             error;
 
-    ES_API_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_API_OBLIGATION(sm->signature = (esAtomic)~SM_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, sm != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    ES_OBLIGATION(sm->signature = (esAtomic)~SM_SIGNATURE);
 
     error = esMemFree(sm->mem, sm->src);
 
     if (error != ES_ERROR_NONE) {
         goto ERROR_FREE_LEVELS;
     }
-    ES_API_OBLIGATION(sm->src = NULL);
-    ES_API_OBLIGATION(sm->dst = NULL);
+    ES_OBLIGATION(sm->src = NULL);
+    ES_OBLIGATION(sm->dst = NULL);
     error = esMemFree(sm->mem, sm);
 
     if (error != ES_ERROR_NONE) {
@@ -448,9 +448,9 @@ esError esSmDispatch(
     esAction            ret;
     esAction            id;
 
-    ES_API_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_API_REQUIRE(ES_API_POINTER, action != NULL);
+    ES_REQUIRE(ES_API_POINTER, sm != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, action != NULL);
 
     count = 0u;
 
@@ -458,7 +458,7 @@ esError esSmDispatch(
         id = sm->src[count++];
         sm->src[count] = sm->table[id].super;
         ret = sm->table[id].state(sm->wspace, event);
-        ES_API_REQUIRE(
+        ES_REQUIRE(
             ES_API_USAGE,
             ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
              (ret == ES_ACTION_IGNORED) ||
@@ -475,7 +475,7 @@ esError esSmDispatch(
 
         if (ret < ES_ACTION_TOP) {
             ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-            ES_API_REQUIRE(
+            ES_REQUIRE(
                 ES_API_USAGE,
                 ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
                  (ret == ES_ACTION_IGNORED) ||
@@ -490,12 +490,12 @@ esError esSmDispatch(
 #else /* (CONFIG_SMP_HSM == 1) */
     esAction            ret;
 
-    ES_API_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_API_REQUIRE(ES_API_POINTER, action != NULL);
+    ES_REQUIRE(ES_API_POINTER, sm != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, action != NULL);
 
     ret = (*sm->table[sm->src[0]].state)(sm->wspace, (struct esEvent *)event);
-    ES_API_REQUIRE(
+    ES_REQUIRE(
         ES_API_USAGE,
         ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
          (ret == ES_ACTION_IGNORED) ||
@@ -509,7 +509,7 @@ esError esSmDispatch(
 
         if (ret < ES_ACTION_TOP) {
             ret = (*sm->table[sm->dst[0]].state)(sm->wspace, ES_SMP_EVENT(ES_INIT));
-            ES_API_REQUIRE(
+            ES_REQUIRE(
                 ES_API_USAGE,
                 ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
                  (ret == ES_ACTION_IGNORED) ||

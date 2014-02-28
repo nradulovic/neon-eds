@@ -471,13 +471,13 @@ esError esEpaKernelStart(
             schedSetCurrentI(epa);
             event = epaFetchEventI(epa);
             ES_CRITICAL_LOCK_EXIT(intrCtx);
-            ES_API_ENSURE_INTERNAL(esSmDispatch(epa->sm, event, &action));
+            ES_ENSURE_INTERNAL(esSmDispatch(epa->sm, event, &action));
             ES_CRITICAL_LOCK_ENTER(&intrCtx);
 
             if (action == ES_ACTION_DEFFERED) {
                 epaSendEventI(epa, event);
             }
-            ES_API_ENSURE_INTERNAL(esEventDestroyI(event));
+            ES_ENSURE_INTERNAL(esEventDestroyI(event));
         }
         schedSetCurrentI(NULL);
         ES_CRITICAL_LOCK_EXIT(intrCtx);
@@ -511,7 +511,7 @@ esError esEpaKernelSetIdle(
 esError esEpaKernelGetIdle(
     void (** idle)(void)) {
 
-    ES_API_REQUIRE(ES_API_POINTER, idle != NULL);
+    ES_REQUIRE(ES_API_POINTER, idle != NULL);
 
     if (GlobalEpaKernel.idle == kernelIdle) {
         *idle = NULL;
@@ -541,9 +541,9 @@ esError esEpaCreate(
     struct esSm *       sm;
     void **             qBuff;
 
-    ES_API_REQUIRE(ES_API_POINTER, epaDefine != NULL);
-    ES_API_REQUIRE(ES_API_POINTER, smDefine != NULL);
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_POINTER, epaDefine != NULL);
+    ES_REQUIRE(ES_API_POINTER, smDefine != NULL);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
 
     error = esMemAlloc(mem, sizeof(struct esEpa), (void **)epa);
 
@@ -570,13 +570,13 @@ esError esEpaCreate(
     eventQPutItemI(&(*epa)->eventQ, ES_SMP_EVENT(ES_INIT));
     ES_CRITICAL_LOCK_EXIT(intrCtx);
 
-    ES_API_OBLIGATION((*epa)->signature = EPA_SIGNATURE);
+    ES_OBLIGATION((*epa)->signature = EPA_SIGNATURE);
 
     return (ES_ERROR_NONE);
 ERROR_ALLOC_SM:
-    ES_API_ENSURE_INTERNAL(esSmDestroy(sm));
+    ES_ENSURE_INTERNAL(esSmDestroy(sm));
 ERROR_ALLOC_QBUFF:
-    ES_API_ENSURE_INTERNAL(esMemFree(mem, epa));
+    ES_ENSURE_INTERNAL(esMemFree(mem, epa));
 ERROR_ALLOC_EPA:
 
     return (ES_ERROR_NO_MEMORY);
@@ -589,9 +589,9 @@ esError esEpaDestroy(
     esIntrCtx           intrCtx;
     void **             qBuff;
 
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
-    ES_API_OBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    ES_OBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
 
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
 
@@ -637,8 +637,8 @@ esError esEpaSendEventI(
 
     esError             error;
 
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     error = epaSendEventI(epa, event);
 
@@ -652,8 +652,8 @@ esError esEpaSendEvent(
     esError             error;
     esIntrCtx           intrCtx;
 
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
     error = epaSendEventI(epa, event);
@@ -669,8 +669,8 @@ esError esEpaSendAheadEventI(
 
     esError             error;
 
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     error = epaSendAheadEventI(epa, event);
 
@@ -684,8 +684,8 @@ esError esEpaSendAheadEvent(
     esError             error;
     esIntrCtx           intrCtx;
 
-    ES_API_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, epa != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
     error = epaSendAheadEventI(epa, event);

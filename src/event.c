@@ -94,7 +94,7 @@ static PORT_C_INLINE void eventInit(
     uint16_t            id,
     struct esEvent *    event) {
 
-    ES_API_REQUIRE(ES_API_OBJECT, event->signature != ES_EVENT_SIGNATURE);
+    ES_REQUIRE(ES_API_OBJECT, event->signature != ES_EVENT_SIGNATURE);
 
     event->id     = id;
     event->attrib = 0u;                                                         /* Dogadjaj je dinamican, sa 0 korisnika.                   */
@@ -110,14 +110,14 @@ static PORT_C_INLINE void eventInit(
 #else
     (void)size;
 #endif
-    ES_API_OBLIGATION(event->signature = ES_EVENT_SIGNATURE);
+    ES_OBLIGATION(event->signature = ES_EVENT_SIGNATURE);
 }
 
 static PORT_C_INLINE void eventTerm(
     struct esEvent *    event) {
 
-    ES_API_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
-    ES_API_OBLIGATION(event->signature = ~ES_EVENT_SIGNATURE);
+    ES_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
+    ES_OBLIGATION(event->signature = ~ES_EVENT_SIGNATURE);
 
 #if (CONFIG_API_VALIDATION == 0)
     (void)event;
@@ -131,8 +131,8 @@ static PORT_C_INLINE esError eventCreateI(
     esError             error;
     uint_fast8_t        cnt;
 
-    ES_API_REQUIRE(ES_API_RANGE, size >= sizeof(struct esEvent));
-    ES_API_REQUIRE(ES_API_POINTER, event != NULL);
+    ES_REQUIRE(ES_API_RANGE, size >= sizeof(struct esEvent));
+    ES_REQUIRE(ES_API_POINTER, event != NULL);
 
     cnt = 0u;
 
@@ -163,7 +163,7 @@ static PORT_C_INLINE esError eventDestroyI(
 
     esError             error;
     
-    ES_API_ENSURE_INTERNAL(
+    ES_ENSURE_INTERNAL(
         error = esMemFreeI(
             event->mem,
             event));
@@ -181,10 +181,10 @@ esError esEventRegisterMem(
     uint_fast8_t        cnt;
     size_t              size;
 
-    ES_API_REQUIRE(ES_API_POINTER, mem != NULL);
+    ES_REQUIRE(ES_API_POINTER, mem != NULL);
 
     ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    ES_API_ENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
+    ES_ENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
     cnt = GlobalEvtStorage.nPools;
 
     while (0u < cnt) {
@@ -221,7 +221,7 @@ esError esEventUnregisterMem(
     }
     GlobalEvtStorage.nPools--;
 
-    ES_API_REQUIRE(ES_API_RANGE, mem == GlobalEvtStorage.mem[cnt].handle);
+    ES_REQUIRE(ES_API_RANGE, mem == GlobalEvtStorage.mem[cnt].handle);
 
     while (cnt < GlobalEvtStorage.nPools) {
         GlobalEvtStorage.mem[cnt].handle    =
@@ -237,8 +237,6 @@ esError esEventUnregisterMem(
     return (ES_ERROR_NONE);
 }
 
-static uint32_t GlobalEventCount;
-
 /*----------------------------------------------------------------------------*/
 esError esEventCreate(
     size_t              size,
@@ -250,7 +248,6 @@ esError esEventCreate(
 
     ES_CRITICAL_LOCK_ENTER(&lockCtx);
     error = eventCreateI(size, event);
-    GlobalEventCount++;
     ES_CRITICAL_LOCK_EXIT(lockCtx);
 
     if (error == ES_ERROR_NONE) {
@@ -281,8 +278,8 @@ esError esEventCreateI(
 void esEventReserve(
     struct esEvent *           evt) {
 
-    ES_API_REQUIRE(ES_API_POINTER, NULL != evt);
-    ES_API_REQUIRE(ES_API_OBJECT, ES_EVENT_SIGNATURE == evt->signature);
+    ES_REQUIRE(ES_API_POINTER, NULL != evt);
+    ES_REQUIRE(ES_API_OBJECT, ES_EVENT_SIGNATURE == evt->signature);
 
     evt->attrib |= ES_EVENT_RESERVED_Msk;
 }
@@ -291,8 +288,8 @@ void esEventReserve(
 void esEventUnReserve(
     struct esEvent *       event) {
 
-    ES_API_REQUIRE(ES_API_POINTER, event != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  event->signature == ES_EVENT_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, event != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  event->signature == ES_EVENT_SIGNATURE);
 
     event->attrib &= (uint16_t)~ES_EVENT_RESERVED_Msk;
 
@@ -325,8 +322,8 @@ esError esEventDestroyI(
 
     esError             error;
 
-    ES_API_REQUIRE(ES_API_POINTER, event);
-    ES_API_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, event);
+    ES_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
 
     error = ES_ERROR_NONE;
     esEventReferenceDown(
@@ -338,7 +335,6 @@ esError esEventDestroyI(
         error = eventDestroyI(
             event);
     }
-    GlobalEventCount--;
 
     return (error);
 }
