@@ -279,8 +279,8 @@ void esPqInit(
 
     uint_fast8_t        cnt;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature != PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature != PQ_SIGNATURE);
 
     bitmapInit(&queue->bitmap);
     cnt = CONFIG_PQ_PRIORITY_LEVELS;
@@ -289,7 +289,7 @@ void esPqInit(
         --cnt;
         PQLIST_SENTINEL_INIT(&queue->list[cnt], NULL);
     }
-    ES_API_OBLIGATION(queue->signature = PQ_SIGNATURE);
+    ES_OBLIGATION(queue->signature = PQ_SIGNATURE);
 }
 
 /* 1)       When API validation is not used then this function will become empty.
@@ -297,13 +297,13 @@ void esPqInit(
 void esPqTerm(
     struct esPq *       queue) {
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
 
 #if (CONFIG_API_VALIDATION == 0)
     (void)queue;
 #endif
-    ES_API_OBLIGATION(queue->signature = ~PQ_SIGNATURE);
+    ES_OBLIGATION(queue->signature = ~PQ_SIGNATURE);
 }
 
 
@@ -314,10 +314,10 @@ void esPqAdd(
 
     struct esPqList *   sentinel;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
-    ES_API_REQUIRE(ES_API_POINTER, element != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  element->queue == NULL);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, element != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  element->queue == NULL);
 
     sentinel = &queue->list[element->priority];                                 /* Get the sentinel for element priority level.             */
 
@@ -335,9 +335,9 @@ void esPqRm(
 
     struct esPqList *   sentinel;
 
-    ES_API_REQUIRE(ES_API_POINTER, element != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  element->queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  element->queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, element != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  element->queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  element->queue->signature == PQ_SIGNATURE);
 
     sentinel = &element->queue->list[element->priority];                        /* Get the sentinel for element priority level.             */
 
@@ -364,9 +364,9 @@ struct esPqElem * esPqGetHighest(
     const struct esPqList * sentinel;
     uint_fast8_t        prio;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
-    ES_API_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
 
     prio = bitmapGetHighest(&queue->bitmap);
     sentinel = &queue->list[prio];
@@ -380,10 +380,10 @@ struct esPqElem * esPqGetNext(
 
     const struct esPqList * sentinel;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
-    ES_API_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
-    ES_API_REQUIRE(ES_API_RANGE,   priority < CONFIG_PQ_PRIORITY_LEVELS);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
+    ES_REQUIRE(ES_API_RANGE,   priority < CONFIG_PQ_PRIORITY_LEVELS);
 
     sentinel = &queue->list[priority];
 
@@ -396,10 +396,10 @@ struct esPqElem * esPqRotate(
 
     struct esPqList *     sentinel;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
-    ES_API_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
-    ES_API_REQUIRE(ES_API_RANGE,   prio < CONFIG_PQ_PRIORITY_LEVELS);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_USAGE,   bitmapIsEmpty(&queue->bitmap) == false);
+    ES_REQUIRE(ES_API_RANGE,   prio < CONFIG_PQ_PRIORITY_LEVELS);
 
     sentinel = &queue->list[prio];
     PQLIST_ROTATE_NEXT(sentinel);
@@ -412,8 +412,8 @@ bool esPqIsEmpty(
 
     bool              ret;
 
-    ES_API_REQUIRE(ES_API_POINTER, queue != NULL);
-    ES_API_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
+    ES_REQUIRE(ES_API_POINTER, queue != NULL);
+    ES_REQUIRE(ES_API_OBJECT,  queue->signature == PQ_SIGNATURE);
 
     ret = bitmapIsEmpty(&queue->bitmap);
 
@@ -424,8 +424,8 @@ void esPqElementInit(
     struct esPqElem *   element,
     uint_fast8_t        priority) {
 
-    ES_API_REQUIRE(ES_API_POINTER, element != NULL);
-    ES_API_REQUIRE(ES_API_RANGE,   priority < CONFIG_PQ_PRIORITY_LEVELS);
+    ES_REQUIRE(ES_API_POINTER, element != NULL);
+    ES_REQUIRE(ES_API_RANGE,   priority < CONFIG_PQ_PRIORITY_LEVELS);
 
     element->queue = NULL;
     PQLIST_ENTRY_INIT(element);
@@ -435,8 +435,8 @@ void esPqElementInit(
 void esPqElementTerm(
     struct esPqElem *   element) {
 
-    ES_API_REQUIRE(ES_API_POINTER, element != NULL);
-    ES_API_REQUIRE(ES_API_POINTER, element->queue == NULL);
+    ES_REQUIRE(ES_API_POINTER, element != NULL);
+    ES_REQUIRE(ES_API_POINTER, element->queue == NULL);
 
 #if (CONFIG_API_VALIDATION == 0)
     (void)element;

@@ -73,12 +73,10 @@ void portSysTimerSetHandler(
     void             (* handler)(void),
     uint_fast8_t        level) {
 
-    ES_API_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
+    ES_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
 
     GlobalSysTimerHandler[level] = handler;
 }
-#define CONCAT_(a, b)                   a ## b
-#define CONCAT(a, b)                    CONCAT_(a, b)
 
 void __ISR(_CORE_TIMER_VECTOR) sysTimerHandler(
     void) {

@@ -60,9 +60,11 @@
  * @name        System timer management
  * @{ *//*--------------------------------------------------------------------*/
 
+#define ES_SYSTIMER_INIT_EARLY()        portModuleSysTimerInit()
+
 #define ES_SYSTIMER_INIT(val)           portSysTimerInit_(val)
 
-#define ES_SYSTIMER_TERM()              portSysTimerTerm_()
+#define ES_SYSTIMER_TERM()              portModuleSysTimerTerm()
 
 #define ES_SYSTIMER_GET_RVAL()          portSysTimerGetRVal_()
 
