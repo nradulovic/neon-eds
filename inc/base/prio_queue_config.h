@@ -37,7 +37,7 @@
 /*==============================================================  SETTINGS  ==*/
 
 #if !defined(CONFIG_PQ_PRIORITY_LEVELS)
-#define CONFIG_PQ_PRIORITY_LEVELS             33u
+#define CONFIG_PQ_PRIORITY_LEVELS             32u
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
