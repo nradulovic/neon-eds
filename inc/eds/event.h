@@ -74,7 +74,10 @@ deleted.
  */
 #define ES_EVENT_SIGNATURE              ((esAtomic)0xdeadfeedul)
 
-#define ES_EVENT_LOCAL_ID               32767u
+/**@brief       Event with identifiers equalt to or higer than this number are
+ *              event reserved for local usage.
+ */
+#define ES_EVENT_LOCAL_ID               32768u
 
 /*------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -225,7 +228,7 @@ esError esEventDestroyI(
  *              Pointer to the event.
  * @api
  */
-void esEventReserve(
+void esEventLock(
     esEvent *           event);
 
 /**@brief       Oslobadja prethodno rezervisan dogadjaj.
@@ -233,7 +236,7 @@ void esEventReserve(
  *              Pokazivac na dogadjaj koji se oslobadja.
  * @api
  */
-void esEventUnReserve(
+void esEventUnlock(
     esEvent *           event);
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -244,7 +247,7 @@ void esEventUnReserve(
  * @param       event
  *              Pointer to event
  */
-static PORT_C_INLINE void esEventRefUp(
+static PORT_C_INLINE void esEventRefUp_(
     struct esEvent *    event) {
 
     if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {
@@ -262,7 +265,7 @@ static PORT_C_INLINE void esEventRefUp(
  * @param       event
  *              Pointer to event
  */
-static PORT_C_INLINE void esEventReferenceDown(
+static PORT_C_INLINE void esEventReferenceDown_(
     struct esEvent *    event) {
 
     if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {
@@ -280,7 +283,7 @@ static PORT_C_INLINE void esEventReferenceDown(
  * @param       event
  *              Pointer to event
  */
-static PORT_C_INLINE uint_fast16_t esEventRefGet(
+static PORT_C_INLINE uint_fast16_t esEventRefGet_(
     const struct esEvent * event) {
 
     return (event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk);

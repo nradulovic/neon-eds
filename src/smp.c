@@ -154,14 +154,15 @@ static uint_fast8_t smFindDepth(
     cnt   = 1u;
     depth = 0u;
 
-    while ((cnt <= UINT8_MAX) && (table[cnt].state != NULL)) {
+    while ((cnt <= (esAction)UINT8_MAX) && (table[cnt].state != NULL)) {
         esAction        inner;
         uint_fast8_t    level;
 
         inner = cnt;
         level = 2u;
 
-        while ((inner <= UINT8_MAX) && (table[inner].super != 0) && (table[inner].state != NULL)) {
+        while ((inner <= (esAction)UINT8_MAX) && (table[inner].super != 0) &&
+               (table[inner].state != NULL)) {
             inner = table[inner].super;
             level++;
         }

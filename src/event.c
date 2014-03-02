@@ -275,7 +275,7 @@ esError esEventCreateI(
 }
 
 /*----------------------------------------------------------------------------*/
-void esEventReserve(
+void esEventLock(
     struct esEvent *           evt) {
 
     ES_REQUIRE(ES_API_POINTER, NULL != evt);
@@ -285,7 +285,7 @@ void esEventReserve(
 }
 
 /*----------------------------------------------------------------------------*/
-void esEventUnReserve(
+void esEventUnlock(
     struct esEvent *       event) {
 
     ES_REQUIRE(ES_API_POINTER, event != NULL);
@@ -293,7 +293,7 @@ void esEventUnReserve(
 
     event->attrib &= (uint16_t)~ES_EVENT_RESERVED_Msk;
 
-    if (esEventRefGet(event) == 0u) {
+    if (esEventRefGet_(event) == 0u) {
         eventTerm(
             event);
         eventDestroyI(
@@ -326,10 +326,10 @@ esError esEventDestroyI(
     ES_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
 
     error = ES_ERROR_NONE;
-    esEventReferenceDown(
+    esEventReferenceDown_(
         event);
 
-    if (esEventRefGet(event) == 0u) {
+    if (esEventRefGet_(event) == 0u) {
         eventTerm(
             event);
         error = eventDestroyI(

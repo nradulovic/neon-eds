@@ -96,7 +96,7 @@ enum esSmEvents {
     ES_ENTRY            = CONFIG_SMP_EVENT_ID_BASE,                             /**<@brief Process state entry                              */
     ES_EXIT,                                                                    /**<@brief Process state exit                               */
     ES_INIT,                                                                    /**<@brief Process state initialization                     */
-    ES_USER_ID          = CONFIG_SMP_EVENT_ID_BASE + 16u
+    ES_EVENT_USER_ID    = CONFIG_SMP_EVENT_ID_BASE + 16u
 };
 
 enum esAction {

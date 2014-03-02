@@ -351,8 +351,8 @@ static PORT_C_INLINE esError epaSendEventI(
     struct esEpa *      epa,
     struct esEvent *    event) {
 
-    if (esEventRefGet(event) < ES_EVENT_REF_LIMIT) {
-        esEventRefUp(event);
+    if (esEventRefGet_(event) < ES_EVENT_REF_LIMIT) {
+        esEventRefUp_(event);
 
         if (eventQIsEmpty(&epa->eventQ) == true) {
             schedReadyAddI(&epa->schedElem);
@@ -377,8 +377,8 @@ static PORT_C_INLINE esError epaSendAheadEventI(
     struct esEpa *      epa,
     struct esEvent *    event) {
 
-    if (esEventRefGet(event) < ES_EVENT_REF_LIMIT) {
-        esEventRefUp(event);
+    if (esEventRefGet_(event) < ES_EVENT_REF_LIMIT) {
+        esEventRefUp_(event);
 
         if (eventQIsEmpty(&epa->eventQ) == true) {
             schedReadyAddI(&epa->schedElem);
