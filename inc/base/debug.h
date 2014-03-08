@@ -132,14 +132,14 @@
  * @api
  */
 #if (1 == CONFIG_DEBUG)
-# define ES_ASSERT_ALWAYS(msg, text)                                            \
+# define ES_ASSERT_ALWAYS(text)                                                 \
     do {                                                                        \
         static const PORT_C_ROM struct debugCobject_ thisObj = {                \
             &LocalModuleInfo,                                                   \
             PORT_C_FUNC,                                                        \
             PORT_C_LINE                                                         \
         };                                                                      \
-        debugAssert(PORT_C_FUNC, text, msg);                                    \
+        debugAssert(PORT_C_FUNC, text, NULL);                                   \
     } while (0u)
 #else
 # define ES_ASSERT_ALWAYS(msg, text)                                            \
@@ -274,6 +274,7 @@
 #define ES_API_POINTER                  "Pointer has null value."
 #define ES_API_USAGE                    "Object/method usage failure."
 #define ES_API_CALL                     "An API method call has failed."
+#define ES_ASSERT_FAILED                "Assert failed"
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
