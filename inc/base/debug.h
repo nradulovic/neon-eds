@@ -139,7 +139,7 @@
             PORT_C_FUNC,                                                        \
             PORT_C_LINE                                                         \
         };                                                                      \
-        debugAssert(PORT_C_FUNC, text, NULL);                                   \
+        debugAssert(&thisObj, text, NULL);                                   \
     } while (0u)
 #else
 # define ES_ASSERT_ALWAYS(msg, text)                                            \
