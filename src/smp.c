@@ -72,7 +72,7 @@ static uint_fast8_t smFindPath(
     struct esSm *       sm,
     uint_fast8_t        srcCount);
 
-static PORT_C_INLINE esAction smPathEnter(
+static PORT_C_INLINE void smPathEnter(
     struct esSm *       sm,
     esAction *          entry);
 
@@ -272,21 +272,24 @@ static uint_fast8_t smFindPath(
     return (0);
 }
 
-static PORT_C_INLINE esAction smPathEnter(
+static PORT_C_INLINE void smPathEnter(
     struct esSm *       sm,
     esAction *          entry) {
 
-    esAction            ret;
-
-    ret = ES_ACTION_HANDLED;
-
     while (*entry != 0) {
-        ret = sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
-        ES_REQUIRE(ES_API_USAGE, (ret == ES_ACTION_IGNORED) || (ret == ES_ACTION_HANDLED));
-        --entry;
-    }
+#if (CONFIG_API_VALIDATION == 1)
+        esAction        ret;
 
-    return (ret);
+        ret = sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
+        ES_REQUIRE(
+            ES_API_USAGE,
+            (ret == ES_ACTION_IGNORED) ||
+            (ret == ES_ACTION_HANDLED));
+        --entry;
+#else
+        (void)sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
+#endif
+    }
 }
 
 static PORT_C_INLINE void smPathExit(
@@ -300,11 +303,12 @@ static PORT_C_INLINE void smPathExit(
         ret = sm->table[*exit].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
         ES_REQUIRE(
             ES_API_USAGE,
-            ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-             (ret == ES_ACTION_IGNORED) ||
-             (ret == ES_ACTION_HANDLED));
+            ((ret > ES_ACTION_TOP)     &&
+             (ret < ES_ACTION_BOTTOM)) ||
+            (ret == ES_ACTION_IGNORED) ||
+            (ret == ES_ACTION_HANDLED));
 #else
-        (void)(*sm->table[*exit].state)(sm->wspace, ES_SMP_EVENT(ES_EXIT));
+        (void)sm->table[*exit].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
 #endif
         ++exit;
     }
@@ -461,10 +465,11 @@ esError esSmDispatch(
         ret = sm->table[id].state(sm->wspace, event);
         ES_REQUIRE(
             ES_API_USAGE,
-            ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-             (ret == ES_ACTION_IGNORED) ||
-             (ret == ES_ACTION_HANDLED) ||
-             (ret == ES_ACTION_DEFFERED));
+            ((ret > ES_ACTION_TOP) &&
+             (ret < ES_ACTION_BOTTOM)) ||
+            (ret == ES_ACTION_IGNORED) ||
+            (ret == ES_ACTION_HANDLED) ||
+            (ret == ES_ACTION_DEFFERED));
     } while ((ret == ES_ACTION_IGNORED) && (sm->table[id].super != 0));
     count--;
 
@@ -472,16 +477,14 @@ esError esSmDispatch(
         sm->dst[1] = ret;
         count = smFindPath(sm, count);
         smPathExit(sm, &sm->src[0]);
-        ret = smPathEnter(sm, &sm->dst[count]);
-
-        if (ret < ES_ACTION_TOP) {
-            ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-            ES_REQUIRE(
-                ES_API_USAGE,
-                ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-                 (ret == ES_ACTION_IGNORED) ||
-                 (ret == ES_ACTION_HANDLED));
-        }
+        smPathEnter(sm, &sm->dst[count]);
+        ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
+        ES_REQUIRE(
+            ES_API_USAGE,
+            ((ret > ES_ACTION_TOP) &&
+             (ret < ES_ACTION_BOTTOM)) ||
+            (ret == ES_ACTION_IGNORED) ||
+            (ret == ES_ACTION_HANDLED));
         sm->src[0] = sm->dst[1];
         count = 0u;
     }
@@ -495,27 +498,26 @@ esError esSmDispatch(
     ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
     ES_REQUIRE(ES_API_POINTER, action != NULL);
 
-    ret = (*sm->table[sm->src[0]].state)(sm->wspace, (struct esEvent *)event);
+    ret = sm->table[sm->src[0]].state(sm->wspace, (struct esEvent *)event);
     ES_REQUIRE(
         ES_API_USAGE,
-        ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-         (ret == ES_ACTION_IGNORED) ||
-         (ret == ES_ACTION_HANDLED) ||
-         (ret == ES_ACTION_DEFFERED));
+        ((ret > ES_ACTION_TOP) &&
+         (ret < ES_ACTION_BOTTOM)) ||
+        (ret == ES_ACTION_IGNORED) ||
+        (ret == ES_ACTION_HANDLED) ||
+        (ret == ES_ACTION_DEFFERED));
 
     while (ret > 0) {
         sm->dst[0] = ret;
-        (void)(*sm->table[sm->src[0]].state)(sm->wspace, ES_SMP_EVENT(ES_EXIT));
-        ret = (*sm->table[sm->dst[0]].state)(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
-
-        if (ret < ES_ACTION_TOP) {
-            ret = (*sm->table[sm->dst[0]].state)(sm->wspace, ES_SMP_EVENT(ES_INIT));
-            ES_REQUIRE(
-                ES_API_USAGE,
-                ((ret > ES_ACTION_TOP) && (ret < ES_ACTION_BOTTOM)) ||
-                 (ret == ES_ACTION_IGNORED) ||
-                 (ret == ES_ACTION_HANDLED));
-        }
+        (void)sm->table[sm->src[0]].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
+        (void)sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
+        ret = sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
+        ES_REQUIRE(
+            ES_API_USAGE,
+            ((ret > ES_ACTION_TOP) &&
+             (ret < ES_ACTION_BOTTOM)) ||
+            (ret == ES_ACTION_IGNORED) ||
+            (ret == ES_ACTION_HANDLED));
         sm->src[0] = sm->dst[0];
     }
     *action = ret;
