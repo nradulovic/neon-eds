@@ -64,7 +64,7 @@
 
 #define ES_SYSTIMER_GET_RVAL()          (void)0
 
-#define ES_SYSTIMER_GET_CVAL()          (void)0
+#define ES_SYSTIMER_GET_CVAL()          0
 
 #define ES_SYSTIMER_RELOAD(val)         (void)0
 
