@@ -51,24 +51,20 @@ PORT_C_UNUSED const PORT_C_ROM struct esModuleInfo GlobalUnnamedModule = {
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esBaseInit(
+void esBaseInit(
     void) {
 
-    ES_CPU_INIT_EARLY();
-    ES_INTR_INIT_EARLY();
-    ES_SYSTIMER_INIT_EARLY();
-
-    return (ES_ERROR_NONE);
+    ES_MODULE_CPU_INIT();
+    ES_MODULE_INTR_INIT();
+    ES_MODULE_SYSTIMER_INIT();
 }
 
-esError esBaseTerm(
+void esBaseTerm(
     void) {
 
-    ES_SYSTIMER_TERM();
-    ES_INTR_TERM();
-    ES_CPU_TERM();
-
-    return (ES_ERROR_NONE);
+    ES_MODULE_SYSTIMER_TERM();
+    ES_MODULE_INTR_TERM();
+    ES_MODULE_CPU_TERM();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

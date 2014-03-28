@@ -48,7 +48,7 @@
 
 /**@brief       Provides function name for assert macros
  */
-#if (__STDC_VERSION__ >= 199901L) || defined(__DOXYGEN__)
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || defined(__DOXYGEN__)
 # define PORT_C_FUNC                    __func__
 #elif (__GNUC__ >= 2)
 # define PORT_C_FUNC                    __FUNCTION__

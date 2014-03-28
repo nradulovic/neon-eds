@@ -77,18 +77,8 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-#if !defined(ES_OPTIMIZE_FOR_SPEED)
-/**@brief       Unsigned RAM memory size type
- */
-typedef unsigned short int esRamSize;
-
-/**@brief       Signed RAM memory size type
- */
-typedef signed   short int esRamSSize;
-#else
 typedef unsigned int       esRamSize;
 typedef signed   int       esRamSSize;
-#endif /* !ES_OPTIMIZE_FOR_SPEED */
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/

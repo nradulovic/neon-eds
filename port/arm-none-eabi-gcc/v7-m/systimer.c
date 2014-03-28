@@ -74,7 +74,7 @@ void portSysTimerSetHandler(
     void             (* handler)(void),
     uint_fast8_t        level) {
 
-    ES_API_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
+    ES_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
 
     GlobalSysTimerHandler[level] = handler;
 }

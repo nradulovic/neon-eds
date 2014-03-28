@@ -81,7 +81,7 @@ static PORT_C_INLINE void esQpInit(
 static PORT_C_INLINE void esQpTerm(
     struct esQp *       qp) {
 
-    qp->buff = (void **)0;
+    qp->buff = NULL;
     qp->head = UINT32_C(0);
     qp->tail = UINT32_C(0);
     qp->free = UINT32_C(0);
