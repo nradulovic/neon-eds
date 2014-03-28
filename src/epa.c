@@ -71,12 +71,17 @@ struct epaEventQ {
     uint32_t            max;
 };
 
+struct epaResource {
+    struct esSls        list;
+};
+
 struct esEpa {
     struct esMem *      mem;
     struct esSm *       sm;
     struct epaSchedElem schedElem;
     struct epaEventQ    eventQ;
     const PORT_C_ROM char * name;
+    struct esSls        resources;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     esAtomic            signature;
 #endif
@@ -150,6 +155,9 @@ static PORT_C_INLINE bool schedIsEmptyI(
 static PORT_C_INLINE void schedSetCurrentI(
     struct esEpa *      epa);
 
+static PORT_C_INLINE struct esEpa * schedGetCurrentI(
+    void);
+
 static PORT_C_INLINE struct esEpa * schedGetHead(
     void);
 
@@ -174,7 +182,7 @@ static void kernelIdle(
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 static const ES_MODULE_INFO_CREATE("EPA", "Event Processing Agent", "Nenad Radulovic");
-static struct epaKernel GlobalEpaKernel;
+static struct epaKernel GlobalEdsKernel;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
@@ -198,7 +206,7 @@ static PORT_C_INLINE void eventQTerm(
 
 static PORT_C_INLINE void eventQPutItemI(
     struct epaEventQ *  eventQ,
-    struct esEvent *    event) {
+    struct esEvent * event) {
 
     uint32_t            occupied;
 
@@ -253,14 +261,14 @@ static PORT_C_INLINE void ** eventQBuff(
 static PORT_C_INLINE void schedInit(
     void) {
 
-    esPqInit(&GlobalEpaKernel.sched.ready);
-    esSlsSentinelInit(&GlobalEpaKernel.sched.regSentinel);
+    esPqInit(&GlobalEdsKernel.sched.ready);
+    esSlsSentinelInit(&GlobalEdsKernel.sched.regSentinel);
 }
 
 static PORT_C_INLINE void schedTerm(
     void) {
 
-    esPqTerm(&GlobalEpaKernel.sched.ready);
+    esPqTerm(&GlobalEdsKernel.sched.ready);
 }
 
 static PORT_C_INLINE void schedElementInit(
@@ -269,20 +277,20 @@ static PORT_C_INLINE void schedElementInit(
 
     esPqElementInit(&elem->pqElem, priority);
     esSlsNodeInit(&elem->regNode);
-    esSlsNodeAddHead(&GlobalEpaKernel.sched.regSentinel, &elem->regNode);
+    esSlsNodeAddHead(&GlobalEdsKernel.sched.regSentinel, &elem->regNode);
 }
 
 static PORT_C_INLINE void schedElementTermI(
     struct epaSchedElem * elem) {
 
     esPqElementTerm(&elem->pqElem);
-    esSlsNodeRm(&GlobalEpaKernel.sched.regSentinel, &elem->regNode);
+    esSlsNodeRm(&GlobalEdsKernel.sched.regSentinel, &elem->regNode);
 }
 
 static PORT_C_INLINE void schedReadyAddI(
     struct epaSchedElem * elem) {
 
-    esPqAdd(&GlobalEpaKernel.sched.ready, &elem->pqElem);
+    esPqAdd(&GlobalEdsKernel.sched.ready, &elem->pqElem);
 }
 
 static PORT_C_INLINE void schedReadyRmI(
@@ -302,7 +310,7 @@ static PORT_C_INLINE void schedReadyRmSafeI(
 static PORT_C_INLINE bool schedReadyIsEmptyI(
     void) {
 
-    return (esPqIsEmpty(&GlobalEpaKernel.sched.ready));
+    return (esPqIsEmpty(&GlobalEdsKernel.sched.ready));
 }
 
 static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
@@ -312,9 +320,9 @@ static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
     struct esEpa *      epa;
     struct esPqElem *   elem;
 
-    elem = esPqGetHighest(&GlobalEpaKernel.sched.ready);
+    elem = esPqGetHighest(&GlobalEdsKernel.sched.ready);
     prio = esPqGetPriority_(elem);
-    (void)esPqRotate(&GlobalEpaKernel.sched.ready, prio);
+    (void)esPqRotate(&GlobalEdsKernel.sched.ready, prio);
     epa  = (struct esEpa *)((uint8_t *)elem - offsetof(struct esEpa, schedElem));
 
     return (epa);
@@ -323,13 +331,19 @@ static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
 static PORT_C_INLINE bool schedIsEmptyI(
     void) {
 
-    return (esSlsIsEmpty(&GlobalEpaKernel.sched.regSentinel));
+    return (esSlsIsEmpty(&GlobalEdsKernel.sched.regSentinel));
 }
 
 static PORT_C_INLINE void schedSetCurrentI(
     struct esEpa *      epa) {
 
-    GlobalEpaKernel.sched.epa = epa;
+    GlobalEdsKernel.sched.epa = epa;
+}
+
+static PORT_C_INLINE struct esEpa * schedGetCurrentI(
+    void) {
+
+    return (GlobalEdsKernel.sched.epa);
 }
 
 static PORT_C_INLINE struct esEpa * schedGetHead(
@@ -340,7 +354,7 @@ static PORT_C_INLINE struct esEpa * schedGetHead(
     epa = ES_SLS_NODE_ENTRY(
         struct esEpa,
         schedElem.regNode,
-        GlobalEpaKernel.sched.regSentinel.next);
+        GlobalEdsKernel.sched.regSentinel.next);
 
     return (epa);
 }
@@ -423,18 +437,18 @@ static void kernelIdle(
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esEpaKernelInit(
+esError esEdsInit(
     void) {
-    
+
     esModuleVTimerInit();
     schedInit();
-    GlobalEpaKernel.idle  = kernelIdle;
-    GlobalEpaKernel.state = KERNEL_STOPPED;
+    GlobalEdsKernel.idle  = kernelIdle;
+    GlobalEdsKernel.state = KERNEL_STOPPED;
 
     return (ES_ERROR_NONE);
 }
 
-esError esEpaKernelTerm(
+esError esEdsTerm(
     void) {
 
     esError             error;
@@ -452,15 +466,15 @@ esError esEpaKernelTerm(
     return (ES_ERROR_NONE);
 }
 
-esError esEpaKernelStart(
+esError esEdsStart(
     void) {
 
     esIntrCtx           intrCtx;
 
-    GlobalEpaKernel.state = KERNEL_STARTED;
+    GlobalEdsKernel.state = KERNEL_STARTED;
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
 
-    while (GlobalEpaKernel.state == KERNEL_STARTED) {
+    while (GlobalEdsKernel.state == KERNEL_STARTED) {
 
         while (schedReadyIsEmptyI() == false) {
             struct esEpa *   epa;
@@ -481,7 +495,7 @@ esError esEpaKernelStart(
         }
         schedSetCurrentI(NULL);
         ES_CRITICAL_LOCK_EXIT(intrCtx);
-        GlobalEpaKernel.idle();
+        GlobalEdsKernel.idle();
         ES_CRITICAL_LOCK_ENTER(&intrCtx);
     }
     ES_CRITICAL_LOCK_EXIT(intrCtx);
@@ -489,43 +503,72 @@ esError esEpaKernelStart(
     return (ES_ERROR_NONE);
 }
 
-esError esEpaKernelStop(
+esError esEdsStop(
     void) {
 
-    GlobalEpaKernel.state = KERNEL_STOPPED;
+    GlobalEdsKernel.state = KERNEL_STOPPED;
 
     return (ES_ERROR_NONE);
 }
 
-esError esEpaKernelSetIdle(
+void esEdsSetIdle(
     void (* idle)(void)) {
 
     if (idle == NULL) {
         idle = kernelIdle;
     }
-    GlobalEpaKernel.idle = idle;
-
-    return (ES_ERROR_NONE);
+    GlobalEdsKernel.idle = idle;
 }
 
-esError esEpaKernelGetIdle(
+void esEdsGetIdle(
     void (** idle)(void)) {
 
     ES_REQUIRE(ES_API_POINTER, idle != NULL);
 
-    if (GlobalEpaKernel.idle == kernelIdle) {
+    if (GlobalEdsKernel.idle == kernelIdle) {
         *idle = NULL;
     } else {
-        *idle = GlobalEpaKernel.idle;
+        *idle = GlobalEdsKernel.idle;
     }
-
-    return (ES_ERROR_NONE);
 }
 
-esError esEpaKernelGetCurrent(
+void esEdsGetCurrent(
     struct esEpa **     epa) {
 
-    *epa = GlobalEpaKernel.sched.epa;
+    /* NOTE: Since pointer loading is atomic operation there is no need to lock
+     *       interrupts here.
+     */
+    *epa = schedGetCurrentI();
+}
+
+esError esEpaResourceAdd(
+    size_t              size,
+    void **             resource) {
+
+    esError             error;
+    struct epaResource * ret;
+    struct esEpa *      epa;
+
+    epa   = schedGetCurrentI();
+    error = esMemAlloc(epa->mem, size + sizeof(struct epaResource), (void **)&ret);
+
+    if (error != ES_ERROR_NONE) {
+        goto ERROR_ALLOC_RESOURCE;
+    }
+    esSlsNodeInit(&ret->list);
+    esSlsNodeAddHead(&epa->resources, &ret->list);
+    *resource = (void **)(&ret[1]);
+
+    return (ES_ERROR_NONE);
+ERROR_ALLOC_RESOURCE:
+
+    return (ES_ERROR_NO_MEMORY);
+}
+
+esError esEpaResourceRemove(
+    void *              resource) {
+
+    (void)resource;
 
     return (ES_ERROR_NONE);
 }
@@ -558,22 +601,23 @@ esError esEpaCreate(
     error = esSmCreate(smDefine, mem, &sm);
 
     if (error != ES_ERROR_NONE) {
-        goto ERROR_ALLOC_SM;
+        goto ERROR_CREATE_SM;
     }
     (*epa)->mem  = mem;
     (*epa)->sm   = sm;
     (*epa)->name = epaDefine->name;
     schedElementInit(&(*epa)->schedElem, epaDefine->priority);
     eventQInit(&(*epa)->eventQ, qBuff, epaDefine->queueSize);
+    esSlsSentinelInit(&(*epa)->resources);
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
     schedReadyAddI(&(*epa)->schedElem);
-    eventQPutItemI(&(*epa)->eventQ, ES_SMP_EVENT(ES_INIT));
+    eventQPutItemI(&(*epa)->eventQ, CONST_CAST(struct esEvent *, ES_SMP_EVENT(ES_INIT)));
     ES_CRITICAL_LOCK_EXIT(intrCtx);
 
     ES_OBLIGATION((*epa)->signature = EPA_SIGNATURE);
 
     return (ES_ERROR_NONE);
-ERROR_ALLOC_SM:
+ERROR_CREATE_SM:
     ES_ENSURE_INTERNAL(esSmDestroy(sm));
 ERROR_ALLOC_QBUFF:
     ES_ENSURE_INTERNAL(esMemFree(mem, epa));

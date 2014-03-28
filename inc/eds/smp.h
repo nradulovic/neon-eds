@@ -75,9 +75,10 @@
 
 #define ES_STATE_IGNORED()                                                      \
     (ES_ACTION_IGNORED)
-
+#define CONST_CAST(typename,value) \
+(((union { const typename cv; typename v; }*)&(*value))->v)
 #define ES_SMP_EVENT(event)                                                     \
-    (struct esEvent *)&esGlobalSmEvents[(event) - CONFIG_SMP_EVENT_ID_BASE]
+    &esGlobalSmEvents[(event) - CONFIG_SMP_EVENT_ID_BASE]
 
 #define ES_SMP_DEFINE_INIT(table, workspace, initState)                         \
     {table, workspace, ES_STATE_ID(initState)}
@@ -109,7 +110,7 @@ enum esAction {
 
 typedef int_fast16_t esAction;
 
-typedef esAction (* esState) (void *, struct esEvent *);
+typedef esAction (* esState) (void *, const struct esEvent *);
 
 struct esSm;
 

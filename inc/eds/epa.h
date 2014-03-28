@@ -42,6 +42,24 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/*------------------------------------------------------------------------*//**
+ * @name        Kernel version
+ * @{ *//*--------------------------------------------------------------------*/
+
+/**@brief       Kernel version major number
+ */
+#define ES_EPA_KERNEL_MAJOR             1
+
+/**@brief       Kernel version minor number
+ */
+#define ES_EPA_KERNEL_MINOT             0
+
+/**@brief       Kernel version patch number
+ */
+#define ES_EPA_KERNEL_PATCH             0
+
+/**@} *//*--------------------------------------------------------------------*/
+
 #define ES_EPA_DEFINE(name, priority, queueSize)                                \
     {                                                                           \
         name,                                                                   \
@@ -71,26 +89,58 @@ typedef struct esEpa esEpa;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-esError esEpaKernelInit(
+/*------------------------------------------------------------------------*//**
+ * @name        EPA Kernel functions
+ * @{ *//*--------------------------------------------------------------------*/
+
+esError esEdsInit(
     void);
 
-esError esEpaKernelTerm(
+esError esEdsTerm(
     void);
 
-esError esEpaKernelStart(
+esError esEdsStart(
     void);
 
-esError esEpaKernelStop(
+esError esEdsStop(
     void);
 
-esError esEpaKernelSetIdle(
-    void (* idle)(void));
+/**@brief       Set idle routine function
+ * @param       idle
+ *              Pointer to idle function routine
+ * @return      eSolid error:
+ *              - @ref ES_ERROR_NONE - call was successful
+ * @details     The idle function puts the processor in the lowest power mode
+ *              capable to serve interrupts. This function is executed only if
+ *              there are no other ready EPAs in the system.
+ * @note        Idle function must return. If it is implemented as a loop EPAs
+ *              execution will stall.
+ */
+void esEdsSetIdle(
+    void             (* idle)(void));
 
-esError esEpaKernelGetIdle(
-    void (** idle)(void));
+void esEdsGetIdle(
+    void            (** idle)(void));
 
-esError esEpaKernelGetCurrent(
+void esEdsGetCurrent(
     struct esEpa **     epa);
+
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        EPA Resource management
+ * @{ *//*--------------------------------------------------------------------*/
+
+esError esEpaResourceAdd(
+    size_t              size,
+    void **             resource);
+
+esError esEpaResourceRemove(
+    void *              resource);
+
+void esEpaGetMem(esMem ** mem);
+
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        EPA management
+ * @{ *//*--------------------------------------------------------------------*/
 
 esError esEpaCreate(
     const struct esEpaDefine * epaDefine,
@@ -100,6 +150,10 @@ esError esEpaCreate(
 
 esError esEpaDestroy(
     struct esEpa *      epa);
+
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        EPA Event transport
+ * @{ *//*--------------------------------------------------------------------*/
 
 esError esEpaSendEventI(
     struct esEpa *      epa,
@@ -117,7 +171,7 @@ esError esEpaSendAheadEvent(
     struct esEpa *      epa,
     struct esEvent *    event);
 
-/*--------------------------------------------------------  C++ extern end  --*/
+/**@} *//*------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
