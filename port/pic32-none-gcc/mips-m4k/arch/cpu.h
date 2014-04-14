@@ -67,13 +67,15 @@
  * @{ *//*--------------------------------------------------------------------*/
 
 
-#define ES_CPU_INIT_EARLY()             (void)0
+#define ES_MODULE_CPU_INIT()            portModuleCpuInit()
 
-#define ES_CPU_INIT()                   portModuleCpuInit()
+#define ES_MODULE_CPU_TERM()            portModuleCpuTerm()
+
+#define ES_CPU_INIT()                   (void)0
 
 #define ES_CPU_INIT_LATE()              (void)0
 
-#define ES_CPU_TERM()                   portModuleCpuTerm()
+#define ES_CPU_TERM()                   (void)0
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

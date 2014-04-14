@@ -79,13 +79,13 @@
  * @name        Generic port macros
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_INTR_INIT_EARLY()            (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_MODULE_INTR_INIT()           portModuleIntrInit()
 
-#define ES_INTR_INIT()                  portModuleIntrInit()
+#define ES_MODULE_INTR_TERM()           portModuleIntrTerm()
 
-#define ES_INTR_INIT_LATE()             (void)0                                 /**< @brief This port does not need this function call      */
+#define ES_INTR_INIT()                  (void)0
 
-#define ES_INTR_TERM()                  portModuleIntrTerm()
+#define ES_INTR_INIT_LATE()             (void)0 
 
 /**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
