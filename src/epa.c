@@ -611,7 +611,7 @@ esError esEpaCreate(
     esSlsSentinelInit(&(*epa)->resources);
     ES_CRITICAL_LOCK_ENTER(&intrCtx);
     schedReadyAddI(&(*epa)->schedElem);
-    eventQPutItemI(&(*epa)->eventQ, CONST_CAST(struct esEvent *, ES_SMP_EVENT(ES_INIT)));
+    eventQPutItemI(&(*epa)->eventQ, (struct esEvent *)ES_SMP_EVENT(ES_INIT));
     ES_CRITICAL_LOCK_EXIT(intrCtx);
 
     ES_OBLIGATION((*epa)->signature = EPA_SIGNATURE);
