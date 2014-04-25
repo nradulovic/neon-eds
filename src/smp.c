@@ -285,10 +285,10 @@ static PORT_C_INLINE void smPathEnter(
             ES_API_USAGE,
             (ret == ES_ACTION_IGNORED) ||
             (ret == ES_ACTION_HANDLED));
-        --entry;
 #else
         (void)sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
 #endif
+        --entry;
     }
 }
 
