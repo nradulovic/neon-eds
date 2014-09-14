@@ -1,8 +1,6 @@
 /*
  * This file is part of esolid-base
  *
- * Template version: 1.1.16 (24.12.2013)
- *
  * Copyright (C) 2011, 2012 - Nenad Radulovic
  *
  * esolid-base is free software; you can redistribute it and/or modify
@@ -29,42 +27,26 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "base/base.h"
-#include "arch/cpu.h"
-#include "arch/intr.h"
-#include "arch/systimer.h"
+#include "base/nport.h"
+#include "arch/ncore.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
-
-PORT_C_UNUSED const PORT_C_ROM struct esModuleInfo GlobalUnnamedModule = {
-    "Unnamed module",
-    "No description",
-    "Unknown author",
-    "Unknown file"
-};
-
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void esBaseInit(
-    void) {
-
-    ES_MODULE_CPU_INIT();
-    ES_MODULE_INTR_INIT();
-    ES_MODULE_SYSTIMER_INIT();
+void nport_init(void)
+{
+    ncore_init();
 }
 
-void esBaseTerm(
-    void) {
-
-    ES_MODULE_SYSTIMER_TERM();
-    ES_MODULE_INTR_TERM();
-    ES_MODULE_CPU_TERM();
+void nport_term(void)
+{
+    ncore_term();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

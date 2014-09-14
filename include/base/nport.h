@@ -20,38 +20,40 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author      Nenad Radulovic
- * @brief       Error handling implementation
- * @addtogroup  base_error
+ * @author  	Nenad Radulovic
+ * @brief       Base module header
+ * @defgroup    base Base
+ * @brief       Debugging support
  *********************************************************************//** @{ */
-/**@defgroup    base_error_impl Implementation
- * @brief       Error handling Implementation
+/**@defgroup    base_intf Interface
+ * @brief       Base API
  * @{ *//*--------------------------------------------------------------------*/
 
+#ifndef ES_BASE_H
+#define ES_BASE_H
+
 /*=========================================================  INCLUDE FILES  ==*/
+/*===============================================================  MACRO's  ==*/
+/*------------------------------------------------------  C++ extern begin  --*/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "base/error.h"
-
-/*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Expander for error text
- */
-#define ES_ERROR_TEXT_(a, b, c)                                                 \
-    c,
-
-/*======================================================  LOCAL DATA TYPES  ==*/
-/*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
-/*=======================================================  LOCAL VARIABLES  ==*/
+/*============================================================  DATA TYPES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
+/*===================================================  FUNCTION PROTOTYPES  ==*/
 
-const PORT_C_ROM char * const PORT_C_ROM_VAR esGlobalErrorText[] = {
-    ES_ERROR_TABLE_(ES_ERROR_TEXT_)
-};
+void nport_init(void);
 
-/*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+void nport_term(void);
+
+/*--------------------------------------------------------  C++ extern end  --*/
+#ifdef __cplusplus
+}
+#endif
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of error.c
+ * END of base.h
  ******************************************************************************/
+#endif /* ES_BASE_H */

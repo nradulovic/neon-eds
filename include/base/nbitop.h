@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon RT Kernel.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2014 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon RT Kernel is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon RT Kernel is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -22,17 +22,14 @@
  * @file
  * @author  	Nenad Radulovic
  * @brief       Common bit/logic operations
- * @defgroup    base_bit_intf Common bit/logic operations
+ * @defgroup    bitop_intf Common bit/logic operations
  * @brief       Common bit/logic operations
  *********************************************************************//** @{ */
 
-#ifndef ES_BITOP_H_
-#define ES_BITOP_H_
+#ifndef NBITOP_H_
+#define NBITOP_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "arch/cpu.h"
-
 /*===============================================================  MACRO's  ==*/
 
 /*------------------------------------------------------------------------*//**
@@ -44,8 +41,7 @@
  *              An array : type unspecified
  * @mseffect
  */
-#define ES_ARRAY_DIMENSION(array)                                               \
-    (sizeof(array) / sizeof(array[0]))
+#define NARRAY_DIMENSION(array)             (sizeof(array) / sizeof(array[0]))
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Integer division
@@ -75,7 +71,7 @@
  *              Float division  : 27 / 5 = 5.4
  *              Rounded division: 27 / 5 = 5
  */
-#define ES_DIVISION_ROUND(numerator, denominator)                               \
+#define NDIVISION_ROUND(numerator, denominator)                                 \
     (((numerator) + ((denominator) / 2u)) / (denominator))
 
 /**@brief       Round up a division
@@ -103,7 +99,7 @@
  *              Float division     : 27 / 5 = 5.4
  *              Rounded up division: 27 / 5 = 6
  */
-#define ES_DIVISION_ROUNDUP(numerator, denominator)                             \
+#define NDIVISION_ROUNDUP(numerator, denominator)                               \
     (((numerator) + (denominator) - 1u) / (denominator))
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -121,7 +117,7 @@
  *              align: 00000100 = 4
  *              Result is 148.
  */
-#define ES_ALIGN(num, align)                                                    \
+#define NALIGN(num, align)                                                      \
     ((num) & ~((align) - 1u))
 
 /**@brief       Vrsi poravnjanje @a num promenjive sa granicama specificarane
@@ -135,25 +131,17 @@
  *              align: 00000100 = 4
  *              Result is 152.
  */
-#define ES_ALIGN_UP(num, align)                                                 \
+#define NALIGN_UP(num, align)                                                   \
     (((num) + (align) - 1u) & ~((align) - 1u))
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        Log and power of 2 macros
+ * @name        Logarithm of base 2
  * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Da li je @c expr jednak nekom stepenu dvojke?
- * @details     Makro vraca TRUE kada je vrednost @c expr izraza jednaka nekom
- *              stepenu dvojke, inace, vraca FALSE.
- * @mseffect
- */
-#define ES_IS_PWR2(num)                                                   \
-    (!((num) & ((num) - 1)))
 
 /**@brief       Calculate log2 for value @c x during the compilation
  * @mseffect
  */
-#define ES_UINT8_LOG2(x)                                                        \
+#define NLOG2_8(x)                                                              \
     ((x) <   2u ? 0u :                                                          \
      ((x) <   4u ? 1u :                                                         \
       ((x) <   8u ? 2u :                                                        \
@@ -162,38 +150,7 @@
          ((x) <  64u ? 5u :                                                     \
           ((x) < 128u ? 6u : 7u)))))))
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Simple bit operations
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Kreira masku za MSB bit koji odgovara tipu @c type
- * @param       type                    Tip podataka za koji se trazi MSB.
- * @return      Odgovarajuca binarna maska za MSB.
- */
-#define ES_BIT_MASK_MSB(type)                                                   \
-    (1uL << ((sizeof(type) * 8u) - 1u))
-
-/**@brief       Postavlja MSB bit na jedan, "1".
- * @param       var                     Promenljiva kojoj se postavlja MSB bit
- *                                      na jedan.
- * @mseffect
- */
-#define ES_BIT_SET_MSB(var)                                                     \
-    do {                                                                        \
-        var |= ES_BIT_MASK_MSB(var);                                            \
-    } while (0)
-
-/**@brief       Postavlja MSB bit na nulu, "0".
- * @param       var                     Promenljiva kojoj se postavlja MSB bit
- *                                      na nulu.
- * @mseffect
- */
-#define ES_BIT_CLR_MSB(var)                                                     \
-    do {                                                                        \
-        var &= ~ES_BIT_MASK_MSB(var);                                           \
-    } while (0)
-
-/**@} *//*----------------------------------------------  C++ extern base  --*/
+/**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -201,13 +158,13 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-/**@} *//*------------------------------------------------  C++ extern end  --*/
+/*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of bitop.h
+ * END of nbitop.h
  ******************************************************************************/
-#endif /* ES_BITOP_H_ */
+#endif /* NBITOP_H_ */

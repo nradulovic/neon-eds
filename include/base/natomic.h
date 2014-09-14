@@ -18,64 +18,46 @@
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
- *//***************************************************************************************************************//**
+ *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
- * @brief   	Family profile for ST-Microelectronics STM32F10x
- * @addtogroup  arm-none-eabi-gcc
- * @brief       Family profile for ST-Microelectronics STM32F10x
+ * @author      Nenad Radulovic
+ * @brief       Atomic operations
+ * @defgroup    atomic_intf Atomic operations
+ * @brief       Atomic operations
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-stm32f10x ST-Microelectronics STM32F10x
- * @brief       ST-Microelectronics STM32F10x
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_PROFILE_H_
-#define ES_PROFILE_H_
+#ifndef NATOMIC_H
+#define NATOMIC_H
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/cortex_m3.h"
+#include "plat/compiler.h"
+#include "arch/ncore.h"
 
 /*===============================================================  MACRO's  ==*/
-
-/**@brief       Specifies maximum CPU clock speed in Hz.
- */
-#define NPROFILE_MAX_CPU_CLOCK          24000000ul
-
-/**@brief       System timer maximum value
- * @details     STM32F10x family has 24-bit wide system tick register
- */
-#define NPROFILE_MAX_SYSTIMER_VAL       0xfffffful
-
-/**@brief       Maximum RAM get_size for this family
- * @details     This define is used to choose optimal algorithm for this family
- *              of micro-controllers.
- */
-#define NPROFILE_RAM_SIZE               8192u
-
-/**@brief       Port constant: interrupt priority bits implemented in MCU
- * @note        It is also recommended to ensure that all priority bits are
- *              assigned as being preemption priority bits, and none as sub
- *              priority bits
- */
-#define PORT_ISR_PRIO_BITS              4u
-
-#define PORT_BIT_BAND                   1u
-
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
+
+struct natomic
+{
+    ncpu_reg                    counter;
+};
+
+typedef struct natomic natomic;
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
- * END of profile.h
+/** @endcond *//** @} *//******************************************************
+ * END of natomic.h
  ******************************************************************************/
-#endif /* ES_PROFILE_H_ */
+#endif /* NATOMIC_H */

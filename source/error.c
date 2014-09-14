@@ -21,68 +21,47 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Debug support Implementation
- * @addtogroup  base_dbg
+ * @brief       Error handling implementation
+ * @addtogroup  base_error
  *********************************************************************//** @{ */
-/**@defgroup    base_dbg_impl Implementation
- * @brief       Debug support Implementation
+/**@defgroup    base_error_impl Implementation
+ * @brief       Error handling Implementation
  * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stdbool.h>
-#include <stddef.h>
-
-#include "plat/compiler.h"
-#include "arch/cpu.h"
-#include "arch/intr.h"
-#include "base/debug.h"
+#include "base/nerror.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+/**@brief       Expander for error text
+ */
+#define ERROR_TEXT(a, b, c)                c,
+
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+const PORT_C_ROM char * const PORT_C_ROM_VAR g_error_text[] =
+{
+    NERROR_TABLE_(ERROR_TEXT)
+};
+
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-/* 1)       This function will disable all interrupts to prevent any new
- *          interrupts to execute which can trigger another assert causing a
- *          very confusing situation of why it failed.
- */
-PORT_C_NORETURN void debugAssert(
-    const PORT_C_ROM struct debugCobject_ * cObject,
-    const PORT_C_ROM char * expr,
-    const PORT_C_ROM char * msg) {
-
-    struct esDebugReport debugReport;
-
-    ES_INTR_DISABLE();
-
-    if (cObject->mod != NULL) {
-        debugReport.modName   = cObject->mod->name;
-        debugReport.modDesc   = cObject->mod->desc;
-        debugReport.modAuthor = cObject->mod->auth;
-        debugReport.modFile   = cObject->mod->file;
+const char * nerror_no_to_text(enum nerror error_no)
+{
+    if (error_no < NERROR_LAST_NUMBER) {
+        return (g_error_text[error_no]);
     } else {
-        debugReport.modName   = "Unnamed";
-        debugReport.modDesc   = "not specified";
-        debugReport.modAuthor = "not specified";
-        debugReport.modFile   = "not specified";
+        return ("unknown error");
     }
-    debugReport.fnName    = cObject->fn;
-    debugReport.expr      = expr;
-    debugReport.msg       = msg;
-    debugReport.line      = cObject->line;
-    userAssert(
-        &debugReport);
-    ES_CPU_TERM();
-
-    while (true);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of dbg.c
+ * END of error.c
  ******************************************************************************/

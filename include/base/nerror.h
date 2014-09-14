@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Error handling header
  * @defgroup    base_error Error handling
  * @brief       Error handling
@@ -29,8 +29,8 @@
  * @brief       Error handling API
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_ERROR_H_
-#define ES_ERROR_H_
+#ifndef NERROR_H
+#define NERROR_H
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -41,51 +41,53 @@
 /**@brief       Error table
  * @details     This table defines error enumerators, number and associated text
  */
-#define ES_ERROR_TABLE_(entry)                                                  \
-    entry(ES_ERROR_NONE,                0u,     "no error")                     \
-    entry(ES_ERROR_OBJECT_NFOUND,       100u,   "object not found")             \
-    entry(ES_ERROR_OBJECT_INVALID,      101u,   "object is invalid")            \
-    entry(ES_ERROR_DEVICE_FAIL,         201u,   "device failure")               \
-    entry(ES_ERROR_DEVICE_BUSY,         202u,   "device is busy")               \
-    entry(ES_ERROR_NO_DEVICE,           203u,   "no free device")               \
-    entry(ES_ERROR_NO_MEMORY,           300u,   "no free memory")               \
-    entry(ES_ERROR_NO_RESOURCE,         301u,   "no free resource")             \
-    entry(ES_ERROR_NO_REFERENCE,        302u,   "no free reference slot")       \
-    entry(ES_ERROR_NOT_IMPLEMENTED,     1000u,  "operation not implemented")    \
-    entry(ES_ERROR_NOT_PERMITTED,       1001u,  "operation not permitted")      \
-    entry(ES_ERROR_NOT_ENABLED,         1002u,  "operation not enabled")        \
-    entry(ES_ERROR_NOT_FOUND,           1002u,  "item not found")               \
-    entry(ES_ERROR_ARG_INVALID,         2000u,  "argument is invalid")          \
-    entry(ES_ERROR_ARG_OUT_OF_RANGE,    2001u,  "argument is out of range")     \
-    entry(ES_ERROR_ARG_NULL,            2002u,  "argument is null")
+#define NERROR_TABLE_(entry)                                                    \
+    entry(NERROR_NONE,                  0u,     "no error")                     \
+    entry(NERROR_OBJECT_NFOUND,         100u,   "object not found")             \
+    entry(NERROR_OBJECT_INVALID,        101u,   "object is invalid")            \
+    entry(NERROR_DEVICE_FAIL,           201u,   "device failure")               \
+    entry(NERROR_DEVICE_BUSY,           202u,   "device is busy")               \
+    entry(NERROR_NO_DEVICE,             203u,   "no free device")               \
+    entry(NERROR_NO_MEMORY,             300u,   "no free memory")               \
+    entry(NERROR_NO_RESOURCE,           301u,   "no free resource")             \
+    entry(NERROR_NO_REFERENCE,          302u,   "no free reference slot")       \
+    entry(NERROR_NOT_IMPLEMENTED,       1000u,  "operation not implemented")    \
+    entry(NERROR_NOT_PERMITTED,         1001u,  "operation not permitted")      \
+    entry(NERROR_NOT_ENABLED,           1002u,  "operation not enabled")        \
+    entry(NERROR_NOT_FOUND,             1002u,  "item not found")               \
+    entry(NERROR_ARG_INVALID,           2000u,  "argument is invalid")          \
+    entry(NERROR_ARG_OUT_OF_RANGE,      2001u,  "argument is out of range")     \
+    entry(NERROR_ARG_NULL,              2002u,  "argument is null")
 
 /**@brief       Expander for error enum
  */
-#define ES_ERROR_ENUM_(a, b, c)                                                 \
-    a = b,
+#define NERROR_ENUM_(a, b, c)               a = b,
 
 /*============================================================  DATA TYPES  ==*/
 
 /**@brief       Error enumeration, see the error table
  */
-enum esError {
-    ES_ERROR_TABLE_(ES_ERROR_ENUM_)
-    ES_LAST_ERROR_NUMBER                                                        /**< @brief This enum member is not used for indication     */
+enum nerror {
+    NERROR_TABLE_(NERROR_ENUM_)
+    NERROR_LAST_NUMBER                                                          /**< @brief This enum member is not used for indication     */
 };
 
 /**@brief       Error type
  */
-typedef enum esError esError;
+typedef enum nerror nerror;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 /**@brief       Error text which is associated with error number
  */
-extern const PORT_C_ROM char * const PORT_C_ROM_VAR esGlobalErrorText[];
+extern const PORT_C_ROM char * const PORT_C_ROM_VAR g_error_text[];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
+
+const char * nerror_no_to_text(enum nerror error_no);
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of error.h
+ * END of nerror.h
  ******************************************************************************/
-#endif /* ES_ERROR_H_ */
+#endif /* NERROR_H */
