@@ -33,14 +33,11 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  DEFINES  ==*/
-/** @cond */
-
-/** @endcond */
 /*==============================================================  SETTINGS  ==*/
 
-/**@brief       Enable/disable Debug module
+/**@brief       Enable/disable debugging facility
  * @details     Possible values:
- *              - 0 - All debug options are disabled
+ *              - 0 - Force all debug options to disabled state
  *              - 1 - Debug options can be enabled individually
  */
 #if !defined(CONFIG_DEBUG)
