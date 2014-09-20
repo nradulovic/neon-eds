@@ -1,29 +1,20 @@
 # Quick-start guide
 
-eSolid - Base system is a library for embedded devices.  
-
-eSolid is a collection of resources for embedded system design and this
-Base system is only a piece of that collection.
+Neon Base is a collection of low-level libraries for Neon Real-Time Framework.  
 
 
 ## TODO list
 
-- Integrate a profiling system (memory usage, fragmentation...)
 - test, test, test...
 
 
-# Using eSolid - Base system
+# Using Base system
 
 ## Configuration and ports
 
-Configuration is done in two group of files: the ones located under /inc/base
-directory (like `dbg_cfg.h`...), which are port independent settings, and in 
-port directory (like `intr_cfg.h`, `sysctrl_cfg`), which are port depended 
-settings.
-Currently, eSolid is ported only to ARMv7-M architecture range of 
-microcontrollers. It was tested on STM32F100 series of microcontrollers, but it
-should work, with minimal modifications, on any ARMv7-M CPU. Some other ports 
-like AVR-GCC are planned, too.
+Configuration is done in two group of files: 
+- the port independent settings are located in 'include/nbase_config.h'
+- the port dependent settings are located in the port directory
 
 
 ## Building
@@ -47,8 +38,6 @@ The following include paths are needed:
 
 ## Documentation
 
-Some documentation is available under Wiki 
-https://github.com/nradulovic/esolid-base/wiki. 
 Doxygen configuration and full documentation source files are available in `/doc` 
 directory. Go to the directory `doc` create a directory named `kernel` and than 
 run doxygen:
@@ -59,6 +48,7 @@ This will generate HTML, LaTex and man documentation in `./doc/base` directory.
 
 
 ## Running
+
 To successfully use and run kernel you will need to study the documentation. The 
 documentation is still being written and some examples will be added later.
 
