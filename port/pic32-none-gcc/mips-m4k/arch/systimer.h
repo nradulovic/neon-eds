@@ -1,109 +1,87 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon RT Kernel.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2014 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon RT Kernel is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon RT Kernel is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of System timer module port.
- * @addtogroup  pic32-none-gcc
+ * @brief       Port core module header
+ * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
-/**@defgroup    pic32-none-gcc-systmr System timer module
- * @brief       System timer module
+/**@defgroup    arm-none-eabi-gcc-v7-m-core ARM Cortex M3/M4 Core module
+ * @brief       Port core module
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_SYSTIMER_H_
-#define ES_SYSTIMER_H_
+#ifndef ARCH_SYSTIMER_H
+#define ARCH_SYSTIMER_H
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stdint.h>
+#include <xc.h>
 
 #include "plat/compiler.h"
-#include "arch/systimer_config.h"
-#include "family/profile.h"
-#include "cpu.h"
+#include "arch/port_config.h"
+#include "arch/cpu.h"
 
 /*===============================================================  MACRO's  ==*/
 
 /*------------------------------------------------------------------------*//**
- * @name        Port constants
+ * @name        Core timer macros
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       System timer one tick value
+/**@brief       Core timer one tick value
  */
-#define ES_SYSTIMER_ONE_TICK                                                    \
+#define NSYSTIMER_ONE_TICK                                                    \
     (CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ)
 
-/**@brief       Maximum number of ticks without overflowing the system timer
+/**@brief       Maximum number of ticks without overflowing the core timer
  */
-#define ES_SYSTIMER_MAX_TICKS                                                   \
-    (ES_PROFILE_MAX_SYSTIMER_VAL / ES_SYSTIMER_ONE_TICK)
+#define NSYSTIMER_MAX_TICKS                                                   \
+    (NPROFILE_MAX_SYSTIMER_VAL / NSYSTIMER_ONE_TICK)
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        System timer management
- * @{ *//*--------------------------------------------------------------------*/
-
-#define ES_MODULE_SYSTIMER_INIT()       portModuleSysTimerInit()
-
-#define ES_MODULE_SYSTIMER_TERM()       portModuleSysTimerTerm()
-
-#define ES_SYSTIMER_INIT(val)           portSysTimerInit_(val)
-
-#define ES_SYSTIMER_TERM()              portSysTimerTerm_()
-
-#define ES_SYSTIMER_GET_RVAL()          portSysTimerGetRVal_()
-
-#define ES_SYSTIMER_GET_CVAL()          portSysTimerGetCVal_()
-
-#define ES_SYSTIMER_RELOAD(val)         portSysTimerReload_(val)
-
-#define ES_SYSTIMER_ENABLE()            portSysTimerEnable_()
-
-#define ES_SYSTIMER_DISABLE()           portSysTimerDisable_()
-
-#define ES_SYSTIMER_ISR_ENABLE()        portSysTimerIsrEnable_()
-
-#define ES_SYSTIMER_ISR_DISABLE()       portSysTimerIsrDisable_()
-
-#define ES_SYSTIMER_SET_HANDLER(handler, level)                                 \
-    portSysTimerSetHandler(handler, level)
-
-/**@} *//*-----------------------------------------------  C++ extern base  --*/
+/**@} *//*----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       System timer hardware register type.
+/**@brief       Core timer hardware register type.
  */
-typedef unsigned int esSysTimerTick;
+typedef unsigned int nsystimer_tick;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-static PORT_C_INLINE void portSysTimerInit_(
-    esSysTimerTick      tick) {
+/*------------------------------------------------------------------------*//**
+ * @name        Core timer management
+ * @{ *//*--------------------------------------------------------------------*/
 
-    esCpuReg            cause;
 
+/**@brief       Initialize and start the system timer
+ */
+PORT_C_INLINE
+void nsystimer_init(
+    nsystimer_tick              tick)
+{
+    ncpu_reg                    cause;
+    
     cause  = _CP0_GET_CAUSE();
     _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
     _CP0_SET_COUNT(0u);
@@ -111,31 +89,48 @@ static PORT_C_INLINE void portSysTimerInit_(
     _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
 }
 
-static PORT_C_INLINE void portSysTimerTerm_(
-    void) {
 
-    esCpuReg            cause;
 
+/**@brief       Stop and terminate the system timer
+ */
+PORT_C_INLINE
+void nsystimer_term(void)
+{
+    ncpu_reg                    cause;
+    
     cause  = _CP0_GET_CAUSE();
     _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
 }
 
-static PORT_C_INLINE esSysTimerTick portSysTimerGetRVal_(
-    void) {
 
-    return (_CP0_GET_COMPARE());
-}
 
-static PORT_C_INLINE esSysTimerTick portSysTimerGetCVal_(
-    void) {
-
+/**@brief       Get free counter value
+ */
+PORT_C_INLINE
+nsystimer_tick nsystimer_get_current(void)
+{
     return (_CP0_GET_COMPARE() - _CP0_GET_COUNT());
 }
 
-static PORT_C_INLINE void portSysTimerReload_(
-    esSysTimerTick      tick) {
 
-    esCpuReg            cause;
+
+/**@brief       Get reload counter value
+ */
+PORT_C_INLINE
+nsystimer_tick nsystimer_get_reload(void)
+{
+    return (_CP0_GET_COMPARE());
+}
+
+
+
+/**@brief       Load the system timer Reload value register
+ */
+PORT_C_INLINE
+void nsystimer_load(
+    nsystimer_tick              val)
+{
+    ncpu_reg                    cause;
 
     cause  = _CP0_GET_CAUSE();
     _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
@@ -144,10 +139,14 @@ static PORT_C_INLINE void portSysTimerReload_(
     _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
 }
 
-static PORT_C_INLINE void portSysTimerEnable_(
-    void) {
 
-    esCpuReg            cause;
+
+/**@brief       Enable the system timer
+ */
+PORT_C_INLINE
+void nsystimer_enable(void)
+{
+    ncpu_reg                    cause;
 
     cause  = _CP0_GET_CAUSE();
     cause &= ~_CP0_CAUSE_DC_MASK;
@@ -155,40 +154,65 @@ static PORT_C_INLINE void portSysTimerEnable_(
 }
 
 
-static PORT_C_INLINE void portSysTimerDisable_(
-    void) {
 
-    esCpuReg            cause;
+/**@brief       Disable the system timer
+ */
+PORT_C_INLINE
+void nsystimer_disable(void)
+{
+    ncpu_reg                    cause;
 
     cause  = _CP0_GET_CAUSE();
     cause |= _CP0_CAUSE_DC_MASK;
     _CP0_SET_CAUSE(cause);
 }
 
-static PORT_C_INLINE void portSysTimerIsrEnable_(
-    void) {
 
+
+/**@brief       Disable the system timer interrupt
+ */
+PORT_C_INLINE
+void nsystimer_isr_enable(void)
+{
     IFS0CLR = _IFS0_CTIF_MASK;
     IEC0SET = _IEC0_CTIE_MASK;
 }
 
-static PORT_C_INLINE void portSysTimerIsrDisable_(
-    void) {
 
+
+
+/**@brief       Enable the system timer interrupt
+ */
+PORT_C_INLINE
+void nsystimer_isr_disable(void)
+{
     IEC0CLR = _IEC0_CTIE_MASK;
 }
 
-void portModuleSysTimerInit(
-    void);
 
-void portModuleSysTimerTerm(
-    void);
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        Generic port functions
+ * @{ *//*--------------------------------------------------------------------*/
 
-void portSysTimerSetHandler(
-    void             (* handler)(void),
-    uint_fast8_t        level);
 
-/*--------------------------------------------------------  C++ extern end  --*/
+/**@brief       Initialize port
+ */
+void nsystimer_module_init(void);
+
+
+
+/**@brief       Terminate port
+ */
+void nsystimer_module_term(void);
+
+
+
+/**@brief       User System Timer ISR
+ */
+extern void nsystimer_isr(void);
+
+
+/** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
@@ -197,4 +221,4 @@ void portSysTimerSetHandler(
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of systimer.h
  ******************************************************************************/
-#endif /* ES_SYSTIMER_H_ */
+#endif /* ARCH_SYSTIMER_H */

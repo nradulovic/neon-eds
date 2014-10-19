@@ -27,10 +27,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <xc.h>
-
-#include "arch/intr.h"
-#include "arch/cpu.h"
+#include "arch/isr.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -41,13 +38,15 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portModuleIntrInit(
-    void) {
-    esCpuReg            cause;
-    esCpuReg            status;
 
-    ES_INTR_DISABLE();
-    /*--  Use vectored interrupt table  --------------------------------------*/
+
+void nisr_module_init(void) 
+{
+    ncpu_reg                    cause;
+    ncpu_reg                    status;
+
+    nisr_disable();
+    /* Use vectored interrupt table */
     cause   = _CP0_GET_CAUSE();
     cause  |= _CP0_CAUSE_IV_MASK;
     _CP0_SET_CAUSE(cause);
@@ -55,16 +54,17 @@ void portModuleIntrInit(
     status &= ~_CP0_STATUS_BEV_MASK;
     _CP0_SET_STATUS(status);
     INTCONSET = _INTCON_MVEC_MASK;
-    ES_INTR_ENABLE();
+    nisr_enable();
 }
 
-void portModuleIntrTerm(
-    void) {
 
-    ES_INTR_DISABLE();
+
+void nisr_module_term(void) 
+{
+    nisr_disable();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of intr.c
+ * END of isr.c
  ******************************************************************************/

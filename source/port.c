@@ -27,8 +27,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "base/nport.h"
-#include "arch/ncore.h"
+#include "nport.h"
+#include "ncpu.h"
+#include "nisr.h"
+#include "nsystimer.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -41,12 +43,16 @@
 
 void nport_init(void)
 {
-    ncore_init();
+    module_init_cpu();
+    module_init_isr();
+    module_init_core_timer();
 }
 
 void nport_term(void)
 {
-    ncore_term();
+    module_term_core_timer();
+    module_term_isr();
+    module_term_cpu();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

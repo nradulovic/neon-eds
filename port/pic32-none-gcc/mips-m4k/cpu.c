@@ -30,10 +30,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <peripheral/system.h>
-
 #include "arch/cpu.h"
-#include "family/profile.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -44,17 +41,15 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portModuleCpuInit(
-    void) {
-
+void ncpu_module_init(void) 
+{
     /*
      * TODO: Do CPU related initialization here
      */
 }
 
-void portModuleCpuTerm(
-    void) {
-
+void ncpu_module_term(void) 
+{
     /*
      * TODO: Put the CPU to sleep
      */

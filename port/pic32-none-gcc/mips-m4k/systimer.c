@@ -33,68 +33,47 @@
 #include <xc.h>
 
 #include "arch/systimer.h"
-#include "arch/intr.h"
-#include "base/bitop.h"
-#include "base/debug.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const ES_MODULE_INFO_CREATE("systimer", "System Timer (port)", "Nenad Radulovic");
-
-static void (* GlobalSysTimerHandler[4])(void);
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void portModuleSysTimerInit(
-    void) {
 
-    ES_SYSTIMER_DISABLE();
-    IFS0CLR = IFS0_CT_BIT;
-    IEC0CLR = IEC0_CT_BIT;
+void nsystimer_module_init(void) 
+{
+    nsystimer_disable();
+    nsystimer_isr_disable();
     IPC0CLR = 0x7u << IPC0_CTIP_SHIFT;
-    IPC0SET = (ES_INTR_DEFAULT_ISR_PRIO << IPC0_CTIP_SHIFT) & IPC0_MASK;
+    IPC0SET = (CONFIG_ISR_MAX_PRIO << IPC0_CTIP_SHIFT) & IPC0_MASK;
 }
 
-void portModuleSysTimerTerm(
-    void) {
 
-    ES_SYSTIMER_DISABLE();
-    IFS0CLR = IFS0_CT_BIT;
-    IEC0CLR = IEC0_CT_BIT;
+
+void nsystimer_module_term(void) 
+{
+    nsystimer_disable();
+    nsystimer_isr_disable();
 }
 
-void portSysTimerSetHandler(
-    void             (* handler)(void),
-    uint_fast8_t        level) {
 
-    ES_REQUIRE(ES_API_RANGE, level < ES_ARRAY_DIMENSION(GlobalSysTimerHandler));
 
-    GlobalSysTimerHandler[level] = handler;
-}
+void __ISR(_CORE_TIMER_VECTOR) systimer_handler(void) 
+{
+    ncpu_reg                    compare;
 
-void __ISR(_CORE_TIMER_VECTOR) sysTimerHandler(
-    void) {
-
-    uint_fast8_t        count;
-    esCpuReg            compare;
-
-    ES_SYSTIMER_DISABLE();
+    nsystimer_disable();                                     /* Restart timer */
     compare = _CP0_GET_COMPARE();
     _CP0_SET_COUNT(0u);
     _CP0_SET_COMPARE(compare);
-    ES_SYSTIMER_ENABLE();
+    nsystimer_enable();
+    
+    nsystimer_isr();                                 /* Call the user handler */
 
-    for (count = 0; count < ES_ARRAY_DIMENSION(GlobalSysTimerHandler); count++) {
-        if (GlobalSysTimerHandler[count] != NULL) {
-            GlobalSysTimerHandler[count]();
-        }
-    }
     IFS0CLR = IFS0_CT_BIT;
 }
 
