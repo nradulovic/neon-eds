@@ -33,9 +33,6 @@
 #define ES_PROFILE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "arch/cortex_m3.h"
-
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Specifies maximum CPU clock speed in Hz.
@@ -52,6 +49,10 @@
  *              of micro-controllers.
  */
 #define NPROFILE_RAM_SIZE               8192u
+
+#define PORT_SYSTIMER_HANDLER       	SysTick_Handler
+
+#define PORT_KERNEL_HANDLER         	PendSV_Handler
 
 /**@brief       Port constant: interrupt priority bits implemented in MCU
  * @note        It is also recommended to ensure that all priority bits are

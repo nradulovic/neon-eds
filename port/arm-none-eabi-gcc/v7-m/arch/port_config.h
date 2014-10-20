@@ -75,19 +75,6 @@
 # define CONFIG_SYSTIMER_EVENT_FREQ         100ul
 #endif
 
-#if !defined(CONFIG_CORE_TIMER_HANDLERS)
-# define CONFIG_CORE_TIMER_HANDLERS         4
-#endif
-
-
-#if !defined(ncore_timer_isr)
-# define ncore_timer_isr                    SysTick_Handler
-#endif
-
-#if !defined(ncore_kernel_isr)
-# define ncore_kernel_isr                   PendSV_Handler
-#endif
-
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of intr_config.h

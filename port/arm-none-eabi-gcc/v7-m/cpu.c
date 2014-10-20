@@ -1,36 +1,36 @@
 /*
- * This file is part of esolid-base
+ * This file is part of Neon RT Kernel.
  *
- * Copyright (C) 2011, 2012 - Nenad Radulovic
+ * Copyright (C) 2010 - 2014 Nenad Radulovic
  *
- * esolid-base is free software; you can redistribute it and/or modify
+ * Neon RT Kernel is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * esolid-base is distributed in the hope that it will be useful,
+ * Neon RT Kernel is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
  *
- * web site:    http://blueskynet.dyndns-server.com
- * e-mail  :    blueskyniss@gmail.com
+ * web site:    http://github.com/nradulovic
+ * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author      nenad
- * @brief       Short desciption of file
- * @addtogroup  module_impl
+ * @author      Nenad Radulovic
+ * @brief       Implementation of ARM Cortex-M3 interrupt port.
+ * @addtogroup  arm-none-eabi-gcc-v7-m_impl
  *********************************************************************//** @{ */
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "nport.h"
-#include "ncpu.h"
-#include "nisr.h"
-#include "nsystimer.h"
+#include "family/profile.h"
+#include "arch/port_config.h"
+#include "arch/cpu.h"
+#include "arch/isr.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -41,21 +41,31 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void nport_init(void)
+
+void ncpu_module_init(void)
 {
-    ncpu_module_init();
-    nisr_module_init();
-    nsystimer_module_init();
+	__asm__ __volatile__(
+		"@  ncpu_init                                       \n"
+		"   clrex                                           \n");
+											  /* Clear the exclusive monitor. */
+	nisr_set_priority(PENDSV_IRQN, NISR_PRIO_TO_CODE(CONFIG_ISR_MAX_PRIO));
 }
 
-void nport_term(void)
+
+
+void ncpu_module_term(void)
 {
-    nsystimer_module_term();
-    nisr_module_term();
-    ncpu_module_term();
+    ncpu_stop();
+}
+
+
+
+void PORT_KERNEL_HANDLER(void)
+{
+    nkernel_isr();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of base.c
+ * END of cpu.c
  ******************************************************************************/
