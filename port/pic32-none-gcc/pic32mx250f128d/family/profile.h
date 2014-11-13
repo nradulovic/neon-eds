@@ -26,42 +26,29 @@
  * @brief       Profile for Microchip PIC32MX250F128
  *********************************************************************//** @{ */
 /**@defgroup    pic32-none-gcc-pic32mx250f128 Microchip PIC32MX250F128
- * @brief       Profile for Microchip PIC32MX150F128
+ * @brief       Profile for Microchip PIC32MX250F128
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_PROFILE_H_
-#define ES_PROFILE_H_
+#ifndef NPROFILE_H_
+#define NPROFILE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "p32xxxx.h"
-
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Specifies maximum CPU clock speed in Hz.
  */
-#define ES_PROFILE_MAX_CPU_CLOCK        50000000ul
+#define NPROFILE_MAX_CPU_CLOCK          50000000ul
 
 /**@brief       System timer maximum value
- * @details     PIC32 family has 32-bit wide system tick register
+ * @details     STM32F10x family has 24-bit wide system tick register
  */
-#define ES_PROFILE_MAX_SYSTIMER_VAL     0xfffffffful
+#define NPROFILE_MAX_SYSTIMER_VAL       0xfffffffful
 
-/**@brief       Maximum RAM size for this family
+/**@brief       Maximum RAM get_size for this family
  * @details     This define is used to choose optimal algorithm for this family
  *              of micro-controllers.
  */
-#define ES_PROFILE_MAX_RAM_SIZE         32768u
-
-#if !defined(ES_OPTIMIZE_FOR_SPEED)
-#define ES_RAM_SIZE_MAX                 65535
-#define ES_RAM_SSIZE_MAX                32767
-#define ES_RAM_SSIZE_MIN                -32768
-#else
-#define ES_RAM_SIZE_MAX                 4294967295ul
-#define ES_RAM_SSIZE_MAX                2147483647l
-#define ES_RAM_SSIZE_MIN                -2147483648l
-#endif /* !ES_OPTIMIZE_FOR_SPEED */
+#define NPROFILE_RAM_SIZE               32768u
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -69,20 +56,6 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-#if !defined(ES_OPTIMIZE_FOR_SPEED)
-/**@brief       Unsigned RAM memory size type
- */
-typedef unsigned short int esRamSize;
-
-/**@brief       Signed RAM memory size type
- */
-typedef signed   short int esRamSSize;
-#else
-typedef unsigned int       esRamSize;
-typedef signed   int       esRamSSize;
-#endif /* !ES_OPTIMIZE_FOR_SPEED */
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/
@@ -93,4 +66,4 @@ typedef signed   int       esRamSSize;
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of profile.h
  ******************************************************************************/
-#endif /* ES_PROFILE_H_ */
+#endif /* NPROFILE_H_ */

@@ -33,8 +33,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "plat/compiler.h"
 

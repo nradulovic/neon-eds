@@ -73,9 +73,25 @@ void i2c_bus_restart(
 void i2c_bus_stop(
     struct i2c_bus *            bus);
 
-void i2c_slave_open(struct i2c_slave * slave, const struct i2c_slave_config * config, struct i2c_bus * bus, uint8_t id);
-void i2c_slave_close(struct i2c_slave * slave);
-bool i2c_slave_read(struct i2c_slave * slave, uint8_t address, void * data, size_t size);
-bool i2c_slave_write(struct i2c_slave * slave, uint8_t address, const void * data, size_t size);
+void i2c_slave_open(
+    struct i2c_slave *          slave,
+    const struct i2c_slave_config * config,
+    struct i2c_bus *            bus,
+    uint8_t                     id);
+
+void i2c_slave_close(
+    struct i2c_slave *          slave);
+    
+bool i2c_slave_read(
+    struct i2c_slave *          slave,
+    uint8_t                     address,
+    void *                      data,
+    size_t                      size);
+
+bool i2c_slave_write(
+    struct i2c_slave *          slave,
+    uint8_t                     address,
+    const void *                data,
+    size_t                      size);
 
 #endif /* NI2C_H_ */

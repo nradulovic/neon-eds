@@ -40,10 +40,6 @@
 
 /*===============================================================  MACRO's  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        CPU management macros
- * @{ *//*--------------------------------------------------------------------*/
-
 /**@brief       Specifies bit-width of general purpose registers
  */
 #define NCPU_DATA_WIDTH                     32u
@@ -58,7 +54,7 @@
 
 #define NCPU_SSIZE_MAX                      INT32_MAX
 
-/**@} *//*----------------------------------------------  C++ extern base  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -75,10 +71,6 @@ typedef signed   int ncpu_ssize;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        CPU arithmetic/logic operations
- * @{ *//*--------------------------------------------------------------------*/
 
 
 /**@brief       Stop the further CPU execution
@@ -97,7 +89,7 @@ void ncpu_stop(void)
 
 /**@brief       Computes integer logarithm base 2
  */
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 uint_fast8_t ncpu_log2(
     ncpu_reg                    value)
 {
@@ -141,11 +133,6 @@ void ncpu_sat_decrement(
     }
 }
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Generic port functions
- * @{ *//*--------------------------------------------------------------------*/
-
-
 /**@brief       Initialize port
  */
 void ncpu_module_init(void);
@@ -157,7 +144,10 @@ void ncpu_module_init(void);
 void ncpu_module_term(void);
 
 
-/** @} *//*-----------------------------------------------  C++ extern end  --*/
+
+extern void nkernel_isr(void);
+
+/*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif

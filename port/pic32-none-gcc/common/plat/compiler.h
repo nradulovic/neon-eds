@@ -34,45 +34,45 @@
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
 
-/**@brief       C extension - make a function inline
- */
-#define PORT_C_INLINE                   __inline__
 
-/**@brief       C extension - make a function inline - always
+/**@brief       Try to force a function always to be inlined.
+ *              Since there is no default language construct to ensure this,
+ *              this will always only be an approximation depending on
+ *              the compiler.
  */
-#define PORT_C_INLINE_ALWAYS            __inline__ __attribute__((__always_inline__))
+#define PORT_C_INLINE                       static __inline__
+
+/**@brief       Same as @ref PORT_C_INLINE but has greater power over compiler
+ */
+#define PORT_C_INLINE_ALWAYS                static __inline__ __attribute__((__always_inline__))
 
 /**@brief       Omit function prologue/epilogue sequences
  */
-#define PORT_C_NAKED                    __attribute__((naked))
+#define PORT_C_NAKED                        __attribute__((naked))
+
+#define PORT_C_UNUSED                       __attribute__((unused))
 
 /**@brief       Provides function name for assert macros
  */
-#if (__STDC_VERSION__ >= 199901L) || defined(__DOXYGEN__)
-# define PORT_C_FUNC                    __func__
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || defined(__DOXYGEN__)
+# define PORT_C_FUNC                        __func__
 #elif (__GNUC__ >= 2)
-# define PORT_C_FUNC                    __FUNCTION__
+# define PORT_C_FUNC                        __FUNCTION__
 #else
-# define PORT_C_FUNC                    "unknown"
+# define PORT_C_FUNC                        "unknown"
 #endif
 
 /**@brief       Provides the free file's name which is being compiled
  */
-#define PORT_C_FILE                     __FILE__
+#define PORT_C_FILE                         __FILE__
 
 /**@brief       Provides the free source line
  */
-#define PORT_C_LINE                     __LINE__
-
-/**@brief       Declare a weak function
- */
-#define PORT_C_WEAK                     __attribute__((weak))
+#define PORT_C_LINE                         __LINE__
 
 /**@brief       Declare a function that will never return
  */
-#define PORT_C_NORETURN                 __attribute__((noreturn))
-
-#define PORT_C_UNUSED                   __attribute__((unused))
+#define PORT_C_NORETURN                     __attribute__((noreturn))
 
 /**@brief       Declare a variable that will be stored in ROM address space
  */
@@ -85,25 +85,18 @@
 /**@brief       This attribute specifies a minimum alignment (in bytes) for
  *              variables of the specified type.
  */
-#define PORT_C_ALIGN(align)             __attribute__((aligned (align)))
+#define PORT_C_ALIGN(align)                 __attribute__((aligned (align)))
 
-/**@brief       A standardized way of properly setting the value of HW register
- * @param       reg
- *              Register which will be written to
- * @param       mask
- *              The bit mask which will be applied to register and @c val
- *              argument
- * @param       val
- *              Value to be written into the register
+/**@brief       Cast a member of a structure out to the containing structure
+ * @param       ptr
+ *              the pointer to the member.
+ * @param       type
+ *              the type of the container struct this is embedded in.
+ * @param       member
+ *              the name of the member within the struct.
  */
-#define PORT_HWREG_SET(reg, mask, val)                                          \
-    do {                                                                        \
-        esAtomic tmp;                                                           \
-        tmp = (reg);                                                            \
-        tmp &= ~(mask);                                                         \
-        tmp |= ((mask) & (val));                                                \
-        (reg) = tmp;                                                            \
-    } while (0u)
+#define CONTAINER_OF(ptr, type, member)                                         \
+    ((type *)((char *)(ptr) - offsetof(type, member)))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -111,11 +104,6 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       General purpose registers are 32bit wide.
- */
-typedef unsigned int esAtomic;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/

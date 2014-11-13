@@ -37,7 +37,7 @@
 
 /**@brief       Specifies maximum CPU clock speed in Hz.
  */
-#define NPROFILE_MAX_CPU_CLOCK          50000000ul
+#define NPROFILE_MAX_CPU_CLOCK          80000000ul
 
 /**@brief       System timer maximum value
  * @details     STM32F10x family has 24-bit wide system tick register
@@ -48,7 +48,7 @@
  * @details     This define is used to choose optimal algorithm for this family
  *              of micro-controllers.
  */
-#define NPROFILE_RAM_SIZE               32768u
+#define NPROFILE_RAM_SIZE               65536u
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -66,4 +66,4 @@ extern "C" {
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of profile.h
  ******************************************************************************/
-#endif /* NPROFILE_H_ */
+#endif /* ES_PROFILE_H_ */

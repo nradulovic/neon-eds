@@ -32,7 +32,7 @@
 #define NCORE_TIMER_MAX_TICKS                                                   \
     (NPROFILE_MAX_SYSTIMER_VAL / NCORE_TIMER_ONE_TICK)
 
-/**@} *//*----------------------------------------------  C++ extern base  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif

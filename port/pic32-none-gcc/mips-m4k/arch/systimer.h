@@ -38,24 +38,21 @@
 #include "plat/compiler.h"
 #include "arch/port_config.h"
 #include "arch/cpu.h"
+#include "family/profile.h"
 
 /*===============================================================  MACRO's  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Core timer macros
- * @{ *//*--------------------------------------------------------------------*/
-
 /**@brief       Core timer one tick value
  */
-#define NSYSTIMER_ONE_TICK                                                    \
+#define NSYSTIMER_ONE_TICK                                                      \
     (CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ)
 
 /**@brief       Maximum number of ticks without overflowing the core timer
  */
-#define NSYSTIMER_MAX_TICKS                                                   \
+#define NSYSTIMER_MAX_TICKS                                                     \
     (NPROFILE_MAX_SYSTIMER_VAL / NSYSTIMER_ONE_TICK)
 
-/**@} *//*----------------------------------------------  C++ extern base  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -68,10 +65,6 @@ typedef unsigned int nsystimer_tick;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Core timer management
- * @{ *//*--------------------------------------------------------------------*/
 
 
 /**@brief       Initialize and start the system timer
@@ -128,7 +121,7 @@ nsystimer_tick nsystimer_get_reload(void)
  */
 PORT_C_INLINE
 void nsystimer_load(
-    nsystimer_tick              val)
+    nsystimer_tick              tick)
 {
     ncpu_reg                    cause;
 
@@ -190,10 +183,6 @@ void nsystimer_isr_disable(void)
 }
 
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Generic port functions
- * @{ *//*--------------------------------------------------------------------*/
-
 
 /**@brief       Initialize port
  */
@@ -211,8 +200,7 @@ void nsystimer_module_term(void);
  */
 extern void nsystimer_isr(void);
 
-
-/** @} *//*-----------------------------------------------  C++ extern end  --*/
+/*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif

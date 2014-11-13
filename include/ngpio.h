@@ -25,15 +25,12 @@ struct gpio_pin
 {
     struct gpio_port *          port;
     uint32_t                    pin_mask;
-}
+};
 
 void gpio_driver_init(void);
 
-void gpio_init(struct gpio_port * port, uint32_t pin_no, const struct gpio_pin_config * config);
-void gpio_term(struct gpio_port * port, uint32_t pin_no);
-
-void gpio_pin_init(uint32_t pin_id, const struct gpio_pin_config * config);
-void gpio_pin_term(uint32_t pin_id);
+void gpio_init(uint32_t pin_id, const struct gpio_pin_config * config);
+void gpio_term(uint32_t pin_id);
 bool gpio_get(uint32_t pin_id);
 void gpio_set(uint32_t pin_id);
 void gpio_clear(uint32_t pin_id);

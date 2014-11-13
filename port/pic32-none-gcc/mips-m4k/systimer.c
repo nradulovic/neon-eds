@@ -31,6 +31,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <xc.h>
+#include <sys/attribs.h>
 
 #include "arch/systimer.h"
 
@@ -62,7 +63,7 @@ void nsystimer_module_term(void)
 
 
 
-void __ISR(_CORE_TIMER_VECTOR) systimer_handler(void) 
+void __ISR(_CORE_TIMER_VECTOR, IPL7AUTO) systimer_handler(void)
 {
     ncpu_reg                    compare;
 
@@ -71,9 +72,9 @@ void __ISR(_CORE_TIMER_VECTOR) systimer_handler(void)
     _CP0_SET_COUNT(0u);
     _CP0_SET_COMPARE(compare);
     nsystimer_enable();
-    
+#if 0
     nsystimer_isr();                                 /* Call the user handler */
-
+#endif
     IFS0CLR = IFS0_CT_BIT;
 }
 

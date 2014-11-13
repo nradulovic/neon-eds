@@ -38,12 +38,9 @@
 
 #include "plat/compiler.h"
 #include "arch/port_config.h"
+#include "arch/cpu.h"
 
 /*===============================================================  MACRO's  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Interrupt service management macros
- * @{ *//*--------------------------------------------------------------------*/
 
 #define NISR_PRIO_TO_CODE(prio)                                                 \
     (((prio) << _CP0_STATUS_IPL_POSITION) & _CP0_STATUS_IPL_MASK)
@@ -53,7 +50,7 @@
 
 #define nisr_exit()                         (void)0
 
-/**@} *//*-----------------------------------------------  C++ extern base  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,10 +68,6 @@ typedef unsigned int nisr_ctx;
 extern bool g_isr_is_active;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Interrupt management
- * @{ *//*--------------------------------------------------------------------*/
 
 
 /**@brief       Enable all interrupts
@@ -188,9 +181,6 @@ bool nisr_is_active(void)
     return (g_isr_is_active);
 }
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Generic port functions
- * @{ *//*--------------------------------------------------------------------*/
 
 
 /**@brief       Initialize ISR module
@@ -203,11 +193,7 @@ void nisr_module_init(void);
  */
 void nisr_module_term(void);
 
-
-
-extern void ncore_kernel_isr(void);
-
-/** @} *//*-----------------------------------------------  C++ extern end  --*/
+/*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
