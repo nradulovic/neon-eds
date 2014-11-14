@@ -27,10 +27,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "nport.h"
-#include "ncpu.h"
-#include "nisr.h"
-#include "nsystimer.h"
+#include "port/port.h"
+#include "port/cpu.h"
+#include "port/isr.h"
+#include "port/systimer.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
