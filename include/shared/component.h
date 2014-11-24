@@ -1,0 +1,89 @@
+/*
+ * This file is part of eSolid.
+ *
+ * Copyright (C) 2010 - 2013 Nenad Radulovic
+ *
+ * eSolid is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * eSolid is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * web site:    http://github.com/nradulovic
+ * e-mail  :    nenad.b.radulovic@gmail.com
+ *//***********************************************************************//**
+ * @file
+ * @author  	Nenad Radulovic
+ * @brief       Software component information header
+ * @defgroup    common_component Component
+ * @brief       Software component information
+ *********************************************************************//** @{ */
+/**@defgroup    common_component_intf Interface
+ * @brief       Software component information
+ * @{ *//*--------------------------------------------------------------------*/
+
+#ifndef NCOMMON_COMPONENT_H_
+#define NCOMMON_COMPONENT_H_
+
+/*=========================================================  INCLUDE FILES  ==*/
+
+#include "port/compiler.h"
+
+/*===============================================================  MACRO's  ==*/
+
+/**@brief       Declare a module information
+ *              Module description : string
+ * @param       author
+ *              Module author : string
+ * @api
+ */
+#define NCOMPONENT_DEFINE(description, author)                             		\
+    PORT_C_ROM struct PORT_C_UNUSED ncomponent_info g_component_info =          \
+    {                                                                           \
+        description,                                                            \
+        author,                                                                 \
+        PORT_C_FILE                                                             \
+    }
+
+/*------------------------------------------------------  C++ extern begin  --*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*============================================================  DATA TYPES  ==*/
+
+/**@brief       Defines module information structure
+ * @api
+ */
+struct ncomponent_info
+{
+    const PORT_C_ROM char * const PORT_C_ROM_VAR desc;      
+                                        /**<@brief Component description      */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR auth;
+                                        /**<@brief Component author           */
+    const PORT_C_ROM char * const PORT_C_ROM_VAR file;
+                                        /**<@brief Component source file      */
+};
+
+/*======================================================  GLOBAL VARIABLES  ==*/
+
+extern PORT_C_UNUSED const PORT_C_ROM struct ncomponent_info g_unknown_component;
+
+/*===================================================  FUNCTION PROTOTYPES  ==*/
+/*--------------------------------------------------------  C++ extern end  --*/
+#ifdef __cplusplus
+}
+#endif
+
+/*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of component.h
+ ******************************************************************************/
+#endif /* NCOMMON_COMPONENT_H_ */

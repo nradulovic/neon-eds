@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "common/compiler.h"
+#include "port/compiler.h"
 #include "family/profile.h"
 #include "arch/port_config.h"
 #include "arch/cortex_m3.h"
