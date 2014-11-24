@@ -36,7 +36,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "plat/compiler.h"
+#include "common/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
 

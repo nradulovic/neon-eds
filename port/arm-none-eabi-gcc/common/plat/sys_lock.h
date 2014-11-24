@@ -33,8 +33,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/compiler.h"
-#include "arch/isr.h"
+#include "common/compiler.h"
+#include "port/isr.h"
 
 /*===============================================================  MACRO's  ==*/
 

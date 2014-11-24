@@ -29,8 +29,8 @@
  * @brief       Configuration of Interrupt module
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_INTR_CONFIG_H_
-#define ES_INTR_CONFIG_H_
+#ifndef NARCH_PORT_CONFIG_H_
+#define NARCH_PORT_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  DEFINES  ==*/
@@ -77,6 +77,6 @@
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of intr_config.h
+ * END of port_config.h
  ******************************************************************************/
-#endif /* ES_INTR_CONFIG_H_ */
+#endif /* NARCH_PORT_CONFIG_H_ */

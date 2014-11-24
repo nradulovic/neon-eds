@@ -13,10 +13,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "plat/compiler.h"
+#include "common/compiler.h"
 #include "family/profile.h"
 #include "arch/port_config.h"
-#include "cortex_m3.h"
+#include "arch/cortex_m3.h"
 
 /*===============================================================  MACRO's  ==*/
 

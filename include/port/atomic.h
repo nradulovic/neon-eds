@@ -31,7 +31,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/compiler.h"
+#include "common/compiler.h"
 #include "arch/cpu.h"
 
 /*===============================================================  MACRO's  ==*/
