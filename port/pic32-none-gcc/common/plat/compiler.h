@@ -1,39 +1,38 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon RT Kernel.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2014 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon RT Kernel is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon RT Kernel is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
  * @author  	Nenad Radulovic
- * @brief       Interface of PIC32 compiler port.
- * @addtogroup  pic32-none-gcc
+ * @brief       Interface of ARM Cortex compiler port.
+ * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
-/**@defgroup    pic32-none-gcc-compiler Compiler support
+/**@defgroup    arm-none-eabi-gcc-compiler Compiler support
  * @brief       Compiler support
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_COMPILER_H_
-#define ES_COMPILER_H_
+#ifndef NPLAT_COMPILER_H_
+#define NPLAT_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
-
 
 /**@brief       Try to force a function always to be inlined.
  *              Since there is no default language construct to ensure this,
@@ -115,4 +114,4 @@ extern "C" {
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of compiler.h
  ******************************************************************************/
-#endif /* ES_COMPILER_H_ */
+#endif /* NPLAT_COMPILER_H_ */
