@@ -10,7 +10,7 @@
 #define I2C_SLAVE_RD_START_STOP         (0x1u << 1)
 #define I2C_SLAVE_RD_REPEAT             (0x2u << 1)
 
-struct i2c_bus_config
+struct i2c_master_bus_config
 {
     uint32_t                    flags;
     uint32_t                    speed;
@@ -36,7 +36,7 @@ void i2c_driver_init(void);
 
 void i2c_bus_init(
     struct i2c_bus *            bus, 
-    const struct i2c_bus_config * config);
+    const struct i2c_master_bus_config * config);
     
 void i2c_bus_term(
     struct i2c_bus *            bus);
