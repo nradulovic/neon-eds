@@ -73,10 +73,9 @@ extern bool g_isr_is_active;
 /**@brief       Enable all interrupts
  */
 PORT_C_INLINE
-void __attribute__ ((nomips16)) nisr_enable(void)
+void nisr_enable(void)
 {
-    __asm __volatile__(
-        "   ei                                              \n");
+    INTCON2bits.GIE = 1;
 }
 
 
@@ -84,10 +83,11 @@ void __attribute__ ((nomips16)) nisr_enable(void)
 /**@brief       Disable all interrupts
  */
 PORT_C_INLINE
-void __attribute__ ((nomips16)) nisr_disable(void)
+void nisr_disable(void)
 {
-    __asm __volatile__(
-        "   di                                              \n");
+    while (INTCON2bits.GIE == 1) {
+        INTCON2bits.GIE = 0;
+    }
 }
 
 
@@ -100,7 +100,7 @@ void __attribute__ ((nomips16)) nisr_disable(void)
  *              disable/enable all interrupts.
  */
 PORT_C_INLINE
-void __attribute__ ((nomips16)) nisr_set_mask(
+void nisr_set_mask(
     nisr_ctx                    new_mask)
 {
 #if (CONFIG_ISR_MAX_PRIO == 0)
@@ -112,11 +112,14 @@ void __attribute__ ((nomips16)) nisr_set_mask(
     }
 #else
     ncpu_reg                    isr_status;
+    unsigned int                disi_save;
     
-    isr_status  =  _CP0_GET_STATUS();
-    isr_status &= ~_CP0_STATUS_IPL_MASK;
-    isr_status |= new_mask & _CP0_STATUS_IPL_MASK;
-    _CP0_SET_STATUS(isr_status);
+    isr_status = SR;
+    disi_save  = DISICNT;
+    __asm__ __volatile__(
+        "   disi #0x3fff                                    \n");
+    SR         = new_mask;
+    __builtin_write_DISICNT(disi_save);
 #endif
 }
 
