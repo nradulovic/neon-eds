@@ -40,7 +40,6 @@
 #define NPROFILE_MAX_CPU_CLOCK          80000000ul
 
 /**@brief       System timer maximum value
- * @details     STM32F10x family has 24-bit wide system tick register
  */
 #define NPROFILE_MAX_SYSTIMER_VAL       0xfffffffful
 

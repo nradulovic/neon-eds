@@ -23,13 +23,17 @@
 # define PORT_CONFIG_ISR_SUBPRIORITY        0u
 #endif
 
+#if !defined(PORT_CONFIG_SYSTIMER_SELECTION)
+# define PORT_CONFIG_SYSTIMER_SELECTION     2
+#endif
+
 /**@brief       The frequency of clock which is used for the system timer
  * @details     System timer SysTick uses core clock (sometimes referred to as
  *              HCLK) for counting. Specify here the core clock so the OS can
  *              properly manage system tick event generation.
  */
 #if !defined(CONFIG_SYSTIMER_CLOCK_FREQ)
-# define CONFIG_SYSTIMER_CLOCK_FREQ         24000000ul
+# define CONFIG_SYSTIMER_CLOCK_FREQ         NPROFILE_MAX_CPU_CLOCK
 #endif
 
 /**@brief       The frequency of system timer tick event

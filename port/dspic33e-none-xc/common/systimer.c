@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <xc.h>
-#include <sys/attribs.h>
 
 #include "arch/systimer.h"
 
@@ -47,10 +46,18 @@
 
 void nsystimer_module_init(void) 
 {
-    nsystimer_disable();
-    nsystimer_isr_disable();
-    IPC0CLR = 0x7u << IPC0_CTIP_SHIFT;
-    IPC0SET = (CONFIG_ISR_MAX_PRIO << IPC0_CTIP_SHIFT) & IPC0_MASK;
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    IEC0bits.T2IE = 0;
+    IEC0bits.T3IE = 0;
+    IFS0bits.T2IF = 0;
+    IFS0bits.T3IF = 0;
+    IPC1bits.T2IP = CONFIG_ISR_MAX_PRIO;
+    T2CON         = 0;
+    T3CON         = 0;
+    T2CONbits.T32 = 1;
+    TMR2          = 0;
+    PR2           = 0;
+#endif
 }
 
 
@@ -63,20 +70,14 @@ void nsystimer_module_term(void)
 
 
 
-void __ISR(_CORE_TIMER_VECTOR, IPL7AUTO) systimer_handler(void)
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+void __attribute__((interrupt, auto_psv)) _T2Interrupt(void)
 {
-    ncpu_reg                    compare;
-
-    nsystimer_disable();                                     /* Restart timer */
-    compare = _CP0_GET_COMPARE();
-    _CP0_SET_COUNT(0u);
-    _CP0_SET_COMPARE(compare);
-    nsystimer_enable();
-#if 0
     nsystimer_isr();                                 /* Call the user handler */
-#endif
-    IFS0CLR = IFS0_CT_BIT;
+    IFS0bits.T2IF;
 }
+#endif
+    
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************

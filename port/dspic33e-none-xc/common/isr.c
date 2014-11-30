@@ -39,21 +39,10 @@
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
-
 void nisr_module_init(void) 
 {
-    ncpu_reg                    cause;
-    ncpu_reg                    status;
-
     nisr_disable();
-    /* Use vectored interrupt table */
-    cause   = _CP0_GET_CAUSE();
-    cause  |= _CP0_CAUSE_IV_MASK;
-    _CP0_SET_CAUSE(cause);
-    status  = _CP0_GET_STATUS();
-    status &= ~_CP0_STATUS_BEV_MASK;
-    _CP0_SET_STATUS(status);
-    INTCONSET = _INTCON_MVEC_MASK;
+    INTCON1bits.NSTDIS = 0;                   /* Interrupt nesting is enabled */
     nisr_enable();
 }
 

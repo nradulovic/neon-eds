@@ -43,10 +43,10 @@
 /*===============================================================  MACRO's  ==*/
 
 #define NISR_PRIO_TO_CODE(prio)                                                 \
-    (((prio) << _CP0_STATUS_IPL_POSITION) & _CP0_STATUS_IPL_MASK)
+    (((prio) << _SR_IPL_POSITION) & _SR_IPL_MASK)
 
 #define NISR_CODE_TO_PRIO(code)                                                 \
-    (((code) & _CP0_STATUS_IPL_MASK) >> _CP0_STATUS_IPL_POSITION)
+    (((code) & _SR_IPL_POSITION) >> _SR_IPL_POSITION)
 
 #define nisr_exit()                         (void)0
 
@@ -81,6 +81,9 @@ void nisr_enable(void)
 
 
 /**@brief       Disable all interrupts
+ * @details     Enabling/disabling interrupts on 16-bit PIC series seems to be
+ *              quite problematic. For further discusion see:
+ *              http://www.microchip.com/forums/tm.aspx?m=458828&mpage=1&key=&#461267
  */
 PORT_C_INLINE
 void nisr_disable(void)
@@ -111,15 +114,7 @@ void nisr_set_mask(
         nisr_enable();
     }
 #else
-    ncpu_reg                    isr_status;
-    unsigned int                disi_save;
-    
-    isr_status = SR;
-    disi_save  = DISICNT;
-    __asm__ __volatile__(
-        "   disi #0x3fff                                    \n");
-    SR         = new_mask;
-    __builtin_write_DISICNT(disi_save);
+    SET_CPU_IPL(new_mask);
 #endif
 }
 
@@ -129,31 +124,25 @@ void nisr_set_mask(
  * @return      Current interrupt priority mask
  */
 PORT_C_INLINE
-nisr_ctx __attribute__ ((nomips16)) nisr_replace_mask(
+nisr_ctx nisr_replace_mask(
     nisr_ctx                    new_mask)
 {
-#if (CONFIG_ISR_MAX_PRIO != 0)
+#if (CONFIG_ISR_MAX_PRIO == 0)
     nisr_ctx                    old_mask;
+
+    old_mask = INTCON2bits.GIE;
     
     if (new_mask == 0u) {
-        __asm __volatile__(
-            "   di      %0                                  \n"
-            : "=r"(old_mask));
+        nisr_disable();
     } else {
-        __asm __volatile__(
-            "   ei      %0                                  \n"
-            : "=r"(old_mask));
+        nisr_enable();
     }
     
     return (old_mask);
 #else
     nisr_ctx                    old_mask;
-    ncpu_reg                    isr_status;
     
-    isr_status  = _CP0_GET_STATUS();
-    old_mask    = isr_status;
-    isr_status &= ~_CP0_STATUS_IPL_MASK;
-    _CP0_SET_STATUS(isr_status | new_mask);
+    SET_AND_SAVE_CPU_IPL(old_mask, new_mask);
     
     return (old_mask);
 #endif

@@ -42,17 +42,17 @@
 
 /**@brief       Specifies bit-width of general purpose registers
  */
-#define NCPU_DATA_WIDTH                     32u
+#define NCPU_DATA_WIDTH                     16u
 
 /**@brief       Specifies data alignment for optimal performance
  */
-#define NCPU_DATA_ALIGNMENT                 4u
+#define NCPU_DATA_ALIGNMENT                 2u
 
-#define NCPU_REG_MAX                        UINT32_MAX
+#define NCPU_REG_MAX                        UINT16_MAX
 
-#define NCPU_SIZE_MAX                       UINT32_MAX
+#define NCPU_SIZE_MAX                       UINT16_MAX
 
-#define NCPU_SSIZE_MAX                      INT32_MAX
+#define NCPU_SSIZE_MAX                      INT16_MAX
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -61,7 +61,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief General purpose registers are 32bit wide.
+/**@brief General purpose registers are 16 bit wide.
  */
 typedef unsigned int ncpu_reg;
 
@@ -93,11 +93,13 @@ PORT_C_INLINE
 uint_fast8_t ncpu_log2(
     ncpu_reg                    value)
 {
-    uint_fast8_t                clz;
+    extern const uint_fast8_t   g_log2_lookup[256];
 
-    clz = __builtin_clz(value);
-
-    return (31u - clz);
+    if (value > 255) {
+        return (g_log2_lookup[value >> 8]);
+    } else {
+        return (g_log2_lookup[value]);
+    }
 }
 
 

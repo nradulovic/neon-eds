@@ -52,6 +52,8 @@
 #define NSYSTIMER_MAX_TICKS                                                     \
     (NPROFILE_MAX_SYSTIMER_VAL / NSYSTIMER_ONE_TICK)
 
+#define NSYSTIMER_TICK_MAX              UINT32_MAX
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +63,7 @@ extern "C" {
 
 /**@brief       Core timer hardware register type.
  */
-typedef unsigned int nsystimer_tick;
+typedef uint32_t nsystimer_tick;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -73,13 +75,14 @@ PORT_C_INLINE
 void nsystimer_init(
     nsystimer_tick              tick)
 {
-    ncpu_reg                    cause;
-    
-    cause  = _CP0_GET_CAUSE();
-    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
-    _CP0_SET_COUNT(0u);
-    _CP0_SET_COMPARE(tick);
-    _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    T2CON         = 0;
+    T3CON         = 0;
+    T2CONbits.T32 = 1;
+    TMR2          = 0;
+    PR2           = tick;
+    T2CONbits.TON = 1;
+#endif
 }
 
 
@@ -89,10 +92,9 @@ void nsystimer_init(
 PORT_C_INLINE
 void nsystimer_term(void)
 {
-    ncpu_reg                    cause;
-    
-    cause  = _CP0_GET_CAUSE();
-    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    T2CONbits.TON = 0;
+#endif
 }
 
 
@@ -102,7 +104,9 @@ void nsystimer_term(void)
 PORT_C_INLINE
 nsystimer_tick nsystimer_get_current(void)
 {
-    return (_CP0_GET_COMPARE() - _CP0_GET_COUNT());
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    return (TMR2);
+#endif
 }
 
 
@@ -112,7 +116,9 @@ nsystimer_tick nsystimer_get_current(void)
 PORT_C_INLINE
 nsystimer_tick nsystimer_get_reload(void)
 {
-    return (_CP0_GET_COMPARE());
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    return (PR2);
+#endif
 }
 
 
@@ -123,13 +129,12 @@ PORT_C_INLINE
 void nsystimer_load(
     nsystimer_tick              tick)
 {
-    ncpu_reg                    cause;
-
-    cause  = _CP0_GET_CAUSE();
-    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
-    _CP0_SET_COUNT(0u);
-    _CP0_SET_COMPARE(tick);
-    _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    T2CONbits.TON = 0;
+    TMR2 = 0;
+    PR2  = tick;
+    T2CONbits.TON = 1;
+#endif
 }
 
 
@@ -139,11 +144,9 @@ void nsystimer_load(
 PORT_C_INLINE
 void nsystimer_enable(void)
 {
-    ncpu_reg                    cause;
-
-    cause  = _CP0_GET_CAUSE();
-    cause &= ~_CP0_CAUSE_DC_MASK;
-    _CP0_SET_CAUSE(cause);
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    T2CONbits.TON = 1;
+#endif
 }
 
 
@@ -153,11 +156,9 @@ void nsystimer_enable(void)
 PORT_C_INLINE
 void nsystimer_disable(void)
 {
-    ncpu_reg                    cause;
-
-    cause  = _CP0_GET_CAUSE();
-    cause |= _CP0_CAUSE_DC_MASK;
-    _CP0_SET_CAUSE(cause);
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    T2CONbits.TON = 0;
+#endif
 }
 
 
@@ -167,8 +168,10 @@ void nsystimer_disable(void)
 PORT_C_INLINE
 void nsystimer_isr_enable(void)
 {
-    IFS0CLR = _IFS0_CTIF_MASK;
-    IEC0SET = _IEC0_CTIE_MASK;
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    IFS0bits.T2IF = 0;
+    IEC0bits.T2IE = 1;
+#endif
 }
 
 
@@ -179,7 +182,9 @@ void nsystimer_isr_enable(void)
 PORT_C_INLINE
 void nsystimer_isr_disable(void)
 {
-    IEC0CLR = _IEC0_CTIE_MASK;
+#if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
+    IEC0bits.T2IE = 0;
+#endif
 }
 
 
