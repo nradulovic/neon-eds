@@ -86,6 +86,8 @@
  */
 #define PORT_C_ALIGN(align)                 __attribute__((aligned (align)))
 
+#define PORT_C_PACKED                       __attribute__ ((__packed__))
+
 /**@brief       Cast a member of a structure out to the containing structure
  * @param       ptr
  *              the pointer to the member.
