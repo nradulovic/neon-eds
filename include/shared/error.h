@@ -48,6 +48,7 @@
     entry(NERROR_DEVICE_FAIL,           201u,   "device failure")               \
     entry(NERROR_DEVICE_BUSY,           202u,   "device is busy")               \
     entry(NERROR_NO_DEVICE,             203u,   "no free device")               \
+    entry(NERROR_DEVICE_NO_COMM,        204u,   "no comm with the device")      \
     entry(NERROR_NO_MEMORY,             300u,   "no free memory")               \
     entry(NERROR_NO_RESOURCE,           301u,   "no free resource")             \
     entry(NERROR_NO_REFERENCE,          302u,   "no free reference slot")       \
