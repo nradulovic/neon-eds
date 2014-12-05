@@ -29,8 +29,9 @@
 
 #include <stdbool.h>
 
-#include "eds/smp.h"
 #include "shared/component.h"
+#include "eds/event.h"
+#include "eds/smp.h"
 
 /*=========================================================  LOCAL DEFINES  ==*/
 
@@ -74,11 +75,13 @@ static uint_fast8_t smFindPath(
     struct esSm *       sm,
     uint_fast8_t        srcCount);
 
-static PORT_C_INLINE void smPathEnter(
+PORT_C_INLINE
+void smPathEnter(
     struct esSm *       sm,
     esAction *          entry);
 
-static PORT_C_INLINE void smPathExit(
+PORT_C_INLINE
+void smPathExit(
     struct esSm *       sm,
     esAction *          exit);
 #endif
@@ -89,7 +92,7 @@ static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-const PORT_C_ROM struct nevent esGlobalSmEvents[] = {
+const struct nevent  esGlobalSmEvents[] = {
     {
          ES_ENTRY,
          NEVENT_ATTR_CONST,
@@ -268,7 +271,10 @@ static uint_fast8_t smFindPath(
     return (0);
 }
 
-static PORT_C_INLINE void smPathEnter(
+
+
+PORT_C_INLINE
+void smPathEnter(
     struct esSm *       sm,
     esAction *          entry) {
 
@@ -277,8 +283,8 @@ static PORT_C_INLINE void smPathEnter(
         esAction        ret;
 
         ret = sm->table[*entry].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
-        ES_REQUIRE(
-            ES_API_USAGE,
+        NREQUIRE(
+            NAPI_USAGE,
             (ret == ES_ACTION_IGNORED) ||
             (ret == ES_ACTION_HANDLED));
 #else
@@ -288,7 +294,10 @@ static PORT_C_INLINE void smPathEnter(
     }
 }
 
-static PORT_C_INLINE void smPathExit(
+
+
+PORT_C_INLINE
+void smPathExit(
     struct esSm *       sm,
     esAction *          exit) {
 
@@ -297,8 +306,8 @@ static PORT_C_INLINE void smPathExit(
         esAction        ret;
 
         ret = sm->table[*exit].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
-        ES_REQUIRE(
-            ES_API_USAGE,
+        NREQUIRE(
+            NAPI_USAGE,
             ((ret > ES_ACTION_TOP)     &&
              (ret < ES_ACTION_BOTTOM)) ||
             (ret == ES_ACTION_IGNORED) ||
@@ -314,16 +323,16 @@ static PORT_C_INLINE void smPathExit(
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esSmCreate(
+nerror esSmCreate(
     const struct esSmDefine * define,
     struct esMem *      mem,
     struct esSm **      sm) {
 
     esError             error;
 
-    ES_REQUIRE(ES_API_POINTER, define != NULL);
-    ES_REQUIRE(ES_API_POINTER, define->table != NULL);
-    ES_REQUIRE(ES_API_POINTER, sm != NULL);
+    NREQUIRE(ES_API_POINTER, define != NULL);
+    NREQUIRE(ES_API_POINTER, define->table != NULL);
+    NREQUIRE(ES_API_POINTER, sm != NULL);
 
     error = esMemAlloc(mem, sizeof(struct esSm), (void **)sm);
 
@@ -354,7 +363,7 @@ esError esSmCreate(
         esAction *      levels;
 
         depth = smFindDepth(define->table);
-        ES_REQUIRE(ES_API_RANGE, depth >= 2);
+        NREQUIRE(ES_API_RANGE, depth >= 2);
         ++depth;
         error = esMemAlloc(
             mem,
@@ -378,7 +387,7 @@ esError esSmCreate(
     {
         esAction *      levels;
 
-        ES_REQUIRE(ES_API_RANGE, smFindDepth(define->table) == 2);
+        NREQUIRE(ES_API_RANGE, smFindDepth(define->table) == 2);
 
         error = esMemAlloc(
             mem,
@@ -414,8 +423,8 @@ esError esSmDestroy(
 
     esError             error;
 
-    ES_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    NREQUIRE(ES_API_POINTER, sm != NULL);
+    NREQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
     ES_OBLIGATION(sm->signature = (esAtomic)~SM_SIGNATURE);
 
     error = esMemFree(sm->mem, sm->src);
@@ -449,9 +458,9 @@ esError esSmDispatch(
     esAction            ret;
     esAction            id;
 
-    ES_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_REQUIRE(ES_API_POINTER, action != NULL);
+    NREQUIRE(ES_API_POINTER, sm != NULL);
+    NREQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    NREQUIRE(ES_API_POINTER, action != NULL);
 
     count = 0u;
 
@@ -459,8 +468,8 @@ esError esSmDispatch(
         id = sm->src[count++];
         sm->src[count] = sm->table[id].super;
         ret = sm->table[id].state(sm->wspace, event);
-        ES_REQUIRE(
-            ES_API_USAGE,
+        NREQUIRE(
+            NAPI_USAGE,
             ((ret > ES_ACTION_TOP) &&
              (ret < ES_ACTION_BOTTOM)) ||
             (ret == ES_ACTION_IGNORED) ||
@@ -475,8 +484,8 @@ esError esSmDispatch(
         smPathExit(sm, &sm->src[0]);
         smPathEnter(sm, &sm->dst[count]);
         ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-        ES_REQUIRE(
-            ES_API_USAGE,
+        NREQUIRE(
+            NAPI_USAGE,
             ((ret > ES_ACTION_TOP) &&
              (ret < ES_ACTION_BOTTOM)) ||
             (ret == ES_ACTION_IGNORED) ||
@@ -490,13 +499,13 @@ esError esSmDispatch(
 #else /* (CONFIG_SMP_HSM == 1) */
     esAction            ret;
 
-    ES_REQUIRE(ES_API_POINTER, sm != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_REQUIRE(ES_API_POINTER, action != NULL);
+    NREQUIRE(ES_API_POINTER, sm != NULL);
+    NREQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
+    NREQUIRE(ES_API_POINTER, action != NULL);
 
     ret = sm->table[sm->src[0]].state(sm->wspace, (struct esEvent *)event);
-    ES_REQUIRE(
-        ES_API_USAGE,
+    NREQUIRE(
+        NAPI_USAGE,
         ((ret > ES_ACTION_TOP) &&
          (ret < ES_ACTION_BOTTOM)) ||
         (ret == ES_ACTION_IGNORED) ||
@@ -508,8 +517,8 @@ esError esSmDispatch(
         (void)sm->table[sm->src[0]].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
         (void)sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
         ret = sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-        ES_REQUIRE(
-            ES_API_USAGE,
+        NREQUIRE(
+            NAPI_USAGE,
             ((ret > ES_ACTION_TOP) &&
              (ret < ES_ACTION_BOTTOM)) ||
             (ret == ES_ACTION_IGNORED) ||

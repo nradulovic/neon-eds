@@ -308,9 +308,8 @@ struct nepa * esEpaCreate(
     nsys_lock                   sys_lock;
     void *                      event_fifo_buff;
 
-    NREQUIRE(ES_API_POINTER, epaDefine != NULL);
-    NREQUIRE(ES_API_POINTER, smDefine != NULL);
-    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(NAPI_POINTER, epaDefine != NULL);
+    NREQUIRE(NAPI_POINTER, smDefine != NULL);
 
     epa = nmem_alloc(mem, sizeof(struct nepa));
 
@@ -363,8 +362,8 @@ void esEpaDestroy(
     nsys_lock                   sys_lock;
     void **                     event_fifo_buff;
 
-    NREQUIRE(ES_API_POINTER, epa != NULL);
-    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
     NOBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
 
     nsys_lock_enter(&sys_lock);
@@ -393,8 +392,8 @@ nerror esEpaSendEventI(
 
     nerror             error;
 
-    NREQUIRE(ES_API_POINTER, epa != NULL);
-    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     error = epa_send_event_i(epa, event);
 
@@ -408,8 +407,8 @@ nerror esEpaSendEvent(
     nerror                      error;
     nsys_lock                   sys_lock;
 
-    NREQUIRE(ES_API_POINTER, epa != NULL);
-    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     nsys_lock_enter(&sys_lock);
     error = epa_send_event_i(epa, event);
@@ -425,8 +424,8 @@ nerror esEpaSendAheadEventI(
 
     nerror             error;
 
-    NREQUIRE(ES_API_POINTER, epa != NULL);
-    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     error = epa_send_ahead_event_i(epa, event);
 
@@ -440,8 +439,8 @@ nerror esEpaSendAheadEvent(
     nerror                      error;
     nsys_lock                   sys_lock;
 
-    NREQUIRE(ES_API_POINTER, epa != NULL);
-    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
     nsys_lock_enter(&sys_lock);
     error = epa_send_ahead_event_i(epa, event);

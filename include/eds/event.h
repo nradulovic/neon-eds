@@ -35,8 +35,10 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "port/compiler.h"
+#include "port/cpu.h"
 #include "shared/debug.h"
 #include "eds/event_config.h"
 

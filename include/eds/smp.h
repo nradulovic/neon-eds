@@ -34,7 +34,11 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <stdint.h>
+#include <stddef.h>
+
 #include "port/compiler.h"
+#include "shared/error.h"
 #include "eds/smp_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -132,7 +136,7 @@ typedef struct esSmDefine esSmDefine;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const struct nevent esGlobalSmEvents[];
+extern const struct nevent * esGlobalSmEvents;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 

@@ -193,7 +193,7 @@ void nevent_register_mem(
     g_event_storage.mem[cnt].handle     = mem;
     g_event_storage.mem[cnt].block_size = size;
     g_event_storage.pools++;
-    nsys_lock_exit(sys_lock);
+    nsys_lock_exit(&sys_lock);
 }
 
 
@@ -222,7 +222,7 @@ void nevent_unregister_mem(
     }
     g_event_storage.mem[g_event_storage.pools - 1].handle     = NULL;
     g_event_storage.mem[g_event_storage.pools - 1].block_size = 0;
-    nsys_lock_exit(sys_lock);
+    nsys_lock_exit(&sys_lock);
 }
 
 
@@ -236,7 +236,7 @@ struct nevent * nevent_create(
 
     nsys_lock_enter(&sys_lock);
     event = event_create_i(size);
-    nsys_lock_exit(sys_lock);
+    nsys_lock_exit(&sys_lock);
 
     if (event) {
         event_init(event, size, id);
@@ -315,7 +315,7 @@ void nevent_unlock(
         struct nsys_lock        sys_lock;
 
         event_term(event);
-        nsys_lock_enter(&sys_lock)
+        nsys_lock_enter(&sys_lock);
         event_destroy_i(event);
         nsys_lock_exit(&sys_lock);
     }
