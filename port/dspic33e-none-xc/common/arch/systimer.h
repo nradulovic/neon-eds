@@ -36,21 +36,21 @@
 #include <xc.h>
 
 #include "plat/compiler.h"
-#include "arch/port_config.h"
+#include "arch/config.h"
 #include "arch/cpu.h"
-#include "family/profile.h"
+#include "device/mcu_profile.h"
 
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Core timer one tick value
  */
-#define NSYSTIMER_ONE_TICK                                                      \
-    (CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ)
+#define NSYSTIMER_ONE_TICK(clock)                                               \
+    (((clock) + (CONFIG_SYSTIMER_EVENT_FREQ / 2)) / CONFIG_SYSTIMER_EVENT_FREQ)
 
 /**@brief       Maximum number of ticks without overflowing the core timer
  */
 #define NSYSTIMER_MAX_TICKS                                                     \
-    (NPROFILE_MAX_SYSTIMER_VAL / NSYSTIMER_ONE_TICK)
+    (UINT32_MAX / NSYSTIMER_ONE_TICK)
 
 #define NSYSTIMER_TICK_MAX              UINT32_MAX
 
@@ -72,16 +72,13 @@ typedef uint32_t nsystimer_tick;
 /**@brief       Initialize and start the system timer
  */
 PORT_C_INLINE
-void nsystimer_init(
-    nsystimer_tick              tick)
+void nsystimer_init(void)
 {
 #if (PORT_CONFIG_SYSTIMER_SELECTION == 2)
     T2CON         = 0;
     T3CON         = 0;
     T2CONbits.T32 = 1;
     TMR2          = 0;
-    PR2           = tick;
-    T2CONbits.TON = 1;
 #endif
 }
 

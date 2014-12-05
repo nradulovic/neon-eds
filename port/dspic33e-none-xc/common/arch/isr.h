@@ -37,7 +37,7 @@
 #include <stdint.h>
 #include <xc.h>
 
-#include "arch/port_config.h"
+#include "arch/config.h"
 #include "port/compiler.h"
 #include "port/cpu.h"
 

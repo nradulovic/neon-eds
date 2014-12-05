@@ -29,25 +29,19 @@
  * @brief       Profile for Microchip PIC32MX150F128
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NPROFILE_H_
-#define NPROFILE_H_
+#ifndef DEVICE_PROFILE_H_
+#define DEVICE_PROFILE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Specifies maximum CPU clock speed in Hz.
  */
-#define NPROFILE_MAX_CPU_CLOCK          80000000ul
+#define NDEVICE_MAX_CPU_CLOCK           70000000ul
 
-/**@brief       System timer maximum value
+/**@brief       Maximum RAM for this device
  */
-#define NPROFILE_MAX_SYSTIMER_VAL       0xfffffffful
-
-/**@brief       Maximum RAM get_size for this family
- * @details     This define is used to choose optimal algorithm for this family
- *              of micro-controllers.
- */
-#define NPROFILE_RAM_SIZE               65536u
+#define NDEVICE_RAM_SIZE                53248u
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -65,4 +59,4 @@ extern "C" {
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of profile.h
  ******************************************************************************/
-#endif /* ES_PROFILE_H_ */
+#endif /* DEVICE_PROFILE_H_ */

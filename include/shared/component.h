@@ -44,7 +44,7 @@
  *              Module author : string
  * @api
  */
-#define NCOMPONENT_DEFINE(description, author)                             		\
+#define NCOMPONENT_DEFINE(description, author)                             	\
     PORT_C_ROM struct PORT_C_UNUSED ncomponent_info g_component_info =          \
     {                                                                           \
         description,                                                            \

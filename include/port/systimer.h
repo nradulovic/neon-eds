@@ -3,8 +3,7 @@
 
 #include "arch/systimer.h"
 
-void nsystimer_init(
-    nsystimer_tick              tick);
+void nsystimer_init(void);
 
 
 /**@brief       Stop and terminate the system timer
