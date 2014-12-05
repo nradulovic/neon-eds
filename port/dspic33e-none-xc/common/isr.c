@@ -218,7 +218,6 @@ void nisr_module_init(void)
 {
     nisr_global_disable();
     INTCON1bits.NSTDIS = 0;                   /* Interrupt nesting is enabled */
-    nisr_global_enable();
 }
 
 

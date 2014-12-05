@@ -145,7 +145,7 @@
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if (1 == CONFIG_DEBUG_API)
+#if (CONFIG_API_VALIDATION == 1)
 # define NREQUIRE(msg, expr)                NASSERT(msg, expr)
 #else
 # define NREQUIRE(msg, expr)                (void)0
@@ -174,7 +174,7 @@
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if   (CONFIG_DEBUG_INTERNAL == 1) && (CONFIG_DEBUG_API == 1)
+#if   (CONFIG_API_VALIDATION == 1) && (CONFIG_DEBUG_API == 1)
 # define NREQUIRE_INTERNAL(msg, expr)       NASSERT(msg, expr)
 #else
 # define NREQUIRE_INTERNAL(msg, expr)       (void)0
@@ -185,7 +185,7 @@
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if   (CONFIG_DEBUG_INTERNAL == 1) && (CONFIG_DEBUG_API == 1)
+#if   (CONFIG_DEBUG_INTERNAL == 1) && (CONFIG_API_VALIDATION == 1)
 # define NENSURE_INTERNAL(expr)             NENSURE(expr)
 #else
 # define NENSURE_INTERNAL(expr)             expr

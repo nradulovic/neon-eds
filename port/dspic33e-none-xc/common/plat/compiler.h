@@ -99,6 +99,11 @@
 #define CONTAINER_OF(ptr, type, member)                                         \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
+#define CONST_CAST(typename,value) \
+(((union { const typename cv; typename v; }*)&(*value))->v)
+
+#define UINT32_C(val)                   val ## ul
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
