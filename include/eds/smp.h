@@ -1,4 +1,4 @@
-/*
+    /*
  * This file is part of eSolid.
  *
  * Copyright (C) 2010 - 2013 Nenad Radulovic
@@ -34,9 +34,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/compiler.h"
-#include "mem/mem_class.h"
-#include "eds/event.h"
+#include "port/compiler.h"
 #include "eds/smp_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -75,8 +73,7 @@
 
 #define ES_STATE_IGNORED()                                                      \
     (ES_ACTION_IGNORED)
-#define CONST_CAST(typename,value) \
-(((union { const typename cv; typename v; }*)&(*value))->v)
+
 #define ES_SMP_EVENT(event)                                                     \
     &esGlobalSmEvents[(event) - CONFIG_SMP_EVENT_ID_BASE]
 
@@ -108,11 +105,13 @@ enum esAction {
     ES_ACTION_BOTTOM    = 32767
 };
 
+struct nmem;
+struct nevent;
+struct esSm;
+
 typedef int_fast16_t esAction;
 
-typedef esAction (* esState) (void *, const struct esEvent *);
-
-struct esSm;
+typedef esAction (* esState) (void *, const struct nevent *);
 
 typedef struct esSm esSm;
 
@@ -133,22 +132,20 @@ typedef struct esSmDefine esSmDefine;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const PORT_C_ROM struct esEvent esGlobalSmEvents[];
+extern const struct nevent esGlobalSmEvents[];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-esError esSmCreate(
+struct esSm * esSmCreate(
     const struct esSmDefine * define,
-    struct esMem * mem,
-    struct esSm **      sm);
+    struct nmem * mem);
 
-esError esSmDestroy(
+void esSmDestroy(
     struct esSm *       sm);
 
-esError esSmDispatch(
+esAction esSmDispatch(
     struct esSm *       sm,
-    struct esEvent *    event,
-    esAction *          action);
+    struct nevent *    event);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

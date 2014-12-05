@@ -34,31 +34,11 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/compiler.h"
-#include "base/error.h"
-#include "mem/mem_class.h"
-#include "eds/smp.h"
+#include "port/compiler.h"
+#include "shared/error.h"
 #include "eds/epa_config.h"
 
 /*===============================================================  MACRO's  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Kernel version
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Kernel version major number
- */
-#define ES_EPA_KERNEL_MAJOR             1
-
-/**@brief       Kernel version minor number
- */
-#define ES_EPA_KERNEL_MINOT             0
-
-/**@brief       Kernel version patch number
- */
-#define ES_EPA_KERNEL_PATCH             0
-
-/**@} *//*--------------------------------------------------------------------*/
 
 #define ES_EPA_DEFINE(name, priority, queueSize)                                \
     {                                                                           \
@@ -74,17 +54,20 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-struct esEpaDefine {
-    const PORT_C_ROM char * name;
+struct nepaDefine {
+    const char *        name;
     uint8_t             priority;
     uint8_t             queueSize;
 };
 
-typedef struct esEpaDefine esEpaDefine;
+typedef struct nepaDefine nepaDefine;
 
-struct esEpa;
+struct nmem;
+struct nevent;
+struct nepa;
+struct esSmDefine;
 
-typedef struct esEpa esEpa;
+typedef struct nepa nepa;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -93,83 +76,59 @@ typedef struct esEpa esEpa;
  * @name        EPA Kernel functions
  * @{ *//*--------------------------------------------------------------------*/
 
-esError esEdsInit(
-    void);
+void neds_init(void);
 
-esError esEdsTerm(
-    void);
+void neds_term(void);
 
-esError esEdsStart(
-    void);
+void neds_run(void);
 
-esError esEdsStop(
-    void);
-
-/**@brief       Set idle routine function
- * @param       idle
- *              Pointer to idle function routine
- * @return      eSolid error:
- *              - @ref ES_ERROR_NONE - call was successful
- * @details     The idle function puts the processor in the lowest power mode
- *              capable to serve interrupts. This function is executed only if
- *              there are no other ready EPAs in the system.
- * @note        Idle function must return. If it is implemented as a loop EPAs
- *              execution will stall.
- */
-void esEdsSetIdle(
-    void             (* idle)(void));
-
-void esEdsGetIdle(
-    void            (** idle)(void));
-
-void esEdsGetCurrent(
-    struct esEpa **     epa);
+struct nepa * neds_get_current(void);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA Resource management
  * @{ *//*--------------------------------------------------------------------*/
 
-esError esEpaResourceAdd(
+nerror nepaResourceAdd(
     size_t              size,
     void **             resource);
 
-esError esEpaResourceRemove(
+nerror nepaResourceRemove(
     void *              resource);
 
-void esEpaGetMem(esMem ** mem);
+void nepaGetMem(struct nmem ** mem);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management
  * @{ *//*--------------------------------------------------------------------*/
 
-esError esEpaCreate(
-    const struct esEpaDefine * epaDefine,
+nerror nepaCreate(
+    const struct nepaDefine * epaDefine,
     const struct esSmDefine * smDefine,
-    struct esMem *      mem,
-    struct esEpa **     epa);
+    struct nmem *      mem,
+    struct nepa **     epa);
 
-esError esEpaDestroy(
-    struct esEpa *      epa);
+nerror nepaDestroy(
+    struct nepa *      epa);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA Event transport
  * @{ *//*--------------------------------------------------------------------*/
 
-esError esEpaSendEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+nerror nepaSendEventI(
+    struct nepa *      epa,
+    struct nevent *    event);
 
-esError esEpaSendEvent(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+nerror nepaSendEvent(
+    struct nepa *      epa,
+    struct nevent *    event);
 
-esError esEpaSendAheadEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+nerror nepaSendAheadEventI(
+    struct nepa *      epa,
+    struct nevent *    event);
 
-esError esEpaSendAheadEvent(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+nerror nepaSendAheadEvent(
+    struct nepa *      epa,
+    struct nevent *    event);
 
 /**@} *//*------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

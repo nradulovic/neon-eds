@@ -28,7 +28,9 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
+
 #include "eds/smp.h"
+#include "shared/component.h"
 
 /*=========================================================  LOCAL DEFINES  ==*/
 
@@ -36,25 +38,25 @@
  * @brief       State machine signature
  * @details     This signature is used only during the debugging process
  */
-#define SM_SIGNATURE                   ((esAtomic)0xdaafu)
+#define SM_SIGNATURE                   ((ndebug_magic)0xdaafu)
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 struct esSm {
-    struct esMem *      mem;
-    const struct esSmTable * table;
-    void *              wspace;
-    esAction *          src;
-    esAction *          dst;
+    struct nmem *               mem;
+    const struct esSmTable *    table;
+    void *                      wspace;
+    esAction *                  src;
+    esAction *                  dst;
 #if (CONFIG_API_VALIDATION == 1)
-    esAtomic            signature;
+    ndebug_magic                signature;
 #endif
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-#if (CONFIG_API_VALIDATION == 1) || (CONFIG_SMP_HSM == 1)
+#if (CONFIG_SMP_HSM == 1)
 static uint_fast8_t smFindDepth(
     const struct esSmTable * table);
 #endif
@@ -83,60 +85,54 @@ static PORT_C_INLINE void smPathExit(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const ES_MODULE_INFO_CREATE("SMP", "State Machine Processor", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-const PORT_C_ROM struct esEvent esGlobalSmEvents[] = {
+const PORT_C_ROM struct nevent esGlobalSmEvents[] = {
     {
          ES_ENTRY,
-         ES_EVENT_CONST_Msk,
+         NEVENT_ATTR_CONST,
+         0,
          NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
-#if (CONFIG_EVENT_TIMESTAMP == 1)      || defined(__DOXYGEN__)
-         0,
-#endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct esEvent),
+         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         ES_EVENT_SIGNATURE
+         NEVENT_SIGNATURE
 #endif
     },
     {
          ES_EXIT,
-         ES_EVENT_CONST_Msk,
+         NEVENT_ATTR_CONST,
+         0,
          NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
-#if (CONFIG_EVENT_TIMESTAMP == 1)      || defined(__DOXYGEN__)
-         0,
-#endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct esEvent),
+         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         ES_EVENT_SIGNATURE
+         NEVENT_SIGNATURE
 #endif
     },
     {
          ES_INIT,
-         ES_EVENT_CONST_Msk,
+         NEVENT_ATTR_CONST,
+         0,
          NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
          NULL,
 #endif
-#if (CONFIG_EVENT_TIMESTAMP == 1)      || defined(__DOXYGEN__)
-         0,
-#endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct esEvent),
+         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         ES_EVENT_SIGNATURE
+         NEVENT_SIGNATURE
 #endif
     }
 };

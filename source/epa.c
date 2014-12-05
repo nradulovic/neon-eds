@@ -30,60 +30,40 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/critical.h"
-#include "base/queue.h"
-#include "base/list.h"
-#include "base/prio_queue.h"
+#include "port/sys_lock.h"
+#include "shared/component.h"
+#include "lib/queue.h"
+#include "lib/list.h"
+#include "lib/bitop.h"
 #include "vtimer/vtimer.h"
+#include "mem/mem_class.h"
+#include "kernel/kernel.h"
+#include "eds/event.h"
+#include "eds/smp.h"
 #include "eds/epa.h"
+
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
-#define EPA_SIGNATURE                   ((esAtomic)0xbeef00faul)
+#define EPA_SIGNATURE                   ((ndebug_magic)0xbeef00faul)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-enum epaKernelState {
-    KERNEL_INVALID_STATE,
-    KERNEL_STARTED,
-    KERNEL_STOPPED
+struct event_fifo
+{
+    struct nqueue               qp;
+    ncpu_reg                    max;
 };
 
-struct epaSchedElem {
-    struct esPqElem     pqElem;
-    struct esSls        regNode;
-};
-
-struct epaSched {
-    struct esPq         ready;
-    struct esSls        regSentinel;
-    struct esEpa *      epa;
-};
-
-struct epaKernel {
-    struct epaSched     sched;
-    void             (* idle)(void);
-    enum epaKernelState state;
-};
-
-struct epaEventQ {
-    struct esQp         qp;
-    uint32_t            max;
-};
-
-struct epaResource {
-    struct esSls        list;
-};
-
-struct esEpa {
-    struct esMem *      mem;
-    struct esSm *       sm;
-    struct epaSchedElem schedElem;
-    struct epaEventQ    eventQ;
-    const PORT_C_ROM char * name;
-    struct esSls        resources;
+struct nepa
+{
+    struct nmem *               mem;
+    struct esSm *               sm;
+    struct nthread *            thread;
+    struct event_fifo           event_fifo;
+    const char *                name;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
-    esAtomic            signature;
+    ndebug_magic                signature;
 #endif
 };
 
@@ -91,649 +71,381 @@ struct esEpa {
 
 /*--  Event Queue  -----------------------------------------------------------*/
 
-static PORT_C_INLINE void eventQInit(
-    struct epaEventQ *  eventQ,
-    void **             buff,
-    size_t              size);
+PORT_C_INLINE
+void event_fifo_init(
+    struct event_fifo *         event_fifo,
+    void **                     buff,
+    size_t                      size);
 
-static PORT_C_INLINE void eventQTerm(
-    struct epaEventQ *  eventQ);
+PORT_C_INLINE
+void event_fifo_term(
+    struct event_fifo *         event_fifo);
 
-static PORT_C_INLINE void eventQPutItemI(
-    struct epaEventQ *  eventQ,
-    struct esEvent *    event);
+PORT_C_INLINE
+void event_fifo_put_tail(
+    struct event_fifo *         event_fifo,
+    struct nevent *            event);
 
-static PORT_C_INLINE void eventQPutAheadItemI(
-    struct epaEventQ *  eventQ,
-    struct esEvent *    event);
+PORT_C_INLINE
+void event_fifo_put_head_i(
+    struct event_fifo *         event_fifo,
+    struct nevent *            event);
 
-static PORT_C_INLINE struct esEvent * eventQGetItemI(
-    struct epaEventQ *  eventQ);
+PORT_C_INLINE
+struct nevent * event_fifo_get(
+    struct event_fifo *         event_fifo);
 
-static PORT_C_INLINE bool eventQIsEmpty(
-    const struct epaEventQ * eventQ);
+PORT_C_INLINE
+bool event_fifo_is_empty(
+    const struct event_fifo *   event_fifo);
 
-static PORT_C_INLINE bool eventQIsFull(
-    const struct epaEventQ * eventQ);
+PORT_C_INLINE
+bool event_fifo_is_full(
+    const struct event_fifo *   event_fifo);
 
-static PORT_C_INLINE void ** eventQBuff(
-    const struct epaEventQ * eventQ);
-
-/*--  Scheduler  -------------------------------------------------------------*/
-
-static PORT_C_INLINE void schedInit(
-    void);
-
-static PORT_C_INLINE void schedTerm(
-    void);
-
-static PORT_C_INLINE void schedElementInit(
-    struct epaSchedElem * elem,
-    uint_fast8_t        priority);
-
-static PORT_C_INLINE void schedElementTermI(
-    struct epaSchedElem * elem);
-
-static PORT_C_INLINE void schedReadyAddI(
-    struct epaSchedElem * elem);
-
-static PORT_C_INLINE void schedReadyRmI(
-    struct epaSchedElem * elem);
-
-static PORT_C_INLINE void schedReadyRmSafeI(
-    struct epaSchedElem * elem);
-
-static PORT_C_INLINE bool schedReadyIsEmptyI(
-    void);
-
-static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
-    void);
-
-static PORT_C_INLINE bool schedIsEmptyI(
-    void);
-
-static PORT_C_INLINE void schedSetCurrentI(
-    struct esEpa *      epa);
-
-static PORT_C_INLINE struct esEpa * schedGetCurrentI(
-    void);
-
-static PORT_C_INLINE struct esEpa * schedGetHead(
-    void);
+PORT_C_INLINE
+void ** event_fifo_get_buff(
+    const struct event_fifo *   event_fifo);
 
 /*--  EPA support  -----------------------------------------------------------*/
 
-static PORT_C_INLINE esError epaSendEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+PORT_C_INLINE
+nerror epa_send_event_i(
+    struct nepa *              epa,
+    struct nevent *            event);
 
-static PORT_C_INLINE esError epaSendAheadEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event);
+PORT_C_INLINE
+nerror epa_send_ahead_event_i(
+    struct nepa *              epa,
+    struct nevent *            event);
 
-static PORT_C_INLINE struct esEvent * epaFetchEventI(
-    struct esEpa *      epa);
-
-/*--  Kernel support  --------------------------------------------------------*/
-
-static void kernelIdle(
-    void);
+PORT_C_INLINE
+struct nevent * epa_fetch_event_i(
+    struct nepa *              epa);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const ES_MODULE_INFO_CREATE("EPA", "Event Processing Agent", "Nenad Radulovic");
-static struct epaKernel GlobalEdsKernel;
+static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 /*--  Event Queue  -----------------------------------------------------------*/
 
-static PORT_C_INLINE void eventQInit(
-    struct epaEventQ *  eventQ,
-    void **             buff,
-    size_t              size) {
-
-    esQpInit(&eventQ->qp, buff, size);
-    eventQ->max = UINT32_C(0);
+PORT_C_INLINE
+void event_fifo_init(
+    struct event_fifo *         event_fifo,
+    void **                     buff,
+    size_t                      size)
+{
+    nqueue_init(&event_fifo->qp, buff, size);
+    event_fifo->max = UINT32_C(0);
 }
 
-static PORT_C_INLINE void eventQTerm(
-    struct epaEventQ *  eventQ) {
-
-    esQpTerm(&eventQ->qp);
+PORT_C_INLINE
+void event_fifo_term(
+    struct event_fifo *         event_fifo)
+{
+    nqueue_term(&event_fifo->qp);
 }
 
-static PORT_C_INLINE void eventQPutItemI(
-    struct epaEventQ *  eventQ,
-    struct esEvent * event) {
+PORT_C_INLINE
+void event_fifo_put_tail(
+    struct event_fifo *         event_fifo,
+    struct nevent *             event)
+{
+    uint32_t                    occupied;
 
-    uint32_t            occupied;
+    nqueue_put_tail(&event_fifo->qp, event);
+    occupied = nqueue_occupied(&event_fifo->qp);
 
-    esQpPutItem(&eventQ->qp, event);
-    occupied = esQpOccupied(&eventQ->qp);
-
-    if (eventQ->max < occupied) {
-        eventQ->max = occupied;
+    if (event_fifo->max < occupied) {
+        event_fifo->max = occupied;
     }
 }
 
-static PORT_C_INLINE void eventQPutAheadItemI(
-    struct epaEventQ *  eventQ,
-    struct esEvent *    event) {
+PORT_C_INLINE
+void event_fifo_put_head_i(
+    struct event_fifo *         event_fifo,
+    struct nevent *             event)
+{
+    uint32_t                    occupied;
 
-    uint32_t            occupied;
+    nqueue_put_head(&event_fifo->qp, event);
+    occupied = nqueue_occupied(&event_fifo->qp);
 
-    esQpPutTailItem(&eventQ->qp, event);
-    occupied = esQpOccupied(&eventQ->qp);
-
-    if (eventQ->max < occupied) {
-        eventQ->max = occupied;
+    if (event_fifo->max < occupied) {
+        event_fifo->max = occupied;
     }
 }
 
-static PORT_C_INLINE struct esEvent * eventQGetItemI(
-    struct epaEventQ *  eventQ) {
-
-    return ((struct esEvent *)esQpGetItem(&eventQ->qp));
+PORT_C_INLINE
+struct nevent * event_fifo_get(
+    struct event_fifo *         event_fifo)
+{
+    return ((struct nevent *)nqueue_get_head(&event_fifo->qp));
 }
 
-static PORT_C_INLINE bool eventQIsEmpty(
-    const struct epaEventQ * eventQ) {
-
-    return (esQpIsEmpty(&eventQ->qp));
+PORT_C_INLINE
+bool event_fifo_is_empty(
+    const struct event_fifo *   event_fifo)
+{
+    return (nqueue_is_empty(&event_fifo->qp));
 }
 
-static PORT_C_INLINE bool eventQIsFull(
-    const struct epaEventQ * eventQ) {
+PORT_C_INLINE
+bool event_fifo_is_full(
+    const struct event_fifo * eventQ) {
 
-    return (esQpIsFull(&eventQ->qp));
+    return (nqueue_is_full(&eventQ->qp));
 }
 
-static PORT_C_INLINE void ** eventQBuff(
-    const struct epaEventQ * eventQ) {
+PORT_C_INLINE
+void ** event_fifo_get_buff(
+    const struct event_fifo * eventQ) {
 
-    return (esQpBuff(&eventQ->qp));
-}
-
-/*--  Scheduler  -------------------------------------------------------------*/
-
-static PORT_C_INLINE void schedInit(
-    void) {
-
-    esPqInit(&GlobalEdsKernel.sched.ready);
-    esSlsSentinelInit(&GlobalEdsKernel.sched.regSentinel);
-}
-
-static PORT_C_INLINE void schedTerm(
-    void) {
-
-    esPqTerm(&GlobalEdsKernel.sched.ready);
-}
-
-static PORT_C_INLINE void schedElementInit(
-    struct epaSchedElem * elem,
-    uint_fast8_t        priority) {
-
-    esPqElementInit(&elem->pqElem, priority);
-    esSlsNodeInit(&elem->regNode);
-    esSlsNodeAddHead(&GlobalEdsKernel.sched.regSentinel, &elem->regNode);
-}
-
-static PORT_C_INLINE void schedElementTermI(
-    struct epaSchedElem * elem) {
-
-    esPqElementTerm(&elem->pqElem);
-    esSlsNodeRm(&GlobalEdsKernel.sched.regSentinel, &elem->regNode);
-}
-
-static PORT_C_INLINE void schedReadyAddI(
-    struct epaSchedElem * elem) {
-
-    esPqAdd(&GlobalEdsKernel.sched.ready, &elem->pqElem);
-}
-
-static PORT_C_INLINE void schedReadyRmI(
-    struct epaSchedElem * elem) {
-
-    esPqRm(&elem->pqElem);
-}
-
-static PORT_C_INLINE void schedReadyRmSafeI(
-    struct epaSchedElem * elem) {
-
-    if (esPqGetContainer_(&elem->pqElem) == NULL) {
-        esPqRm(&elem->pqElem);
-    }
-}
-
-static PORT_C_INLINE bool schedReadyIsEmptyI(
-    void) {
-
-    return (esPqIsEmpty(&GlobalEdsKernel.sched.ready));
-}
-
-static PORT_C_INLINE struct esEpa * schedReadyGetHighestI(
-    void) {
-
-    uint_fast8_t        prio;
-    struct esEpa *      epa;
-    struct esPqElem *   elem;
-
-    elem = esPqGetHighest(&GlobalEdsKernel.sched.ready);
-    prio = esPqGetPriority_(elem);
-    (void)esPqRotate(&GlobalEdsKernel.sched.ready, prio);
-    epa  = (struct esEpa *)((uint8_t *)elem - offsetof(struct esEpa, schedElem));
-
-    return (epa);
-}
-
-static PORT_C_INLINE bool schedIsEmptyI(
-    void) {
-
-    return (esSlsIsEmpty(&GlobalEdsKernel.sched.regSentinel));
-}
-
-static PORT_C_INLINE void schedSetCurrentI(
-    struct esEpa *      epa) {
-
-    GlobalEdsKernel.sched.epa = epa;
-}
-
-static PORT_C_INLINE struct esEpa * schedGetCurrentI(
-    void) {
-
-    return (GlobalEdsKernel.sched.epa);
-}
-
-static PORT_C_INLINE struct esEpa * schedGetHead(
-    void) {
-
-    struct esEpa *      epa;
-
-    epa = ES_SLS_NODE_ENTRY(
-        struct esEpa,
-        schedElem.regNode,
-        GlobalEdsKernel.sched.regSentinel.next);
-
-    return (epa);
+    return (nqueue_buffer(&eventQ->qp));
 }
 
 /*--  EPA support  -----------------------------------------------------------*/
 
-static PORT_C_INLINE esError epaSendEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+PORT_C_INLINE
+nerror epa_send_event_i(
+    struct nepa *              epa,
+    struct nevent *             event)
+{
+    if (event->ref < NEVENT_REF_LIMIT) {
+        nevent_ref_up(event);
 
-    if (esEventRefGet_(event) < ES_EVENT_REF_LIMIT) {
-        esEventRefUp_(event);
+        if (event_fifo_is_empty(&epa->event_fifo) == true) {
+            nthread_ready_i(epa->thread);
+            event_fifo_put_tail(&epa->event_fifo, event);
 
-        if (eventQIsEmpty(&epa->eventQ) == true) {
-            schedReadyAddI(&epa->schedElem);
-            eventQPutItemI(&epa->eventQ, event);
+            return (NERROR_NONE);
+        } else if (event_fifo_is_full(&epa->event_fifo) == false) {
+            event_fifo_put_tail(&epa->event_fifo, event);
 
-            return (ES_ERROR_NONE);
-        } else if (eventQIsFull(&epa->eventQ) == false) {
-            eventQPutItemI(&epa->eventQ, event);
-
-            return (ES_ERROR_NONE);
+            return (NERROR_NONE);
         } else {
-            esEventDestroyI(event);
+            nevent_destroy_i(event);
 
-            return (ES_ERROR_NO_MEMORY);
+            return (NERROR_NO_MEMORY);
         }
     }
 
-    return (ES_ERROR_NO_REFERENCE);
+    return (NERROR_NO_REFERENCE);
 }
 
-static PORT_C_INLINE esError epaSendAheadEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+PORT_C_INLINE
+nerror epa_send_ahead_event_i(
+    struct nepa *              epa,
+    struct nevent *             event)
+{
+    if (event->ref < NEVENT_REF_LIMIT) {
+        nevent_ref_up(event);
 
-    if (esEventRefGet_(event) < ES_EVENT_REF_LIMIT) {
-        esEventRefUp_(event);
+        if (event_fifo_is_empty(&epa->event_fifo) == true) {
+            nthread_ready_i(epa->thread);
+            event_fifo_put_head_i(&epa->event_fifo, event);
 
-        if (eventQIsEmpty(&epa->eventQ) == true) {
-            schedReadyAddI(&epa->schedElem);
-            eventQPutAheadItemI(&epa->eventQ, event);
+            return (NERROR_NONE);
+        } else if (event_fifo_is_full(&epa->event_fifo) == false) {
+            event_fifo_put_head_i(&epa->event_fifo, event);
 
-            return (ES_ERROR_NONE);
-        } else if (eventQIsFull(&epa->eventQ) == false) {
-            eventQPutAheadItemI(&epa->eventQ, event);
-
-            return (ES_ERROR_NONE);
+            return (NERROR_NONE);
         } else {
-            esEventDestroyI(event);
+            nevent_destroy_i(event);
 
-            return (ES_ERROR_NO_MEMORY);
+            return (NERROR_NO_MEMORY);
         }
     }
 
-    return (ES_ERROR_NO_REFERENCE);
+    return (NERROR_NO_REFERENCE);
 }
 
-static PORT_C_INLINE struct esEvent * epaFetchEventI(
-    struct esEpa *      epa) {
+PORT_C_INLINE
+struct nevent * epa_fetch_event_i(
+    struct nepa *               epa)
+{
+    struct nevent *             event;
 
-    struct esEvent *    event;
+    event = event_fifo_get(&epa->event_fifo);
 
-    event = eventQGetItemI(&epa->eventQ);
-
-    if (eventQIsEmpty(&epa->eventQ) == true) {
-        schedReadyRmI(&epa->schedElem);
+    if (event_fifo_is_empty(&epa->event_fifo) == true) {
+        nthread_block_i(epa->thread);
     }
 
-    return(event);
+    return (event);
 }
 
-/*--  Kernel support  --------------------------------------------------------*/
-
-static void kernelIdle(
-    void) {
+static void epa_dispatch(
+    void *                      arg)
+{
 
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esEdsInit(
-    void) {
 
-    esModuleVTimerInit();
-    schedInit();
-    GlobalEdsKernel.idle  = kernelIdle;
-    GlobalEdsKernel.state = KERNEL_STOPPED;
-
-    return (ES_ERROR_NONE);
-}
-
-esError esEdsTerm(
-    void) {
-
-    esError             error;
-
-    while (schedIsEmptyI() != true) {
-        error = esEpaDestroy(schedGetHead());
-
-        if (error != ES_ERROR_NONE) {
-
-            return (ES_ERROR_NOT_PERMITTED);
-        }
-    }
-    schedTerm();
-
-    return (ES_ERROR_NONE);
-}
-
-esError esEdsStart(
-    void) {
-
-    esIntrCtx           intrCtx;
-
-    GlobalEdsKernel.state = KERNEL_STARTED;
-    ES_CRITICAL_LOCK_ENTER(&intrCtx);
-
-    while (GlobalEdsKernel.state == KERNEL_STARTED) {
-
-        while (schedReadyIsEmptyI() == false) {
-            struct esEpa *   epa;
-            struct esEvent * event;
-            esAction         action;
-
-            epa = schedReadyGetHighestI();
-            schedSetCurrentI(epa);
-            event = epaFetchEventI(epa);
-            ES_CRITICAL_LOCK_EXIT(intrCtx);
-            ES_ENSURE_INTERNAL(esSmDispatch(epa->sm, event, &action));
-            ES_CRITICAL_LOCK_ENTER(&intrCtx);
-
-            if (action == ES_ACTION_DEFFERED) {
-                epaSendEventI(epa, event);
-            }
-            ES_ENSURE_INTERNAL(esEventDestroyI(event));
-        }
-        schedSetCurrentI(NULL);
-        ES_CRITICAL_LOCK_EXIT(intrCtx);
-        GlobalEdsKernel.idle();
-        ES_CRITICAL_LOCK_ENTER(&intrCtx);
-    }
-    ES_CRITICAL_LOCK_EXIT(intrCtx);
-
-    return (ES_ERROR_NONE);
-}
-
-esError esEdsStop(
-    void) {
-
-    GlobalEdsKernel.state = KERNEL_STOPPED;
-
-    return (ES_ERROR_NONE);
-}
-
-void esEdsSetIdle(
-    void (* idle)(void)) {
-
-    if (idle == NULL) {
-        idle = kernelIdle;
-    }
-    GlobalEdsKernel.idle = idle;
-}
-
-void esEdsGetIdle(
-    void (** idle)(void)) {
-
-    ES_REQUIRE(ES_API_POINTER, idle != NULL);
-
-    if (GlobalEdsKernel.idle == kernelIdle) {
-        *idle = NULL;
-    } else {
-        *idle = GlobalEdsKernel.idle;
-    }
-}
-
-void esEdsGetCurrent(
-    struct esEpa **     epa) {
-
+struct nepa * neds_get_current(void)
+{
     /* NOTE: Since pointer loading is atomic operation there is no need to lock
      *       interrupts here.
      */
-    *epa = schedGetCurrentI();
+    
+    return ((struct nepa *)nthread_get_current()->stack);
 }
 
-esError esEpaResourceAdd(
-    size_t              size,
-    void **             resource) {
+struct nepa * esEpaCreate(
+    const struct nepaDefine *   epaDefine,
+    const struct esSmDefine *   smDefine,
+    struct nmem *               mem)
+{
+    struct nepa *               epa;
+    struct esSm *               sm;
+    struct nthread *            thread;
+    nsys_lock                   sys_lock;
+    void *                      event_fifo_buff;
 
-    esError             error;
-    struct epaResource * ret;
-    struct esEpa *      epa;
+    NREQUIRE(ES_API_POINTER, epaDefine != NULL);
+    NREQUIRE(ES_API_POINTER, smDefine != NULL);
+    NREQUIRE(ES_API_POINTER, epa != NULL);
 
-    epa   = schedGetCurrentI();
-    error = esMemAlloc(epa->mem, size + sizeof(struct epaResource), (void **)&ret);
+    epa = nmem_alloc(mem, sizeof(struct nepa));
 
-    if (error != ES_ERROR_NONE) {
-        goto ERROR_ALLOC_RESOURCE;
-    }
-    esSlsNodeInit(&ret->list);
-    esSlsNodeAddHead(&epa->resources, &ret->list);
-    *resource = (void **)(&ret[1]);
-
-    return (ES_ERROR_NONE);
-ERROR_ALLOC_RESOURCE:
-
-    return (ES_ERROR_NO_MEMORY);
-}
-
-esError esEpaResourceRemove(
-    void *              resource) {
-
-    (void)resource;
-
-    return (ES_ERROR_NONE);
-}
-
-esError esEpaCreate(
-    const struct esEpaDefine * epaDefine,
-    const struct esSmDefine * smDefine,
-    struct esMem *      mem,
-    struct esEpa **     epa) {
-
-    esError             error;
-    esIntrCtx           intrCtx;
-    struct esSm *       sm;
-    void **             qBuff;
-
-    ES_REQUIRE(ES_API_POINTER, epaDefine != NULL);
-    ES_REQUIRE(ES_API_POINTER, smDefine != NULL);
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-
-    error = esMemAlloc(mem, sizeof(struct esEpa), (void **)epa);
-
-    if (error != ES_ERROR_NONE) {
+    if (epa == NULL) {
         goto ERROR_ALLOC_EPA;
     }
-    error = esMemAlloc(mem, ES_QP_SIZEOF(epaDefine->queueSize), (void **)&qBuff);
+    thread = nmem_alloc(mem, sizeof(nthread));
 
-    if (error != ES_ERROR_NONE) {
-        goto ERROR_ALLOC_QBUFF;
+    if (thread == NULL) {
+        goto ERRIR_ALLOC_THREAD;
     }
-    error = esSmCreate(smDefine, mem, &sm);
+    event_fifo_buff = nmem_alloc(mem, NQUEUE_SIZEOF(epaDefine->queueSize));
 
-    if (error != ES_ERROR_NONE) {
+    if (event_fifo_buff == NULL) {
+        goto ERROR_ALLOC_EVENT_FIFO_BUFF;
+    }
+    sm = esSmCreate(smDefine, mem);
+
+    if (sm == NULL) {
         goto ERROR_CREATE_SM;
     }
-    (*epa)->mem  = mem;
-    (*epa)->sm   = sm;
-    (*epa)->name = epaDefine->name;
-    schedElementInit(&(*epa)->schedElem, epaDefine->priority);
-    eventQInit(&(*epa)->eventQ, qBuff, epaDefine->queueSize);
-    esSlsSentinelInit(&(*epa)->resources);
-    ES_CRITICAL_LOCK_ENTER(&intrCtx);
-    schedReadyAddI(&(*epa)->schedElem);
-    eventQPutItemI(&(*epa)->eventQ, (struct esEvent *)ES_SMP_EVENT(ES_INIT));
-    ES_CRITICAL_LOCK_EXIT(intrCtx);
+    epa->mem    = mem;
+    epa->sm     = sm;
+    epa->thread = thread;
+    epa->name   = epaDefine->name;
+    nthread_init(epa->thread, epa_dispatch, epa, epaDefine->priority);
+    event_fifo_init(&epa->event_fifo, event_fifo_buff, epaDefine->queueSize);
+    nsys_lock_enter(&sys_lock);
+    event_fifo_put_head_i(&epa->event_fifo,
+        (struct nevent *)ES_SMP_EVENT(ES_INIT));
+    nsys_lock_exit(&sys_lock);
 
-    ES_OBLIGATION((*epa)->signature = EPA_SIGNATURE);
+    NOBLIGATION((*epa)->signature = EPA_SIGNATURE);
 
-    return (ES_ERROR_NONE);
+    return (epa);
 ERROR_CREATE_SM:
-    ES_ENSURE_INTERNAL(esSmDestroy(sm));
-ERROR_ALLOC_QBUFF:
-    ES_ENSURE_INTERNAL(esMemFree(mem, epa));
+    esSmDestroy(sm);
+ERROR_ALLOC_EVENT_FIFO_BUFF:
+    nmem_free(mem, thread);
+ERRIR_ALLOC_THREAD:
+    nmem_free(mem, epa);
 ERROR_ALLOC_EPA:
 
-    return (ES_ERROR_NO_MEMORY);
+    return (NULL);
 }
 
-esError esEpaDestroy(
-    struct esEpa *      epa) {
+void esEpaDestroy(
+    struct nepa *               epa)
+{
+    nsys_lock                   sys_lock;
+    void **                     event_fifo_buff;
 
-    esError             error;
-    esIntrCtx           intrCtx;
-    void **             qBuff;
+    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
 
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
-    ES_OBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
+    nsys_lock_enter(&sys_lock);
 
-    ES_CRITICAL_LOCK_ENTER(&intrCtx);
+    while (event_fifo_is_empty(&epa->event_fifo) != true) {
+        struct nevent *         event;
 
-    while (eventQIsEmpty(&epa->eventQ) != true) {
-        struct esEvent * event;
-
-        event = eventQGetItemI(&epa->eventQ);
-        esEventDestroyI(event);
+        event = event_fifo_get(&epa->event_fifo);
+        nevent_destroy_i(event);
     }
-    schedReadyRmSafeI(&epa->schedElem);
-    schedElementTermI(&epa->schedElem);
-    ES_CRITICAL_LOCK_EXIT(intrCtx);
+    nthread_block_i(epa->thread);
+    nthread_term(epa->thread);
+    nsys_lock_exit(&sys_lock);
 
-    qBuff = eventQBuff(&epa->eventQ);
-    eventQTerm(&epa->eventQ);
-    error = esSmDestroy(epa->sm);
-
-    if (error != ES_ERROR_NONE) {
-        goto ERROR_FREE_SM;
-    }
-    error = esMemFree(epa->mem, qBuff);
-
-    if (error != ES_ERROR_NONE) {
-        goto ERROR_FREE_QBUFF;
-    }
-    error = esMemFree(epa->mem, epa);
-
-    if (error != ES_ERROR_NONE) {
-        goto ERROR_FREE_EPA;
-    }
-
-    return (ES_ERROR_NONE);
-ERROR_FREE_EPA:
-ERROR_FREE_QBUFF:
-ERROR_FREE_SM:
-
-    return (ES_ERROR_NOT_PERMITTED);
+    event_fifo_buff = event_fifo_get_buff(&epa->event_fifo);
+    event_fifo_term(&epa->event_fifo);
+    esSmDestroy(epa->sm);
+    nmem_free(epa->mem, event_fifo_buff);
+    nmem_free(epa->mem, epa->thread);
+    nmem_free(epa->mem, epa);
 }
 
-esError esEpaSendEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+nerror esEpaSendEventI(
+    struct nepa *      epa,
+    struct nevent *    event) {
 
-    esError             error;
+    nerror             error;
 
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    error = epaSendEventI(epa, event);
+    error = epa_send_event_i(epa, event);
 
     return (error);
 }
 
-esError esEpaSendEvent(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+nerror esEpaSendEvent(
+    struct nepa *               epa,
+    struct nevent *             event)
+{
+    nerror                      error;
+    nsys_lock                   sys_lock;
 
-    esError             error;
-    esIntrCtx           intrCtx;
+    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
-
-    ES_CRITICAL_LOCK_ENTER(&intrCtx);
-    error = epaSendEventI(epa, event);
-    ES_CRITICAL_LOCK_EXIT(intrCtx);
+    nsys_lock_enter(&sys_lock);
+    error = epa_send_event_i(epa, event);
+    nsys_lock_exit(&sys_lock);
 
     return (error);
 }
 
 
-esError esEpaSendAheadEventI(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+nerror esEpaSendAheadEventI(
+    struct nepa *      epa,
+    struct nevent *    event) {
 
-    esError             error;
+    nerror             error;
 
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    error = epaSendAheadEventI(epa, event);
+    error = epa_send_ahead_event_i(epa, event);
 
     return (error);
 }
 
-esError esEpaSendAheadEvent(
-    struct esEpa *      epa,
-    struct esEvent *    event) {
+nerror esEpaSendAheadEvent(
+    struct nepa *               epa,
+    struct nevent *             event)
+{
+    nerror                      error;
+    nsys_lock                   sys_lock;
 
-    esError             error;
-    esIntrCtx           intrCtx;
+    NREQUIRE(ES_API_POINTER, epa != NULL);
+    NREQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    ES_REQUIRE(ES_API_POINTER, epa != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  epa->signature == EPA_SIGNATURE);
-
-    ES_CRITICAL_LOCK_ENTER(&intrCtx);
-    error = epaSendAheadEventI(epa, event);
-    ES_CRITICAL_LOCK_EXIT(intrCtx);
+    nsys_lock_enter(&sys_lock);
+    error = epa_send_ahead_event_i(epa, event);
+    nsys_lock_exit(&sys_lock);
 
     return (error);
 }

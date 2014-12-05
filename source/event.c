@@ -30,7 +30,11 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "plat/critical.h"
+#include <stddef.h>
+
+#include "port/sys_lock.h"
+#include "shared/component.h"
+#include "mem/mem_class.h"
 #include "eds/event.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
@@ -42,10 +46,10 @@
 
 struct evtStorage {
     struct storageInstance {
-        struct esMem *      handle;
-        size_t              blockSize;
+        struct nmem *      handle;
+        size_t              block_size;
     }                   mem[CONFIG_EVENT_STORAGE_NPOOLS];
-    uint_fast8_t        nPools;
+    uint_fast8_t        pools;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -59,48 +63,48 @@ struct evtStorage {
  *              Event to initialize
  * @inline
  */
-static PORT_C_INLINE void eventInit(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent *    event);
+static void event_init(
+    struct nevent *             event,
+    size_t                      size,
+    uint16_t                    id);
 
 /**@brief       Terminate an event
  * @param       event
  *              Event to terminate
  * @inline
  */
-static PORT_C_INLINE_ALWAYS void eventTerm(
-    struct esEvent *    event);
+static void event_term(
+    struct nevent *             event);
 
 
-static PORT_C_INLINE esError eventCreateI(
-    size_t              size,
-    struct esEvent **   event);
+static struct nevent * event_create_i(
+    size_t                      size);
 
-static PORT_C_INLINE esError eventDestroyI(
-    struct esEvent *    event);
+static void event_destroy_i(
+    struct nevent *             event);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const ES_MODULE_INFO_CREATE("EVT", "Event management", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Event management", "Nenad Radulovic");
 
-static struct evtStorage GlobalEvtStorage;
+static struct evtStorage g_event_storage;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-static PORT_C_INLINE void eventInit(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent *    event) {
-
-    ES_REQUIRE(ES_API_OBJECT, event->signature != ES_EVENT_SIGNATURE);
+static void event_init(
+    struct nevent *             event,
+    size_t                      size,
+    uint16_t                    id)
+{
+    NREQUIRE(NAPI_OBJECT, event->signature != NEVENT_SIGNATURE);
 
     event->id     = id;
     event->attrib = 0u;                                                         /* Dogadjaj je dinamican, sa 0 korisnika.                   */
+    event->ref    = 0u;
 
 #if (CONFIG_EVENT_TIMESTAMP == 1)
-    event->timestamp = ES_SYSTIMER_GET_CVAL();
+    event->timestamp = NSYSTIMER_GET_CVAL();
 #endif
 #if (CONFIG_EVENT_PRODUCER == 1)
     CONFIG_GET_CURRENT_EPA(&event->producer);
@@ -110,233 +114,211 @@ static PORT_C_INLINE void eventInit(
 #else
     (void)size;
 #endif
-    ES_OBLIGATION(event->signature = ES_EVENT_SIGNATURE);
+    NOBLIGATION(event->signature = NEVENT_SIGNATURE);
 }
 
-static PORT_C_INLINE void eventTerm(
-    struct esEvent *    event) {
+static void event_term(
+    struct nevent *    event) {
 
-    ES_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
-    ES_OBLIGATION(event->signature = ~ES_EVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
+    NOBLIGATION(event->signature = ~NEVENT_SIGNATURE);
 
 #if (CONFIG_API_VALIDATION == 0)
     (void)event;
 #endif
 }
 
-static PORT_C_INLINE esError eventCreateI(
-    size_t              size,
-    struct esEvent **   event) {
+static struct nevent * event_create_i(
+    size_t                      size)
+{
+    uint_fast8_t                cnt;
 
-    esError             error;
-    uint_fast8_t        cnt;
+    NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
 
-    ES_REQUIRE(ES_API_RANGE, size >= sizeof(struct esEvent));
-    ES_REQUIRE(ES_API_POINTER, event != NULL);
+    for (cnt = 0u; cnt < g_event_storage.pools; cnt++) {
 
-    cnt = 0u;
+        if (g_event_storage.mem[cnt].block_size >= size) {
+            struct nevent *     event;
+            struct nmem *       mem;
 
-    while (cnt < GlobalEvtStorage.nPools) {
+            mem   = g_event_storage.mem[cnt].handle;
+            event = nmem_alloc_i(mem, size);
 
-        if (GlobalEvtStorage.mem[cnt].blockSize >= size) {
-            struct esMem *      mem;
-
-            mem = GlobalEvtStorage.mem[cnt].handle;
-            error = esMemAllocI(mem, size, (void **)event);
-
-            if (error != ES_ERROR_NONE) {
-
-                return (ES_ERROR_NO_MEMORY);
+            if (event) {
+                event->mem = mem;
             }
-            (*event)->mem = mem;
             
-            return (ES_ERROR_NONE);
+            return (event);
         }
-        cnt++;
     }
     
-    return (ES_ERROR_NO_RESOURCE);
+    return (NULL);
 }
 
-static PORT_C_INLINE esError eventDestroyI(
-    struct esEvent *    event) {
-
-    esError             error;
-    
-    ES_ENSURE_INTERNAL(
-        error = esMemFreeI(
-            event->mem,
-            event));
-
-    return (error);
+static void event_destroy_i(
+    struct nevent *    event)
+{
+    nmem_free_i(event->mem, event);
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-esError esEventRegisterMem(
-    struct esMem *      mem) {
 
-    esLockCtx           lockCtx;
-    uint_fast8_t        cnt;
-    size_t              size;
 
-    ES_REQUIRE(ES_API_POINTER, mem != NULL);
+void nevent_register_mem(
+    struct nmem *               mem)
+{
+    nsys_lock                   sys_lock;
+    uint_fast8_t                cnt;
+    size_t                      size;
 
-    ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    ES_ENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
-    cnt = GlobalEvtStorage.nPools;
+    NREQUIRE(NAPI_POINTER, mem != NULL);
+
+    nsys_lock_enter(&sys_lock);
+    NENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
+    cnt = g_event_storage.pools;
 
     while (0u < cnt) {
-        GlobalEvtStorage.mem[cnt].handle    =
-            GlobalEvtStorage.mem[cnt - 1].handle;
-        GlobalEvtStorage.mem[cnt].blockSize =
-            GlobalEvtStorage.mem[cnt - 1].blockSize;
+        g_event_storage.mem[cnt].handle = g_event_storage.mem[cnt - 1].handle;
+        g_event_storage.mem[cnt].block_size =
+            g_event_storage.mem[cnt - 1].block_size;
 
-        if (GlobalEvtStorage.mem[cnt].blockSize <= size) {
+        if (g_event_storage.mem[cnt].block_size <= size) {
 
             break;
         }
         cnt--;
     }
-    GlobalEvtStorage.mem[cnt].handle    = mem;
-    GlobalEvtStorage.mem[cnt].blockSize = size;
-    GlobalEvtStorage.nPools++;
-    ES_CRITICAL_LOCK_EXIT(lockCtx);
-
-    return (ES_ERROR_NONE);
+    g_event_storage.mem[cnt].handle     = mem;
+    g_event_storage.mem[cnt].block_size = size;
+    g_event_storage.pools++;
+    nsys_lock_exit(sys_lock);
 }
 
-esError esEventUnregisterMem(
-    struct esMem *      mem) {
 
-    esLockCtx           lockCtx;
-    uint_fast8_t        cnt;
 
-    ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    cnt = GlobalEvtStorage.nPools;
+void nevent_unregister_mem(
+    struct nmem *               mem)
+{
+    nsys_lock                   sys_lock;
+    uint_fast8_t                cnt;
 
-    while ((0u < cnt) && (mem != GlobalEvtStorage.mem[cnt].handle)) {
+    nsys_lock_enter(&sys_lock);
+    cnt = g_event_storage.pools;
+
+    while ((0u < cnt) && (mem != g_event_storage.mem[cnt].handle)) {
         cnt--;
     }
-    GlobalEvtStorage.nPools--;
+    g_event_storage.pools--;
 
-    ES_REQUIRE(ES_API_RANGE, mem == GlobalEvtStorage.mem[cnt].handle);
+    NREQUIRE(NAPI_RANGE, mem == g_event_storage.mem[cnt].handle);
 
-    while (cnt < GlobalEvtStorage.nPools) {
-        GlobalEvtStorage.mem[cnt].handle    =
-            GlobalEvtStorage.mem[cnt + 1].handle;
-        GlobalEvtStorage.mem[cnt].blockSize =
-            GlobalEvtStorage.mem[cnt + 1].blockSize;
+    while (cnt < g_event_storage.pools) {
+        g_event_storage.mem[cnt].handle = g_event_storage.mem[cnt + 1].handle;
+        g_event_storage.mem[cnt].block_size =
+            g_event_storage.mem[cnt + 1].block_size;
         cnt++;
     }
-    GlobalEvtStorage.mem[GlobalEvtStorage.nPools - 1].handle    = NULL;
-    GlobalEvtStorage.mem[GlobalEvtStorage.nPools - 1].blockSize = 0;
-    ES_CRITICAL_LOCK_EXIT(lockCtx);
-
-    return (ES_ERROR_NONE);
+    g_event_storage.mem[g_event_storage.pools - 1].handle     = NULL;
+    g_event_storage.mem[g_event_storage.pools - 1].block_size = 0;
+    nsys_lock_exit(sys_lock);
 }
 
-/*----------------------------------------------------------------------------*/
-esError esEventCreate(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent **   event) {
 
-    esError             error;
-    esLockCtx           lockCtx;
 
-    ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    error = eventCreateI(size, event);
-    ES_CRITICAL_LOCK_EXIT(lockCtx);
+struct nevent * nevent_create(
+    size_t                      size,
+    uint16_t                    id)
+{
+    struct nevent *             event;
+    nsys_lock                   sys_lock;
 
-    if (error == ES_ERROR_NONE) {
-        eventInit(size, id, *event);
+    nsys_lock_enter(&sys_lock);
+    event = event_create_i(size);
+    nsys_lock_exit(sys_lock);
+
+    if (event) {
+        event_init(event, size, id);
     }
 
-    return (error);
+    return (event);
 }
 
-/*----------------------------------------------------------------------------*/
-esError esEventCreateI(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent **   event) {
 
-    esError             error;
 
-    error = eventCreateI(size, event);
+struct nevent * nevent_create_i(
+    size_t                      size,
+    uint16_t                    id)
+{
+    struct nevent *             event;
+
+    event = event_create_i(size);
     
-    if (error == ES_ERROR_NONE) {
-        eventInit(size, id, *event);
+    if (event) {
+        event_init(event, size, id);
     }
 
-    return (error);
+    return (event);
 }
 
-/*----------------------------------------------------------------------------*/
-void esEventLock(
-    struct esEvent *           evt) {
 
-    ES_REQUIRE(ES_API_POINTER, NULL != evt);
-    ES_REQUIRE(ES_API_OBJECT, ES_EVENT_SIGNATURE == evt->signature);
 
-    evt->attrib |= ES_EVENT_RESERVED_Msk;
+
+
+void nevent_destroy(
+    struct nevent *             event)
+{
+    nsys_lock                   sys_lock;
+
+    nsys_lock_enter(&sys_lock);
+    nevent_destroy_i(event);
+    nsys_lock_exit(&sys_lock);
 }
 
-/*----------------------------------------------------------------------------*/
-void esEventUnlock(
-    struct esEvent *       event) {
 
-    ES_REQUIRE(ES_API_POINTER, event != NULL);
-    ES_REQUIRE(ES_API_OBJECT,  event->signature == ES_EVENT_SIGNATURE);
 
-    event->attrib &= (uint16_t)~ES_EVENT_RESERVED_Msk;
+void nevent_destroy_i(
+    struct nevent *             event)
+{
+    NREQUIRE(NAPI_POINTER, event);
+    NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
 
-    if (esEventRefGet_(event) == 0u) {
-        eventTerm(
-            event);
-        eventDestroyI(
-            event);
+    if (nevent_ref_down(event) == 0u) {
+        event_term(event);
+        event_destroy_i(event);
     }
 }
 
-/*----------------------------------------------------------------------------*/
-esError esEventDestroy(
-    struct esEvent *    evt) {
 
-    esError             error;
-    esLockCtx           lockCtx;
 
-    ES_CRITICAL_LOCK_ENTER(&lockCtx);
-    error = esEventDestroyI(
-        evt);
-    ES_CRITICAL_LOCK_EXIT(lockCtx);
+void nevent_lock(
+    struct nevent *           evt) {
 
-    return (error);
+    NREQUIRE(NAPI_POINTER, NULL != evt);
+    NREQUIRE(NAPI_OBJECT, NEVENT_SIGNATURE == evt->signature);
+
+    evt->attrib |= NEVENT_ATTR_RESERVED;
 }
 
-/*----------------------------------------------------------------------------*/
-esError esEventDestroyI(
-    struct esEvent *    event) {
 
-    esError             error;
 
-    ES_REQUIRE(ES_API_POINTER, event);
-    ES_REQUIRE(ES_API_OBJECT, event->signature == ES_EVENT_SIGNATURE);
+void nevent_unlock(
+    struct nevent *             event)
+{
+    NREQUIRE(NAPI_POINTER, event != NULL);
+    NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
 
-    error = ES_ERROR_NONE;
-    esEventReferenceDown_(
-        event);
+    event->attrib &= (uint16_t)~NEVENT_ATTR_RESERVED;
 
-    if (esEventRefGet_(event) == 0u) {
-        eventTerm(
-            event);
-        error = eventDestroyI(
-            event);
+    if (nevent_ref_down(event) == 0u) {
+        struct nsys_lock        sys_lock;
+
+        event_term(event);
+        nsys_lock_enter(&sys_lock)
+        event_destroy_i(event);
+        nsys_lock_exit(&sys_lock);
     }
-
-    return (error);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

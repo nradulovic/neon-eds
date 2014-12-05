@@ -36,10 +36,8 @@
 
 #include <stdint.h>
 
-#include "plat/compiler.h"
-#include "arch/systimer.h"
-#include "base/debug.h"
-#include "mem/mem_class.h"
+#include "port/compiler.h"
+#include "shared/debug.h"
 #include "eds/event_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -53,7 +51,7 @@
  *              defining a static event in ROM address space.
  * @api
  */
-#define ES_EVENT_RESERVED_Msk           ((uint16_t)(0x01u << 15))
+#define NEVENT_ATTR_RESERVED            ((ncpu_reg)(0x01u << 0))
 
 /**@brief       Bit mask which defines a constant event
  * @details     When the bits defined in this bit mask are set the given event
@@ -62,22 +60,22 @@
 deleted.
  * @api
  */
-#define ES_EVENT_CONST_Msk              ((uint16_t)(0x01u << 14))
+#define NEVENT_ATTR_CONST               ((ncpu_reg)(0x01u << 1))
 
 /**@brief       This macro defines limit for event ID value
  * @details     An event must have ID which is below this limit.
  * @api
  */
-#define ES_EVENT_REF_LIMIT              (ES_EVENT_CONST_Msk - (uint16_t)1u)
+#define NEVENT_REF_LIMIT                (NCPU_REG_MAX)
 
 /**@brief       Event object API signature
  */
-#define ES_EVENT_SIGNATURE              ((esAtomic)0xdeadfeedul)
+#define NEVENT_SIGNATURE                ((ndebug_magic)0xdeadfeedul)
 
 /**@brief       Event with identifiers equalt to or higer than this number are
  *              event reserved for local usage.
  */
-#define ES_EVENT_LOCAL_ID               32768u
+#define NEVENT_LOCAL_ID                 32768u
 
 /*------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -85,6 +83,9 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
+
+struct nmem;
+struct nepa;
 
 /**@brief       Event header structure
  * @details     This structure defines mandatory event data. Other data fields
@@ -95,27 +96,24 @@ extern "C" {
  *              directives for this structure.
  * @api
  */
-struct CONFIG_EVENT_STRUCT_ATTRIBUTE esEvent {
-    uint16_t            id;
+struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
+    uint16_t                    id;
 /**<@brief Event ID number                                  */
-    uint16_t            attrib;
+    ncpu_reg                    ref;
+    ncpu_reg                    attrib;
 /**<@brief Event dynamic attributes                         */
-    struct esMem *      mem;
+    struct nmem *               mem;
 /**<@brief Event storage                                    */
 #if (CONFIG_EVENT_PRODUCER == 1)  || defined(__DOXYGEN__)
-    struct esEpa *      producer;
+    struct nepa *               producer;
 /**<@brief Event producer                                   */
 #endif
-#if (CONFIG_EVENT_TIMESTAMP == 1) || defined(__DOXYGEN__)
-    esSysTimerTick      timestamp;
-/**<@brief Event creation time-stamp                        */
-#endif
 #if (CONFIG_EVENT_SIZE == 1)      || defined(__DOXYGEN__)
-    size_t              size;
+    size_t                      size;
 /**<@brief Event size in bytes                              */
 #endif
 #if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
-    esAtomic            signature;
+    ndebug_magic                signature;
 /**<@brief Structure signature, used during development only*/
 #endif
 };
@@ -123,7 +121,7 @@ struct CONFIG_EVENT_STRUCT_ATTRIBUTE esEvent {
 /**@brief       Event header type
  * @api
  */
-typedef struct esEvent esEvent;
+typedef struct nevent nevent;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -141,8 +139,8 @@ typedef struct esEvent esEvent;
  *              memory handles for event storage.
  * @api
  */
-esError esEventRegisterMem(
-    struct esMem *      mem);
+void nevent_register_mem(
+    struct nmem *               mem);
 
 /**@brief       Unregister a memory object
  * @param       esPoolMem
@@ -151,8 +149,8 @@ esError esEventRegisterMem(
  *              - @ref ES_ERROR_NONE
  * @api
  */
-esError esEventUnregisterMem(
-    struct esMem *      mem);
+void nevent_unregister_mem(
+    struct nmem *               mem);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
@@ -172,10 +170,9 @@ esError esEventUnregisterMem(
  *              - @reg ES_ERROR_NO_MEMORY - No available memory storage
  * @api
  */
-esError esEventCreate(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent **   event);
+struct nevent * nevent_create(
+    size_t                      size,
+    uint16_t                    id);
 
 /**@brief       Create an event
  * @param       size
@@ -191,10 +188,9 @@ esError esEventCreate(
  *              - @reg ES_ERROR_NO_MEMORY - No available memory storage
  * @iclass
  */
-esError esEventCreateI(
-    size_t              size,
-    uint16_t            id,
-    struct esEvent **   event);
+struct nevent * nevent_create_i(
+    size_t                      size,
+    uint16_t                    id);
 
 /**@brief       Destroy an event
  * @param       event
@@ -203,8 +199,8 @@ esError esEventCreateI(
  *              referencing this event then it will be deleted.
  * @api
  */
-esError esEventDestroy(
-    struct esEvent *    evt);
+void nevent_destroy(
+    struct nevent *             event);
 
 /**@brief       Destroy an event
  * @param       event
@@ -213,8 +209,8 @@ esError esEventDestroy(
  *              referencing this event then it will be deleted.
  * @iclass
  */
-esError esEventDestroyI(
-    struct esEvent *    event);
+void nevent_destroy_i(
+    struct nevent *             event);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reservation
@@ -228,16 +224,16 @@ esError esEventDestroyI(
  *              Pointer to the event.
  * @api
  */
-void esEventLock(
-    esEvent *           event);
+void nevent_lock(
+    nevent *                    event);
 
 /**@brief       Oslobadja prethodno rezervisan dogadjaj.
  * @param       event
  *              Pokazivac na dogadjaj koji se oslobadja.
  * @api
  */
-void esEventUnlock(
-    esEvent *           event);
+void nevent_unlock(
+    nevent *                    event);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reference management
@@ -247,17 +243,12 @@ void esEventUnlock(
  * @param       event
  *              Pointer to event
  */
-static PORT_C_INLINE void esEventRefUp_(
-    struct esEvent *    event) {
-
-    if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {
-        uint_fast16_t   count;
-
-        count = event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk;
-        ES_API_REQUIRE_A(ES_API_USAGE, count <= ES_EVENT_REF_LIMIT);
-        count++;
-        event->attrib &= ES_EVENT_RESERVED_Msk;
-        event->attrib |= (uint16_t)count;
+PORT_C_INLINE
+void nevent_ref_up(
+    struct nevent *             event)
+{
+    if ((event->attrib & NEVENT_ATTR_CONST) == 0u) {
+        event->ref++;
     }
 }
 
@@ -265,28 +256,15 @@ static PORT_C_INLINE void esEventRefUp_(
  * @param       event
  *              Pointer to event
  */
-static PORT_C_INLINE void esEventReferenceDown_(
-    struct esEvent *    event) {
-
-    if ((event->attrib & ES_EVENT_CONST_Msk) == 0u) {
-        uint_fast16_t   count;
-
-        count = event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk;
-        ES_API_REQUIRE_A(ES_API_USAGE, count != 0u);
-        count--;
-        event->attrib &= ES_EVENT_RESERVED_Msk;
-        event->attrib |= (uint16_t)count;
+PORT_C_INLINE
+ncpu_reg nevent_ref_down(
+    struct nevent *             event)
+{
+    if ((event->attrib & NEVENT_ATTR_CONST) == 0u) {
+        event->ref--;
     }
-}
 
-/**@brief       Returns the event reference counter
- * @param       event
- *              Pointer to event
- */
-static PORT_C_INLINE uint_fast16_t esEventRefGet_(
-    const struct esEvent * event) {
-
-    return (event->attrib & (uint16_t)~ES_EVENT_RESERVED_Msk);
+    return (event->ref | event->attrib);
 }
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

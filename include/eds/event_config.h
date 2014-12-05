@@ -96,7 +96,7 @@
  *              vremenskom markeru)
  */
 #if !defined(OPT_EVT_USE_TIMESTAMP)
-# define CONFIG_EVENT_TIMESTAMP         1
+# define CONFIG_EVENT_TIMESTAMP         0
 #endif
 
 #if !defined(CONFIG_EVENT_STORAGE_NPOOLS)
@@ -106,8 +106,8 @@
 #if !defined(CONFIG_GET_CURRENT_EPA)
 # define CONFIG_GET_CURRENT_EPA(epa)                                            \
     do {                                                                        \
-        esError esEdsGetCurrent(struct esEpa **);                               \
-        (void)esEdsGetCurrent(epa);                                             \
+        extern struct nepa * neds_get_current(void);                            \
+        *epa = neds_get_current();                                              \
     } while (0)
 #endif
 
