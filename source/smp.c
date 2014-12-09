@@ -32,6 +32,7 @@
 #include "shared/component.h"
 #include "eds/event.h"
 #include "eds/smp.h"
+#include "mem/mem_class.h"
 
 /*=========================================================  LOCAL DEFINES  ==*/
 
@@ -58,7 +59,7 @@ struct esSm {
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 #if (CONFIG_SMP_HSM == 1)
-static uint_fast8_t smFindDepth(
+static uint_fast8_t sm_compute_depth(
     const struct esSmTable * table);
 #endif
 
@@ -92,7 +93,8 @@ static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-const struct nevent  esGlobalSmEvents[] = {
+const struct nevent esGlobalSmEvents[3] =
+{
     {
          ES_ENTRY,
          NEVENT_ATTR_CONST,
@@ -144,7 +146,7 @@ const struct nevent  esGlobalSmEvents[] = {
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 #if (CONFIG_API_VALIDATION == 1) || (CONFIG_SMP_HSM == 1)
-static uint_fast8_t smFindDepth(
+static uint_fast8_t sm_compute_depth(
     const struct esSmTable * table) {
 
     esAction            cnt;
@@ -323,109 +325,97 @@ void smPathExit(
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-nerror esSmCreate(
-    const struct esSmDefine * define,
-    struct esMem *      mem,
-    struct esSm **      sm) {
+struct esSm * esSmCreate(
+    const struct esSmDefine *   define,
+    struct nmem *               mem)
+{
+    struct esSm *               sm;
 
-    esError             error;
+    NREQUIRE(NAPI_POINTER, define != NULL);
+    NREQUIRE(NAPI_POINTER, define->table != NULL);
 
-    NREQUIRE(ES_API_POINTER, define != NULL);
-    NREQUIRE(ES_API_POINTER, define->table != NULL);
-    NREQUIRE(ES_API_POINTER, sm != NULL);
+    sm = nmem_alloc(mem, sizeof(struct esSm));
 
-    error = esMemAlloc(mem, sizeof(struct esSm), (void **)sm);
-
-    if (error != ES_ERROR_NONE) {
+    if (sm == NULL) {
         goto ERROR_ALLOC_SM;
     }
-    (*sm)->mem    = mem;
-    (*sm)->table  = define->table;
-    (*sm)->wspace = NULL;
+    sm->mem    = mem;
+    sm->table  = define->table;
+    sm->wspace = NULL;
 
     if (define->wspaceSize != 0) {
-        size_t          size;
+        size_t                  size;
 
-        error = esMemGetSize(mem, &size);
+        size = nget_mem_size(mem);
 
-        if ((error != ES_ERROR_NONE) || (size < define->wspaceSize)) {
+        if (size < define->wspaceSize) {
             goto ERROR_ALLOC_WSPACE;
         }
-        error = esMemAlloc(mem, define->wspaceSize, &(*sm)->wspace);                                                           /* We force the compiler to use array sizes                 */
+        sm->wspace = nmem_alloc(mem, define->wspaceSize);      
 
-        if (error != ES_ERROR_NONE) {
+        if (sm->wspace == NULL) {
             goto ERROR_ALLOC_WSPACE;
         }
     }
 #if (CONFIG_SMP_HSM == 1)
     {
-        uint_fast8_t    depth;
-        esAction *      levels;
+        uint_fast8_t            depth;
+        esAction *              levels;
 
-        depth = smFindDepth(define->table);
-        NREQUIRE(ES_API_RANGE, depth >= 2);
+        depth = sm_compute_depth(define->table);
+        NREQUIRE(NAPI_RANGE, depth >= 2);
         ++depth;
-        error = esMemAlloc(
-            mem,
-            depth * sizeof(esAction [2]),
-            (void **)&levels);
+        levels = nmem_alloc(mem, depth * sizeof(esAction [2]));
 
-        if (error != ES_ERROR_NONE) {
+        if (levels == NULL) {
             goto ERROR_ALLOC_LEVELS;
         }
-        (*sm)->src = &levels[0];
-        (*sm)->dst = &levels[depth];
+        sm->src = &levels[0];
+        sm->dst = &levels[depth];
 
         while (depth != 0u) {
             depth--;
-            (*sm)->src[depth] = 0;
-            (*sm)->dst[depth] = 0;
+            sm->src[depth] = 0;
+            sm->dst[depth] = 0;
         }
     }
-    (*sm)->src[0] = define->initState;
+    sm->src[0] = define->initState;
 #else
     {
-        esAction *      levels;
+        esAction *              levels;
 
-        NREQUIRE(ES_API_RANGE, smFindDepth(define->table) == 2);
+        levels = nmem_alloc(mem, sizeof(esAction [2]));
 
-        error = esMemAlloc(
-            mem,
-            sizeof(esAction [2]),
-            (void **)&levels);
-
-        if (error != ES_ERROR_NONE) {
+        if (levels == NULL) {
             goto ERROR_ALLOC_LEVELS;
         }
-        (*sm)->src = &levels[0];
-        (*sm)->dst = &levels[1];
-        (*sm)->src[0] = 0;
-        (*sm)->dst[0] = 0;
+        sm->src    = &levels[0];
+        sm->dst    = &levels[1];
+        sm->src[0] = 0;
+        sm->dst[0] = 0;
     }
-    (*sm)->src[0] = define->initState;
+    sm->src[0] = define->initState;
 #endif /* (CONFIG_SMP_HSM == 1) */
-    ES_OBLIGATION((*sm)->signature = SM_SIGNATURE);
+    NOBLIGATION(sm->signature = SM_SIGNATURE);
 
-    return (ES_ERROR_NONE);
+    return (sm);
 ERROR_ALLOC_LEVELS:
-    if ((*sm)->wspace != NULL) {
-        ES_ENSURE_INTERNAL(esMemFree((*sm)->mem, (*sm)->wspace));
+    if (sm->wspace != NULL) {
+        nmem_free(sm->mem, sm->wspace);
     }
 ERROR_ALLOC_WSPACE:
-    ES_ENSURE_INTERNAL(esMemFree((*sm)->mem, *sm));
+    nmem_free(sm->mem, sm);
 ERROR_ALLOC_SM:
 
-    return (ES_ERROR_NO_MEMORY);
+    return (NULL);
 }
 
-esError esSmDestroy(
-    struct esSm *       sm) {
+void esSmDestroy(
+    struct esSm *               sm) {
 
-    esError             error;
-
-    NREQUIRE(ES_API_POINTER, sm != NULL);
-    NREQUIRE(ES_API_OBJECT,  sm->signature == SM_SIGNATURE);
-    ES_OBLIGATION(sm->signature = (esAtomic)~SM_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, sm != NULL);
+    NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
+    NOBLIGATION(sm->signature = (esAtomic)~SM_SIGNATURE);
 
     error = esMemFree(sm->mem, sm->src);
 

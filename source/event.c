@@ -176,7 +176,7 @@ void nevent_register_mem(
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     nsys_lock_enter(&sys_lock);
-    NENSURE_INTERNAL(esMemGetBlockSizeI(mem, &size));
+    NENSURE_INTERNAL(size = nget_mem_size(mem));
     cnt = g_event_storage.pools;
 
     while (0u < cnt) {

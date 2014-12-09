@@ -136,7 +136,7 @@ typedef struct esSmDefine esSmDefine;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const struct nevent * esGlobalSmEvents;
+extern const struct nevent esGlobalSmEvents[3];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
