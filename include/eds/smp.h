@@ -1,4 +1,4 @@
-    /*
+/*
  * This file is part of eSolid.
  *
  * Copyright (C) 2010 - 2013 Nenad Radulovic
@@ -29,8 +29,8 @@
  * @brief       State Machine Processor API
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_SMP_H_
-#define ES_SMP_H_
+#ifndef NEDS_SMP_H_
+#define NEDS_SMP_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -43,46 +43,11 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define ES_STATE_ID(state)                                                      \
-    ES_ACTION_##state
+#define NSMP_EVENT(event)                                                       \
+    &g_smp_events[(event)]
 
-#define ES_EXPAND_STATE_ID(state, super)                                        \
-    ES_STATE_ID(state),
-
-#define ES_EXPAND_STATE_SUPER(state, super)                                     \
-    { ES_STATE_ID(super), (esState)&state },
-
-#define ES_STATE_ID_INIT(table)                                                 \
-    table##_FIRST_STATE,                                                        \
-    table(ES_EXPAND_STATE_ID)                                                   \
-    table##_LAST_STATE
-
-#define ES_STATE_TABLE_INIT(table)                                              \
-    {{0, NULL} ,                                                                \
-    table(ES_EXPAND_STATE_SUPER)                                                \
-    {0, NULL}}
-
-#define ES_SM_DEFINE(table, wspaceSize, initState)                              \
-    {                                                                           \
-        table,                                                                  \
-        wspaceSize,                                                             \
-        ES_STATE_ID(initState)                                                  \
-    }
-
-#define ES_STATE_TRANSITION(state)                                              \
-    (ES_STATE_ID(state))
-
-#define ES_STATE_HANDLED()                                                      \
-    (ES_ACTION_HANDLED)
-
-#define ES_STATE_IGNORED()                                                      \
-    (ES_ACTION_IGNORED)
-
-#define ES_SMP_EVENT(event)                                                     \
-    &esGlobalSmEvents[(event) - CONFIG_SMP_EVENT_ID_BASE]
-
-#define ES_SMP_DEFINE_INIT(table, workspace, initState)                         \
-    {table, workspace, ES_STATE_ID(initState)}
+#define NSMP_PATH_BUFFER_ELEMENTS(hsm_levels)                                   \
+    ((hsm_levels) * 2u)
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -94,62 +59,78 @@ extern "C" {
 /**@brief       State machine processor event identifications
  * @api
  */
-enum esSmEvents {
-    ES_ENTRY            = CONFIG_SMP_EVENT_ID_BASE,                             /**<@brief Process state entry                              */
-    ES_EXIT,                                                                    /**<@brief Process state exit                               */
-    ES_INIT,                                                                    /**<@brief Process state initialization                     */
-    ES_EVENT_USER_ID    = CONFIG_SMP_EVENT_ID_BASE + 16u
+enum nsmp_events {
+    NSMP_SUPER,                         /**<@brief Get the state super state  */
+    NSMP_ENTRY                          /**<@brief Process state entry        */
+    NSMP_EXIT,                          /**<@brief Process state exit         */
+    NSMP_INIT,                          /**<@brief Process state init         */
+    NEVENT_USER_ID      = 16u
 };
 
-enum esAction {
-    ES_ACTION_IGNORED   = -1,
-    ES_ACTION_HANDLED   = -2,
-    ES_ACTION_DEFFERED  = -3,
-    ES_ACTION_TOP       = 0,
-    ES_ACTION_BOTTOM    = 32767
+enum naction {
+    NACTION_SUPER       = 0,
+    NACTION_TRANSIT_TO  = 1,
+    NACTION_HANDLED     = 2,
+    NACTION_IGNORED     = 3,
+    NACTION_DEFFERED    = 4
 };
 
-struct nmem;
+typedef uint_fast8_t naction;
+
 struct nevent;
-struct esSm;
+struct nsm;
 
-typedef int_fast16_t esAction;
+typedef naction (nstate) (struct nsm *, const struct nevent *);
 
-typedef esAction (* esState) (void *, const struct nevent *);
-
-typedef struct esSm esSm;
-
-struct esSmTable {
-    esAction            super;
-    esState             state;
+struct nsm {
+    naction                  (* dispatch)(struct nsm *, const struct nevent *);
+    nstate *                    state;
+    nstate *                    path_exit;
+    nstate *                    path_enter;
+    void *                      wspace;
+#if (CONFIG_API_VALIDATION == 1)
+    ndebug_magic                signature;
+#endif
 };
 
-typedef struct esSmTable esSmTable;
+typedef struct nsm nsm;
 
-struct esSmDefine {
-    const struct esSmTable * table;
-    size_t              wspaceSize;
-    esAction            initState;
+struct nsm_define {
+    void *                      wspace;
+    nstate *                    init_state;
+    nstate *                    path_buffer;
+    size_t                      path_buffer_size;
 };
 
-typedef struct esSmDefine esSmDefine;
+typedef struct nsm_define nsm_define;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const struct nevent esGlobalSmEvents[3];
+extern const struct nevent g_smp_events[3];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-struct esSm * esSmCreate(
-    const struct esSmDefine * define,
-    struct nmem * mem);
+void nsm_init(struct nsm * sm, const struct nsm_define * sm_define);
 
-void esSmDestroy(
-    struct esSm *       sm);
+void nsm_term(struct nsm * sm);
 
-esAction esSmDispatch(
-    struct esSm *       sm,
-    struct nevent *    event);
+naction nsm_dispatch(struct nsm * sm, const struct nevent * event);
+
+PORT_C_INLINE
+naction nstate_transit_to(struct nsm * sm, nstate * state)
+{
+    sm->state = state;
+
+    return (NSTATE_TRANSIT_TO);
+}
+
+PORT_C_INLINE
+naction nstate_super(struct nsm * sm, nstate * state)
+{
+    sm->state = state;
+
+    return (NSTATE_SUPER);
+}
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
@@ -160,4 +141,4 @@ esAction esSmDispatch(
 /** @endcond *//** @} *//******************************************************
  * END of smp.h
  ******************************************************************************/
-#endif /* ES_SMP_H_ */
+#endif /* NEDS_SMP_H_ */
