@@ -38,7 +38,6 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "shared/error.h"
 #include "eds/smp_config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -60,11 +59,11 @@ extern "C" {
  * @api
  */
 enum nsmp_events {
-    NSMP_SUPER,                         /**<@brief Get the state super state  */
-    NSMP_ENTRY                          /**<@brief Process state entry        */
-    NSMP_EXIT,                          /**<@brief Process state exit         */
-    NSMP_INIT,                          /**<@brief Process state init         */
-    NEVENT_USER_ID      = 16u
+    NSMP_SUPER          = 0u,           /**<@brief Get the state super state  */
+    NSMP_ENTRY          = 1u,           /**<@brief Process state entry        */
+    NSMP_EXIT           = 2u,           /**<@brief Process state exit         */
+    NSMP_INIT           = 3u,           /**<@brief Process state init         */
+    NEVENT_USER_ID      = 15u
 };
 
 enum naction {
@@ -73,6 +72,11 @@ enum naction {
     NACTION_HANDLED     = 2,
     NACTION_IGNORED     = 3,
     NACTION_DEFFERED    = 4
+};
+
+enum nsm_type {
+    NTYPE_FSM           = 0,
+    NTYPE_HSM           = 1
 };
 
 typedef uint_fast8_t naction;
@@ -85,8 +89,6 @@ typedef naction (nstate) (struct nsm *, const struct nevent *);
 struct nsm {
     naction                  (* dispatch)(struct nsm *, const struct nevent *);
     nstate *                    state;
-    nstate *                    path_exit;
-    nstate *                    path_enter;
     void *                      wspace;
 #if (CONFIG_API_VALIDATION == 1)
     ndebug_magic                signature;
@@ -98,23 +100,33 @@ typedef struct nsm nsm;
 struct nsm_define {
     void *                      wspace;
     nstate *                    init_state;
-    nstate *                    path_buffer;
-    size_t                      path_buffer_size;
+    enum nsm_type               type;
 };
 
 typedef struct nsm_define nsm_define;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const struct nevent g_smp_events[3];
+extern const struct nevent g_smp_events[4];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
+
 void nsm_init(struct nsm * sm, const struct nsm_define * sm_define);
+
+
 
 void nsm_term(struct nsm * sm);
 
+
+
 naction nsm_dispatch(struct nsm * sm, const struct nevent * event);
+
+
+
+naction ntop_state(struct nsm * sm, const struct nevent * event);
+
+
 
 PORT_C_INLINE
 naction nstate_transit_to(struct nsm * sm, nstate * state)
@@ -123,6 +135,8 @@ naction nstate_transit_to(struct nsm * sm, nstate * state)
 
     return (NSTATE_TRANSIT_TO);
 }
+
+
 
 PORT_C_INLINE
 naction nstate_super(struct nsm * sm, nstate * state)

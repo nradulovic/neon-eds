@@ -41,7 +41,8 @@
  */
 #define SM_SIGNATURE                    ((ndebug_magic)0xdaafu)
 
-#define HSM_STATE_SUPER(state, sm)      state(sm, NSMP_EVENT(NSMP_SUPER)), sm->state
+#define HSM_STATE_SUPER(state, sm)                                              \
+    state((sm), NSMP_EVENT(NSMP_SUPER)), (sm)->state
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -89,59 +90,77 @@ static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-const struct nevent esGlobalSmEvents[3] =
+/*
+ * NOTE: We don't use indexed intialization here, so it must be enusured that 
+ *       the order of events in this array match the enumerator nsmp_events.
+ */
+const struct nevent esGlobalSmEvents[4] =
 {
     {
-         ES_ENTRY,
-         NEVENT_ATTR_CONST,
-         0,
-         NULL,
+        NSMP_SUPER,
+        NEVENT_ATTR_CONST,
+        0,
+        NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
-         NULL,
+        NULL,
 #endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct nevent),
+        sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         NEVENT_SIGNATURE
+        NEVENT_SIGNATURE
+#endif
+    },
+
+    {
+        NSMP_ENTRY,
+        NEVENT_ATTR_CONST,
+        0,
+        NULL,
+#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
+        NULL,
+#endif
+#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
+        sizeof(struct nevent),
+#endif
+#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
+        NEVENT_SIGNATURE
 #endif
     },
     {
-         ES_EXIT,
-         NEVENT_ATTR_CONST,
-         0,
-         NULL,
+        NSMP_EXIT,
+        NEVENT_ATTR_CONST,
+        0,
+        NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
-         NULL,
+        NULL,
 #endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct nevent),
+        sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         NEVENT_SIGNATURE
+        NEVENT_SIGNATURE
 #endif
     },
     {
-         ES_INIT,
-         NEVENT_ATTR_CONST,
-         0,
-         NULL,
+        NSMP_INIT,
+        NEVENT_ATTR_CONST,
+        0,
+        NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
-         NULL,
+        NULL,
 #endif
 #if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
-         sizeof(struct nevent),
+        sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-         NEVENT_SIGNATURE
+        NEVENT_SIGNATURE
 #endif
     }
 };
 
-
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-#if (CONFIG_SMP_HSM == 1)
 
 static uint_fast8_t hsm_build_path(
     struct nsm *                sm,
@@ -179,7 +198,6 @@ static uint_fast8_t hsm_build_path(
 /*--  path: d) super(source) ?== destination  --------------------------------*/
 
     if (source[1] == destination[0]) {
-        index->exit++;
         index->enter = 0u;
 
         return;
@@ -187,7 +205,7 @@ static uint_fast8_t hsm_build_path(
 /*--  path: e) source ?== ...super(super(destination))  ----------------------*/
     index->enter = 1u;
 
-    while (destination[index->enter]) {
+    while (destination[index->enter] != &ntop_state) {
         nstate *                current_state;
 
         current_state = HSM_STATE_SUPER(sm, destination[index->enter++]);
@@ -201,42 +219,37 @@ static uint_fast8_t hsm_build_path(
 /*--  path: f) super(source) ?== ...super(super(destination))  ---------------*/
     index->exit++;
 
-    while (dstCount != 2u) {
+    while (index->enter != 2u) {
 
-        if (source[1] == destination[dstCount]) {
-            source[1] = 0;
+        if (source[1] == destination[index->enter]) {
 
-            return (dstCount);
+            return;
         }
-        dstCount--;
+        index->enter--;
     }
 /*--  path: g) ...super(super(source)) ?== ...super(super(destination))  -----*/
-    srcCount = 1u;
 
-    while (true) {
-        naction       stateId;
+    for (;;) {
+        nstate *                current_state;
 
-        stateId = source[srcCount++];
-        source[srcCount] = sm->table[stateId].super;
-        dstCount = 0u;
+        current_state = HSM_STATE_SUPER(sm, source[index->exit++]);
+        source[index->exit] = current_state;
+        index->exit = 0u;
 
-        while (0 != destination[dstCount]) {
-            dstCount++;
+        while (destination[index->enter] != &ntop_state) {
+            index_enter++;
 
-            if (source[srcCount] == destination[dstCount]) {
-                source[srcCount] = 0;
+            if (source[index->exit] == destination[index->enter]) {
 
-                return (dstCount);
+                return;
             }
         }
     }
-    return (0);
 }
 
 
 
-PORT_C_INLINE
-void hsm_path_enter(struct nsm * sm, uint_fast8_t index) 
+static void hsm_path_enter(struct nsm * sm, uint_fast8_t index) 
 {
     while (index--) {
 #if (CONFIG_API_VALIDATION == 1)
@@ -253,8 +266,7 @@ void hsm_path_enter(struct nsm * sm, uint_fast8_t index)
 
 
 
-PORT_C_INLINE
-void hsm_path_exit(struct nsm * sm, uint_fast8_t index)
+static void hsm_path_exit(struct nsm * sm, uint_fast8_t index)
 {
     uint_fast8_t                count;
 
@@ -276,8 +288,11 @@ void hsm_path_exit(struct nsm * sm, uint_fast8_t index)
 static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
+    nstate *                    current_state;
     struct hsm_path_index       index;
+
     index.exit = 0u;
+    current_state = sm->state;
 
     do {
         sm->path_exit[index.exit++] = sm->state;
@@ -291,9 +306,13 @@ static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
         hsm_path_enter(sm, index.enter);
         ret = sm->path_enter[0](sm, NSMP_EVENT(NSMP_INIT));
         sm->path_exit[0] = sm->path_enter[0];
+        current_state    = sm->path_exit[0];
         index.exit = 1u;
     }
+    sm->state = current_state;
 }
+
+
 
 static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
@@ -342,19 +361,10 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     sm->state  = sm_define->init_state;
     sm->wspace = sm_define->wspace;
 
-    if (sm_define->path_buffer) {
-        uint32_t                path_buffer_elements;
-
-        NREQUIRE(NAPI_RANGE,   sm_define->path_buffer_size >= sizeof(nstate *));
-        path_buffer_elements = sm_define->path_buffer_size /  sizeof(nstate *);
-        memset(sm_define->path_buffer, 0u, sm_define->path_buffer_size);
+    if (sm_define->type == NTYPE_HSM) {
         sm->dispatch   = &hsm_dispatch;
-        sm->path_exit  = &sm_define->path_buffer[0u];
-        sm->path_enter = &sm_define->path_buffer[path_buffer_elements / 2u];
     } else {
         sm->dispatch   = &fsm_dispatch;
-        sm->path_exit  = NULL;
-        sm->path_enter = NULL;
     }
     NOBLIGATION(sm->signature = SM_SIGNATURE);
 }
@@ -366,6 +376,8 @@ void nsm_term(struct nsm * sm)
     NREQUIRE(NAPI_POINTER, sm != NULL);
     NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
     sm->dispatch = NULL;
+    sm->state    = NULL;
+    sm->wspace   = NULL;
     NOBLIGATION(sm->signature = ~SM_SIGNATURE);
 }
 
@@ -381,87 +393,12 @@ naction nsm_dispatch(struct nsm * sm, const struct nevent * event)
 
 
 
-esError esSmDispatch(
-    struct nsm *       sm,
-    struct esEvent *    event,
-    naction *          action) {
+naction ntop_state(struct nsm * sm, const struct nevent * event)
+{
+    (void)nsm;
+    (void)event;
 
-#if (CONFIG_SMP_HSM == 1)
-    uint_fast8_t        count;
-    naction            ret;
-    naction            id;
-
-    NREQUIRE(NAPI_POINTER, sm != NULL);
-    NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
-    NREQUIRE(NAPI_POINTER, action != NULL);
-
-    count = 0u;
-
-    do {
-        id = sm->src[count++];
-        sm->src[count] = sm->table[id].super;
-        ret = sm->table[id].state(sm->wspace, event);
-        NREQUIRE(
-            NAPI_USAGE,
-            ((ret > ES_ACTION_TOP) &&
-             (ret < ES_ACTION_BOTTOM)) ||
-            (ret == ES_ACTION_IGNORED) ||
-            (ret == ES_ACTION_HANDLED) ||
-            (ret == ES_ACTION_DEFFERED));
-    } while ((ret == ES_ACTION_IGNORED) && (sm->table[id].super != 0));
-    count--;
-
-    while (ret > ES_ACTION_TOP) {
-        sm->dst[1] = ret;
-        count = hsm_build_path(sm, count);
-        hsm_path_exit(sm, &sm->src[0]);
-        hsm_path_enter(sm, &sm->dst[count]);
-        ret = sm->table[sm->dst[1]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-        NREQUIRE(
-            NAPI_USAGE,
-            ((ret > ES_ACTION_TOP) &&
-             (ret < ES_ACTION_BOTTOM)) ||
-            (ret == ES_ACTION_IGNORED) ||
-            (ret == ES_ACTION_HANDLED));
-        sm->src[0] = sm->dst[1];
-        count = 0u;
-    }
-    *action = ret;
-
-    return (ES_ERROR_NONE);
-#else /* (CONFIG_SMP_HSM == 1) */
-    naction            ret;
-
-    NREQUIRE(NAPI_POINTER, sm != NULL);
-    NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
-    NREQUIRE(NAPI_POINTER, action != NULL);
-
-    ret = sm->table[sm->src[0]].state(sm->wspace, (struct esEvent *)event);
-    NREQUIRE(
-        NAPI_USAGE,
-        ((ret > ES_ACTION_TOP) &&
-         (ret < ES_ACTION_BOTTOM)) ||
-        (ret == ES_ACTION_IGNORED) ||
-        (ret == ES_ACTION_HANDLED) ||
-        (ret == ES_ACTION_DEFFERED));
-
-    while (ret > 0) {
-        sm->dst[0] = ret;
-        (void)sm->table[sm->src[0]].state(sm->wspace, ES_SMP_EVENT(ES_EXIT));
-        (void)sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_ENTRY));
-        ret = sm->table[sm->dst[0]].state(sm->wspace, ES_SMP_EVENT(ES_INIT));
-        NREQUIRE(
-            NAPI_USAGE,
-            ((ret > ES_ACTION_TOP) &&
-             (ret < ES_ACTION_BOTTOM)) ||
-            (ret == ES_ACTION_IGNORED) ||
-            (ret == ES_ACTION_HANDLED));
-        sm->src[0] = sm->dst[0];
-    }
-    *action = ret;
-
-    return (ES_ERROR_NONE);
-#endif /* !(CONFIG_SMP_HSM == 1) */
+    return (NACTION_IGNORED);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
