@@ -293,31 +293,37 @@ void nevent_destroy_i(
 
 
 void nevent_lock(
-    struct nevent *           evt) {
+    const struct nevent *       event)
+{
+	NREQUIRE(NAPI_POINTER, event != NULL);
+	NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
 
-    NREQUIRE(NAPI_POINTER, NULL != evt);
-    NREQUIRE(NAPI_OBJECT, NEVENT_SIGNATURE == evt->signature);
-
-    evt->attrib |= NEVENT_ATTR_RESERVED;
+    if (event->attrib) {
+    	((struct nevent *)event)->attrib = NEVENT_ATTR_RESERVED;
+    }
 }
 
 
 
 void nevent_unlock(
-    struct nevent *             event)
+    const struct nevent *      	event)
 {
     NREQUIRE(NAPI_POINTER, event != NULL);
     NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
 
-    event->attrib &= (uint16_t)~NEVENT_ATTR_RESERVED;
+    if (event->attrib) {
+    	struct nevent * event_ = (struct nevent *)event;
 
-    if (nevent_ref_down(event) == 0u) {
-        struct nsys_lock        sys_lock;
+    	event_->attrib = NEVENT_ATTR_DYNAMIC;
 
-        event_term(event);
-        nsys_lock_enter(&sys_lock);
-        event_destroy_i(event);
-        nsys_lock_exit(&sys_lock);
+		if (event_->ref == 0u) {
+			struct nsys_lock    sys_lock;
+
+			event_term(event_);
+			nsys_lock_enter(&sys_lock);
+			event_destroy_i(event_);
+			nsys_lock_exit(&sys_lock);
+		}
     }
 }
 

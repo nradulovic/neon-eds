@@ -69,7 +69,7 @@
  *              velicini)
  */
 #if !defined(CONFIG_EVENT_SIZE)
-# define CONFIG_EVENT_SIZE              1
+# define CONFIG_EVENT_SIZE              0
 #endif
 
 /**
@@ -82,7 +82,7 @@
  *              generatoru)
  */
 #if !defined(OPT_EVT_USE_GENERATOR)
-# define CONFIG_EVENT_PRODUCER          1
+# define CONFIG_EVENT_PRODUCER          0
 #endif
 
 /**

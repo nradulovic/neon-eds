@@ -41,13 +41,6 @@
 #include "eds/smp_config.h"
 
 /*===============================================================  MACRO's  ==*/
-
-#define NSMP_EVENT(event)                                                       \
-    &g_smp_events[(event)]
-
-#define NSMP_PATH_BUFFER_ELEMENTS(hsm_levels)                                   \
-    ((hsm_levels) * 2u)
-
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -106,9 +99,6 @@ struct nsm_define {
 typedef struct nsm_define nsm_define;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
-
-extern const struct nevent g_smp_events[4];
-
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
@@ -129,22 +119,26 @@ naction ntop_state(struct nsm * sm, const struct nevent * event);
 
 
 PORT_C_INLINE
-naction nstate_transit_to(struct nsm * sm, nstate * state)
+naction naction_transit_to(struct nsm * sm, nstate * state)
 {
     sm->state = state;
 
-    return (NSTATE_TRANSIT_TO);
+    return (NACTION_TRANSIT_TO);
 }
 
 
 
 PORT_C_INLINE
-naction nstate_super(struct nsm * sm, nstate * state)
+naction naction_super(struct nsm * sm, nstate * state)
 {
     sm->state = state;
 
-    return (NSTATE_SUPER);
+    return (NACTION_SUPER);
 }
+
+
+
+const struct nevent * nsmp_event(enum nsmp_events event_id);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

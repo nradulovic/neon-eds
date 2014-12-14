@@ -53,16 +53,15 @@
  *              defining a static event in ROM address space.
  * @api
  */
-#define NEVENT_ATTR_RESERVED            ((ncpu_reg)(0x01u << 0))
+#define NEVENT_ATTR_RESERVED            ((ncpu_reg)0xff00u | NEVENT_ATTR_DYNAMIC)
 
 /**@brief       Bit mask which defines a constant event
  * @details     When the bits defined in this bit mask are set the given event
  *              is marked as constant. In this case EDS will never try to delete
- *              it. Once the event is marked as constant it never can be
-deleted.
+ *              it. Once the event is marked as constant it never can be deleted.
  * @api
  */
-#define NEVENT_ATTR_CONST               ((ncpu_reg)(0x01u << 1))
+#define NEVENT_ATTR_DYNAMIC             ((ncpu_reg)0x00ffu)
 
 /**@brief       This macro defines limit for event ID value
  * @details     An event must have ID which is below this limit.
@@ -74,8 +73,8 @@ deleted.
  */
 #define NEVENT_SIGNATURE                ((ndebug_magic)0xdeadfeedul)
 
-/**@brief       Event with identifiers equalt to or higer than this number are
- *              event reserved for local usage.
+/**@brief       Event with identifiers equal to to or higher than this number
+ * 				are event reserved for local usage.
  */
 #define NEVENT_LOCAL_ID                 32768u
 
@@ -99,10 +98,10 @@ struct nepa;
  * @api
  */
 struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
-    uint16_t                    id;
+    uint_fast16_t               id;
 /**<@brief Event ID number                                  */
-    ncpu_reg                    ref;
-    ncpu_reg                    attrib;
+    uint_fast16_t               ref;
+    uint_fast16_t               attrib;
 /**<@brief Event dynamic attributes                         */
     struct nmem *               mem;
 /**<@brief Event storage                                    */
@@ -227,7 +226,7 @@ void nevent_destroy_i(
  * @api
  */
 void nevent_lock(
-    nevent *                    event);
+    const struct nevent *       event);
 
 /**@brief       Oslobadja prethodno rezervisan dogadjaj.
  * @param       event
@@ -235,7 +234,7 @@ void nevent_lock(
  * @api
  */
 void nevent_unlock(
-    nevent *                    event);
+    const struct nevent *       event);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reference management
@@ -246,12 +245,14 @@ void nevent_unlock(
  *              Pointer to event
  */
 PORT_C_INLINE
-void nevent_ref_up(
-    struct nevent *             event)
+ncpu_reg nevent_ref_up(
+    const struct nevent *       event)
 {
-    if ((event->attrib & NEVENT_ATTR_CONST) == 0u) {
-        event->ref++;
+    if (event->attrib) {
+        ((struct nevent *)event)->ref++;
     }
+
+    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 /**@brief       Decrements the event reference counter
@@ -260,13 +261,22 @@ void nevent_ref_up(
  */
 PORT_C_INLINE
 ncpu_reg nevent_ref_down(
-    struct nevent *             event)
+    const struct nevent *     	event)
 {
-    if ((event->attrib & NEVENT_ATTR_CONST) == 0u) {
-        event->ref--;
+    if (event->attrib) {
+        ((struct nevent *)event)->ref--;
     }
 
-    return (event->ref | event->attrib);
+    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
+}
+
+
+
+PORT_C_INLINE
+ncpu_reg nevent_ref(
+	const struct nevent *		event)
+{
+	return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

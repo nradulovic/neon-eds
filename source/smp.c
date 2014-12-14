@@ -41,26 +41,26 @@
  */
 #define SM_SIGNATURE                    ((ndebug_magic)0xdaafu)
 
-#define HSM_STATE_SUPER(state, sm)                                              \
-    state((sm), NSMP_EVENT(NSMP_SUPER)), (sm)->state
+#define NSMP_EVENT(event)				&g_smp_events[(event)]
+
+#define CONFIG_HSM_PATH_DEPTH			8
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-struct hsm_path_index
+struct hsm_path
 {
-    uint_fast8_t                exit;
-    uint_fast8_t                enter;
+	nstate *					buff[CONFIG_HSM_PATH_DEPTH];
+    uint_fast8_t                index;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-#if (CONFIG_SMP_HSM == 1)
-static uint_fast8_t sm_compute_depth(
-    const struct nsmTable * table);
-#endif
 
-#if (CONFIG_SMP_HSM == 1)
+static nstate * hsm_get_state_super(struct nsm * sm, nstate * state);
+
+
+
 /**@brief       Finds transition path
  * @param       sm
  *              State machine
@@ -69,36 +69,32 @@ static uint_fast8_t sm_compute_depth(
  * @return      Index for destination starting position
  * @notapi
  */
-static uint_fast8_t hsm_build_path(
-    struct nsm *       sm,
-    uint_fast8_t        srcCount);
+static void hsm_build_path(
+    struct nsm *                sm,
+    struct hsm_path *     		entry,
+	struct hsm_path *     		exit);
 
-PORT_C_INLINE
-void hsm_path_enter(
-    struct nsm *       sm,
-    naction *          entry);
 
-PORT_C_INLINE
-void hsm_path_exit(
-    struct nsm *       sm,
-    naction *          exit);
-#endif
+
+static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry);
+
+
+
+static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 
-/*======================================================  GLOBAL VARIABLES  ==*/
-
 /*
- * NOTE: We don't use indexed intialization here, so it must be enusured that 
+ * NOTE: We don't use indexed initialisation here, so it must be ensured that
  *       the order of events in this array match the enumerator nsmp_events.
  */
-const struct nevent esGlobalSmEvents[4] =
+static const struct nevent g_smp_events[4] =
 {
     {
         NSMP_SUPER,
-        NEVENT_ATTR_CONST,
+        NEVENT_ATTR_DYNAMIC,
         0,
         NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
@@ -111,10 +107,9 @@ const struct nevent esGlobalSmEvents[4] =
         NEVENT_SIGNATURE
 #endif
     },
-
     {
         NSMP_ENTRY,
-        NEVENT_ATTR_CONST,
+        NEVENT_ATTR_DYNAMIC,
         0,
         NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
@@ -129,7 +124,7 @@ const struct nevent esGlobalSmEvents[4] =
     },
     {
         NSMP_EXIT,
-        NEVENT_ATTR_CONST,
+        NEVENT_ATTR_DYNAMIC,
         0,
         NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
@@ -144,7 +139,7 @@ const struct nevent esGlobalSmEvents[4] =
     },
     {
         NSMP_INIT,
-        NEVENT_ATTR_CONST,
+        NEVENT_ATTR_DYNAMIC,
         0,
         NULL,
 #if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
@@ -159,126 +154,144 @@ const struct nevent esGlobalSmEvents[4] =
     }
 };
 
+/*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static uint_fast8_t hsm_build_path(
-    struct nsm *                sm,
-    struct hsm_path_index *     index) 
+static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
 {
-    naction *          source;
-    naction *          destination;
+#if (CONFIG_API_VALIDATION == 1)
+	naction						ret;
 
-    source      = &sm->path_exit[index->exit - 1u];
-    destination = &sm->path_enter[0];
+	ret = state(sm, NSMP_EVENT(NSMP_SUPER));
+
+	NREQUIRE(NAPI_USAGE, ret == NACTION_SUPER);
+#else
+	state(sm, NSMP_EVENT(NSMP_SUPER));
+#endif
+
+	return (sm->state);
+}
+
+
+
+static void hsm_build_path(
+    struct nsm *                sm,
+    struct hsm_path *     		entry,
+	struct hsm_path *     		exit)
+{
+	nstate *                	current_state;
+	entry->index = 0;
+	exit->index--;
 
 /*--  path: a) source ?== destination  ---------------------------------------*/
-    if (source[0] == destination[0]) {
-        index->enter = 1u;
+    if (exit->buff[exit->index] == entry->buff[entry->index]) {
+        entry->index++;
+        exit->index++;
 
         return;
     }
 /*--  path: b) source ?== super(destination)  --------------------------------*/
-    destination[1] = HSM_STATE_SUPER(sm, destination[0]);
+    current_state = hsm_get_state_super(sm, entry->buff[entry->index++]);
+    entry->buff[entry->index] = current_state;
 
-    if (source[0] == destination[1]) {
-        index->exit--;
-        index->enter = 1;
+    if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
         return;
     }
 /*--  path: c) super(source) ?== super(destination)  -------------------------*/
-    source[1] = HSM_STATE_SUPER(sm, source[0]);
+    current_state = hsm_get_state_super(sm, exit->buff[exit->index++]);
+    exit->buff[exit->index] = current_state;
 
-    if (source[1] == destination[1]) {
-        index->enter = 1u;
+    if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
         return;
     }
 /*--  path: d) super(source) ?== destination  --------------------------------*/
+    entry->index--;
 
-    if (source[1] == destination[0]) {
-        index->enter = 0u;
+    if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
         return;
     }
 /*--  path: e) source ?== ...super(super(destination))  ----------------------*/
-    index->enter = 1u;
+    exit->index--;
+    entry->index++;
 
-    while (destination[index->enter] != &ntop_state) {
-        nstate *                current_state;
+    while (entry->buff[entry->index] != &ntop_state) {
+        current_state = hsm_get_state_super(sm, entry->buff[entry->index++]);
+        entry->buff[entry->index] = current_state;
 
-        current_state = HSM_STATE_SUPER(sm, destination[index->enter++]);
-        destination[index->enter] = current_state;
-
-        if (source[0] == current_state) {
+        if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
             return;
         }
     }
 /*--  path: f) super(source) ?== ...super(super(destination))  ---------------*/
-    index->exit++;
+    exit->index++;
 
-    while (index->enter != 2u) {
+    while (entry->index != 1u) {
 
-        if (source[1] == destination[index->enter]) {
+        if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
             return;
         }
-        index->enter--;
+        entry->index--;
     }
 /*--  path: g) ...super(super(source)) ?== ...super(super(destination))  -----*/
 
     for (;;) {
-        nstate *                current_state;
+        current_state = hsm_get_state_super(sm, exit->buff[exit->index++]);
+        exit->buff[exit->index] = current_state;
+        entry->index = 0u;
 
-        current_state = HSM_STATE_SUPER(sm, source[index->exit++]);
-        source[index->exit] = current_state;
-        index->exit = 0u;
+        while (entry->buff[entry->index] != &ntop_state) {
 
-        while (destination[index->enter] != &ntop_state) {
-            index_enter++;
-
-            if (source[index->exit] == destination[index->enter]) {
+            if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
                 return;
             }
+            entry->index++;
         }
     }
 }
 
 
 
-static void hsm_path_enter(struct nsm * sm, uint_fast8_t index) 
+static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
 {
+	uint_fast8_t				index = entry->index;
+
     while (index--) {
 #if (CONFIG_API_VALIDATION == 1)
         naction                 ret;
 
-        ret = sm->path_enter[index](sm, NSMP_EVENT(NSMP_ENTER));
+        ret = entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-                             (ret == NACTION_DEFFERED));
+        					 (ret == NACTION_HANDLED) ||
+                             (ret == NACTION_SUPER));
 #else
-        (void)sm->path_enter[index](sm, NSMP_EVENT(NSMP_ENTER));
+        (void)entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
 #endif
     }
 }
 
 
 
-static void hsm_path_exit(struct nsm * sm, uint_fast8_t index)
+static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 {
     uint_fast8_t                count;
 
-    for (count = 0; count < index; count++) {
+    for (count = 0; count < exit->index; count++) {
 #if (CONFIG_API_VALIDATION == 1)
         naction                 ret;
 
-        ret = sm->path_exit[count](sm, NSMP_EVENT(NSMP_EXIT));
+        ret = exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-                             (ret == NACTION_DEFFERED));
+        		             (ret == NACTION_HANDLED) ||
+                             (ret == NACTION_SUPER));
 #else
-        (void)sm->path_exit[count](sm, NSMP_EVENT(NSMP_EXIT));
+        (void)exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
 #endif
     }
 }
@@ -289,27 +302,30 @@ static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
-    struct hsm_path_index       index;
+    struct hsm_path       		entry;
+    struct hsm_path				exit;
 
-    index.exit = 0u;
+    exit.index = 0u;
     current_state = sm->state;
 
     do {
-        sm->path_exit[index.exit++] = sm->state;
+        exit.buff[exit.index++] = sm->state;
         ret = sm->state(sm, event);
     } while (ret == NACTION_SUPER);
 
     while (ret == NACTION_TRANSIT_TO) {
-        sm->path_enter[0] = sm->state;
-        hsm_build_path(sm, &index);
-        hsm_path_exit(sm, index.exit);
-        hsm_path_enter(sm, index.enter);
-        ret = sm->path_enter[0](sm, NSMP_EVENT(NSMP_INIT));
-        sm->path_exit[0] = sm->path_enter[0];
-        current_state    = sm->path_exit[0];
-        index.exit = 1u;
+        entry.buff[0] = sm->state;
+        hsm_build_path(sm, &entry, &exit);
+        hsm_path_exit(sm, &exit);
+        hsm_path_enter(sm, &entry);
+        ret = entry.buff[0](sm, NSMP_EVENT(NSMP_INIT));
+        exit.buff[0]  = entry.buff[0];
+        current_state = entry.buff[0];
+        exit.index = 1u;
     }
     sm->state = current_state;
+
+    return (ret);
 }
 
 
@@ -328,7 +344,7 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
                              (ret != NACTION_SUPER)    &&
                              (ret != NACTION_TRANSIT_TO));
 #else
-        (void)current_state(sm, NSMP_EVENT(NSMP_EXIT);
+        (void)current_state(sm, NSMP_EVENT(NSMP_EXIT));
 #endif
         current_state = sm->state;
 #if (CONFIG_API_VALIDATION == 1)
@@ -395,10 +411,17 @@ naction nsm_dispatch(struct nsm * sm, const struct nevent * event)
 
 naction ntop_state(struct nsm * sm, const struct nevent * event)
 {
-    (void)nsm;
+    (void)sm;
     (void)event;
 
     return (NACTION_IGNORED);
+}
+
+
+
+const struct nevent * nsmp_event(enum nsmp_events event_id)
+{
+	return (&g_smp_events[event_id]);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
