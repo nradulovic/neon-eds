@@ -131,7 +131,7 @@
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if (CONFIG_DEBUG_API == 1)
+#if (CONFIG_API_VALIDATION == 1)
 # define NOBLIGATION(expr)                  expr
 #else
 # define NOBLIGATION(expr)                  (void)0

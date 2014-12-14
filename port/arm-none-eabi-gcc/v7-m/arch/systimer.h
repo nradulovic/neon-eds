@@ -20,17 +20,17 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NCORE_TIMER_MAX                     UINT32_MAX
-
 /**@brief       Core timer one tick value
  */
-#define NCORE_TIMER_ONE_TICK                                                    \
-    (CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ)
+#define NSYSTIMER_ONE_TICK(clock)                                               \
+    (((clock) + (CONFIG_SYSTIMER_EVENT_FREQ / 2)) / CONFIG_SYSTIMER_EVENT_FREQ)
 
 /**@brief       Maximum number of ticks without overflowing the core timer
  */
-#define NCORE_TIMER_MAX_TICKS                                                   \
-    (NPROFILE_MAX_SYSTIMER_VAL / NCORE_TIMER_ONE_TICK)
+#define NSYSTIMER_MAX_TICKS                                                     \
+    (UINT32_MAX / NSYSTIMER_ONE_TICK)
+
+#define NSYSTIMER_TICK_MAX              UINT32_MAX
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -50,13 +50,10 @@ typedef unsigned int nsystimer_tick;
 /**@brief       Initialize and start the system timer
  */
 PORT_C_INLINE
-void nsystimer_init(
-    nsystimer_tick            	val)
+void nsystimer_init(void)
 {
     PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_ENABLE_Msk;     /* Disable timer */
-    PORT_SYSTICK->LOAD  = val - 1u;                    /* Set reload register */
     PORT_SYSTICK->VAL   = 0u;
-    PORT_SYSTICK->CTRL  = PORT_SYSTICK_CTRL_ENABLE_Msk;  /* Use the CPU clock */
 }
 
 

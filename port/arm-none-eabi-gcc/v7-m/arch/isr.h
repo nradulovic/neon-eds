@@ -62,7 +62,7 @@ extern bool g_isr_is_active;
 /**@brief       Enable all interrupts
  */
 PORT_C_INLINE
-void nisr_enable(void)
+void nisr_global_enable(void)
 {
     __asm __volatile__ (
         "@  nisr_enable                                     \n"
@@ -74,7 +74,7 @@ void nisr_enable(void)
 /**@brief       Disable all interrupts
  */
 PORT_C_INLINE
-void nisr_disable(void)
+void nisr_global_disable(void)
 {
     __asm __volatile__ (
         "@  nisr_disable                                    \n"
