@@ -36,11 +36,11 @@
 
 /**@brief       C extension - make a function inline
  */
-#define PORT_C_INLINE                   __inline__
+#define PORT_C_INLINE                   static __inline__
 
 /**@brief       C extension - make a function inline - always
  */
-#define PORT_C_INLINE_ALWAYS            __inline__ __attribute__((__always_inline__))
+#define PORT_C_INLINE_ALWAYS            static __inline__ __attribute__((__always_inline__))
 
 /**@brief       Omit function prologue/epilogue sequences
  */
@@ -87,23 +87,16 @@
  */
 #define PORT_C_ALIGN(align)             __attribute__((aligned (align)))
 
-/**@brief       A standardized way of properly setting the value of HW register
- * @param       reg
- *              Register which will be written to
- * @param       mask
- *              The bit mask which will be applied to register and @c val
- *              argument
- * @param       val
- *              Value to be written into the register
+/**@brief       Cast a member of a structure out to the containing structure
+ * @param       ptr
+ *              the pointer to the member.
+ * @param       type
+ *              the type of the container struct this is embedded in.
+ * @param       member
+ *              the name of the member within the struct.
  */
-#define PORT_HWREG_SET(reg, mask, val)                                          \
-    do {                                                                        \
-        esAtomic tmp;                                                           \
-        tmp = (reg);                                                            \
-        tmp &= ~(mask);                                                         \
-        tmp |= ((mask) & (val));                                                \
-        (reg) = tmp;                                                            \
-    } while (0u)
+#define CONTAINER_OF(ptr, type, member)                                         \
+    ((type *)((char *)(ptr) - offsetof(type, member)))
 
 /*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

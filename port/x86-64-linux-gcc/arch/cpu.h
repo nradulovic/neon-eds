@@ -38,17 +38,19 @@
 
 /*===============================================================  MACRO's  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Port constants
- * @{ *//*--------------------------------------------------------------------*/
-
 /**@brief       Specifies bit-width of general purpose registers
  */
-#define ES_CPU_DEF_DATA_WIDTH           64u
+#define NCPU_DATA_WIDTH                     64u
 
 /**@brief       Specifies data alignment for optimal performance
  */
-#define ES_CPU_DEF_DATA_ALIGNMENT       8u
+#define NCPU_DATA_ALIGNMENT                 8u
+
+#define NCPU_REG_MAX                        UINT64_MAX
+
+#define NCPU_SIZE_MAX                       UINT64_MAX
+
+#define NCPU_SSIZE_MAX                      INT64_MAX
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Bit operations
@@ -83,47 +85,92 @@ extern "C" {
 
 /**@brief       General purpose registers are 32bit wide.
  */
-typedef unsigned int esCpuReg;
+typedef unsigned long ncpu_reg;
+
+typedef unsigned int ncpu_size;
+
+typedef signed   int ncpu_ssize;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Bit operations
- * @{ *//*--------------------------------------------------------------------*/
-
-/**
- * @brief       Find last set bit in a word
- * @param       value
- *              32 bit value which will be evaluated
- * @return      Last set bit in a word
- * @details     This implementation uses @c clz instruction and then it computes
- *              the result using the following expression:
- *              <code>fls(x) = w − clz(x)</code>.
- * @inline
+/**@brief       Stop the further CPU execution
  */
-static PORT_C_INLINE_ALWAYS uint_fast8_t portCpuFls_(
-    esAtomic            value) {
-
-
-    return ((uint_fast8_t)(31u - (unsigned int)__builtin_clz(value)));
+PORT_C_INLINE
+void ncpu_stop(void)
+{
+    for (;;) {
+        /*
+         * TODO: Put the CPU to sleep
+         */
+    }
 }
 
-/** @} *//*---------------------------------------------------------------*//**
- * @name        Generic port functions
- * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Initialize CPU port module
+
+/**@brief       Computes integer logarithm base 2
  */
-void portModuleCpuInit(
-    void);
+PORT_C_INLINE
+uint_fast8_t ncpu_log2(
+    ncpu_reg                    value)
+{
+    extern const uint_fast8_t   g_log2_lookup[256];
 
-/**@brief       Terminate CPU port module
+    if (value > 255) {
+        return (g_log2_lookup[value >> 8]);
+    } else {
+        return (g_log2_lookup[value]);
+    }
+}
+
+
+
+/**@brief       Computes integer exponent base 2
  */
-void portModuleCpuTerm(
-    void);
+PORT_C_INLINE_ALWAYS
+ncpu_reg ncpu_exp2(
+    uint_fast8_t                value)
+{
+    return (0x1u << value);
+}
 
-/** @} *//*-----------------------------------------------  C++ extern end  --*/
+
+
+PORT_C_INLINE_ALWAYS
+void ncpu_sat_increment(
+    ncpu_reg *                  value)
+{
+    if (*value != NCPU_REG_MAX) {
+        (*value)++;
+    }
+}
+
+
+
+PORT_C_INLINE_ALWAYS
+void ncpu_sat_decrement(
+    ncpu_reg *                  value)
+{
+    if (*value != 0u) {
+        (*value)--;
+    }
+}
+
+/**@brief       Initialize port
+ */
+void ncpu_module_init(void);
+
+
+
+/**@brief       Terminate port
+ */
+void ncpu_module_term(void);
+
+
+
+extern void nkernel_isr(void);
+
+/*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif

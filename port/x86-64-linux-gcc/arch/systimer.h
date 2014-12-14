@@ -42,15 +42,18 @@
  * @name        Port constants
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       System timer one tick value
+/**@brief       Core timer one tick value
  */
-#define ES_SYSTIMER_ONE_TICK                                                    \
-    (CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ)
+#define NSYSTIMER_ONE_TICK(clock)                                               \
+    (((clock) + (CONFIG_SYSTIMER_EVENT_FREQ / 2)) / CONFIG_SYSTIMER_EVENT_FREQ)
 
-/**@brief       Maximum number of ticks without overflowing the system timer
+/**@brief       Maximum number of ticks without overflowing the core timer
  */
-#define ES_SYSTIMER_MAX_TICKS                                                   \
-    (ES_PROFILE_MAX_SYSTIMER_VAL / ES_SYSTIMER_ONE_TICK)
+#define NSYSTIMER_MAX_TICKS                                                     \
+    (UINT32_MAX / NSYSTIMER_ONE_TICK)
+
+#define NSYSTIMER_TICK_MAX              UINT32_MAX
+
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        System timer management
@@ -88,7 +91,7 @@ extern "C" {
 
 /**@brief       System timer hardware register type.
  */
-typedef unsigned int esSysTimerTick;
+typedef unsigned int nsystimer_tick;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/

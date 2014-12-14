@@ -32,54 +32,33 @@
 #define ES_INTR_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "plat/compiler.h"
-#include "family/profile.h"
-#include "arch/intr_config.h"
-
 /*===============================================================  MACRO's  ==*/
 
-/*------------------------------------------------------------------------*//**
- * @name        Interrupt management
- * @{ *//*--------------------------------------------------------------------*/
+#define NISR_MASK_TO_CODE(prio)             (prio)
 
-#define ES_INTR_ENABLE()                (void)0
+#define NISR_MASK_TO_PRIO(code)             (code)
 
-#define ES_INTR_DISABLE()               (void)0
+#define nisr_exit()                         (void)0
 
-#define ES_INTR_MASK_SET(mask)          (void)0
+#define nisr_enter()						(void)0
 
-#define ES_INTR_MASK_GET(mask)          (void)0
+#define nisr_global_enable()				(void)0
 
-#define ES_INTR_MASK_REPLACE(oldPrio, newPrio)                                  \
-    do {                                                                        \
-        (void)oldPrio;                                                          \
-        (void)newPrio;                                                          \
-    } while (0)
+#define nisr_global_disable()				(void)0
 
-#define ES_INTR_PRIO_TO_CODE(prio)                                              \
-    (prio)
+#define nisr_set_mask(new_mask)				(void)0
 
-#define ES_INTR_CODE_TO_PRIO(code)                                              \
-    (code)
+#define nisr_replace_mask(new_mask)			(void)0
 
-#define ES_INTR_PRIO_SET(intrNum, prio) (void)0
+#define nisr_pend_kernel()					(void)0
 
-#define ES_INTR_PRIO_GET(intrNum, prio) (void)0
+#define nisr_is_active()					false
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Generic port macros
- * @{ *//*--------------------------------------------------------------------*/
+#define nisr_module_init()					(void)0
 
-#define ES_INTR_INIT_EARLY()            (void)0
+#define nisr_module_term()					(void)0
 
-#define ES_INTR_INIT()                  (void)0
-
-#define ES_INTR_INIT_LATE()             (void)0
-
-#define ES_INTR_TERM()                  (void)0
-
-/**@} *//*----------------------------------------------  C++ extern base  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -90,11 +69,10 @@ extern "C" {
  * @details     This type is used to declare variable type which will hold
  *              interrupt context data.
  */
-typedef unsigned int esIntrCtx;
+typedef unsigned int nisr_ctx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

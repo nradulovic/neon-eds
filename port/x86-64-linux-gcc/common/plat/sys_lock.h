@@ -33,53 +33,62 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/intr.h"
+#include <pthread.h>
+#include "port/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
-
-/*------------------------------------------------------------------------*//**
- * @name        Critical code lock management
- * @brief       Disable/enable interrupts by preserving the interrupt context
- * @details     Generally speaking these macros would store the interrupt
- *              context in the local variable of @ref esLockCtx type and then
- *              disable interrupts. Local variable is allocated in all of eSolid
- *              functions that need to disable interrupts. Macros would restore
- *              the interrupt context by copying back the allocated variable
- *              into the interrupt controller status/control register.
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Enter critical code section
- * @param       lockCtx
- *              Interrupt context, pointer to portable type variable which will
- *              hold the interrupt context state during the critical code
- *              section.
- */
-#define ES_CRITICAL_LOCK_ENTER(lockCtx)                                         \
-    ES_INTR_MASK_REPLACE(lockCtx, ES_INTR_PRIO_TO_CODE(CONFIG_INTR_MAX_ISR_PRIO))
-
-/**@brief       Exit critical code section
- * @param       lockCtx
- *              Interrupt context, portable type variable which is holding a
- *              previously saved interrupt context state.
- */
-#define ES_CRITICAL_LOCK_EXIT(lockCtx)                                          \
-    ES_INTR_MASK_SET(lockCtx)
-
-/**@} *//*----------------------------------------------  C++ extern begin  --*/
+/*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Lock context type
- * @details     This type is used to declare variable type which will hold lock
- *              context data.
- */
-typedef esIntrCtx esLockCtx;
+struct nsys_lock
+{
+    int                    		dummy;
+};
+
+typedef struct nsys_lock nsys_lock;
+
 
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+extern pthread_mutex_t g_global_lock;
+
 /*===================================================  FUNCTION PROTOTYPES  ==*/
+
+/**@brief       Enter critical code section
+ * @param       resource
+ *              Interrupt resource, pointer to portable type variable which will
+ *              hold the interrupt context state during the critical code
+ *              section.
+ */
+PORT_C_INLINE
+void nsys_lock_enter(
+    struct nsys_lock *          lock)
+{
+    (void)lock;
+
+    pthread_mutex_lock(&g_global_lock);
+}
+
+
+
+/**@brief       Exit critical code section
+ * @param       resource
+ *              Interrupt resource, portable type variable which is holding a
+ *              previously saved interrupt context state.
+ */
+PORT_C_INLINE
+void nsys_lock_exit(
+    struct nsys_lock *          lock)
+{
+    (void)lock;
+
+    pthread_mutex_unlock(&g_global_lock);
+}
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
