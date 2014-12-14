@@ -78,7 +78,7 @@ typedef signed   int ncpu_ssize;
 PORT_C_INLINE
 void ncpu_stop(void)
 {
-    while (true) {
+    for (;;) {
         /*
          * TODO: Put the CPU to sleep
          */
