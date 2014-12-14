@@ -30,10 +30,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <arch/systimer_config.h>
 #include <stdint.h>
 
 #include "plat/compiler.h"
-#include "arch/systimer_config.h"
 #include "family/profile.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -50,37 +50,16 @@
 /**@brief       Maximum number of ticks without overflowing the core timer
  */
 #define NSYSTIMER_MAX_TICKS                                                     \
-    (UINT32_MAX / NSYSTIMER_ONE_TICK)
+    (UINT64_MAX / NSYSTIMER_ONE_TICK)
 
-#define NSYSTIMER_TICK_MAX              UINT32_MAX
+#define NSYSTIMER_TICK_MAX              INT64_MAX
 
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        System timer management
  * @{ *//*--------------------------------------------------------------------*/
 
-#define ES_SYSTIMER_INIT_EARLY()        (void)0
 
-#define ES_SYSTIMER_INIT(val)           (void)0
-
-#define ES_SYSTIMER_TERM()              (void)0
-
-#define ES_SYSTIMER_GET_RVAL()          (void)0
-
-#define ES_SYSTIMER_GET_CVAL()          0
-
-#define ES_SYSTIMER_RELOAD(val)         (void)0
-
-#define ES_SYSTIMER_ENABLE()            (void)0
-
-#define ES_SYSTIMER_DISABLE()           (void)0
-
-#define ES_SYSTIMER_ISR_ENABLE()        (void)0
-
-#define ES_SYSTIMER_ISR_DISABLE()       (void)0
-
-#define ES_SYSTIMER_SET_HANDLER(handler, level)                                 \
-    (void)0
 
 /** @} *//*---------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -91,10 +70,69 @@ extern "C" {
 
 /**@brief       System timer hardware register type.
  */
-typedef unsigned int nsystimer_tick;
+typedef signed long nsystimer_tick;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
+
+
+/**@brief       Initialise and start the system timer
+ */
+void nsystimer_init(void);
+
+
+
+/**@brief       Stop and terminate the system timer
+ */
+void nsystimer_term(void);
+
+
+
+/**@brief       Get free counter value
+ */
+nsystimer_tick nsystimer_get_current(void);
+
+
+
+/**@brief       Get reload counter value
+ */
+nsystimer_tick nsystimer_get_reload(void);
+
+
+
+/**@brief       Load the system timer Reload value register
+ */
+void nsystimer_load(
+    nsystimer_tick              tick);
+
+
+/**@brief       Enable the system timer
+ */
+void nsystimer_enable(void);
+
+
+
+/**@brief       Disable the system timer
+ */
+void nsystimer_disable(void);
+
+
+
+/**@brief       Initialize port
+ */
+void nsystimer_module_init(void);
+
+
+
+/**@brief       Terminate port
+ */
+void nsystimer_module_term(void);
+
+
+
+/**@brief       User System Timer ISR
+ */
+extern void nsystimer_isr(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

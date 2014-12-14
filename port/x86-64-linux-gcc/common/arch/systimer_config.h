@@ -42,7 +42,7 @@
  *              properly manage system tick event generation.
  */
 #if !defined(CONFIG_SYSTIMER_CLOCK_FREQ)
-# define CONFIG_SYSTIMER_CLOCK_FREQ     1ul
+# define CONFIG_SYSTIMER_CLOCK_FREQ     1000000ul
 #endif
 
 /**@brief       The frequency of system timer tick event
