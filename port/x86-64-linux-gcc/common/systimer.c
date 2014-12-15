@@ -26,6 +26,9 @@ static timer_t 					timerid;
 
 static void handler(int sig, siginfo_t *si, void *uc)
 {
+	(void)si;
+	(void)uc;
+
 	nsys_lock_enter(NULL);
 	nsystimer_isr();
 	nsys_lock_exit(NULL);
