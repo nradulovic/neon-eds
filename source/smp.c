@@ -94,58 +94,55 @@ static const struct nevent g_smp_events[4] =
 {
     {
         NSMP_SUPER,
-        NEVENT_ATTR_DYNAMIC,
+        0,
         0,
         NULL,
-#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
         NULL,
 #endif
-#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
         NEVENT_SIGNATURE
 #endif
-    },
-    {
+    }, {
         NSMP_ENTRY,
-        NEVENT_ATTR_DYNAMIC,
+        0,
         0,
         NULL,
-#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
         NULL,
 #endif
-#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
         NEVENT_SIGNATURE
 #endif
-    },
-    {
+    }, {
         NSMP_EXIT,
-        NEVENT_ATTR_DYNAMIC,
+        0,
         0,
         NULL,
-#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
         NULL,
 #endif
-#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
         NEVENT_SIGNATURE
 #endif
-    },
-    {
+    }, {
         NSMP_INIT,
-        NEVENT_ATTR_DYNAMIC,
+        0,
         0,
         NULL,
-#if (CONFIG_EVENT_PRODUCER == 1)       || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
         NULL,
 #endif
-#if (CONFIG_EVENT_SIZE == 1)           || defined(__DOXYGEN__)
+#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
@@ -340,18 +337,16 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
     while ((ret = current_state(sm, event)) == NACTION_TRANSIT_TO) {
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSMP_EXIT));
-        NREQUIRE(NAPI_USAGE, (ret != NACTION_DEFFERED) &&
-                             (ret != NACTION_SUPER)    &&
-                             (ret != NACTION_TRANSIT_TO));
+        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
+				 	 	 	 (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSMP_EXIT));
 #endif
         current_state = sm->state;
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSMP_ENTRY));
-        NREQUIRE(NAPI_USAGE, (ret != NACTION_DEFFERED) &&
-                             (ret != NACTION_SUPER)    &&
-                             (ret != NACTION_TRANSIT_TO));
+        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
+	 	 	 	 	 	 	 (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSMP_ENTRY));
 #endif
@@ -373,14 +368,16 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     NREQUIRE(NAPI_POINTER, sm->signature         != SM_SIGNATURE);
     NREQUIRE(NAPI_POINTER, sm_define             != NULL);
     NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
+    NREQUIRE(NAPI_USAGE, (sm_define->type == NTYPE_FSM) ||
+    					 (sm_define->type == NTYPE_HSM));
 
     sm->state  = sm_define->init_state;
     sm->wspace = sm_define->wspace;
 
     if (sm_define->type == NTYPE_HSM) {
-        sm->dispatch   = &hsm_dispatch;
+        sm->dispatch = &hsm_dispatch;
     } else {
-        sm->dispatch   = &fsm_dispatch;
+        sm->dispatch = &fsm_dispatch;
     }
     NOBLIGATION(sm->signature = SM_SIGNATURE);
 }
