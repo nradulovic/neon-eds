@@ -149,10 +149,6 @@ void ncpu_module_init(void);
  */
 void ncpu_module_term(void);
 
-
-
-extern void nkernel_isr(void);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

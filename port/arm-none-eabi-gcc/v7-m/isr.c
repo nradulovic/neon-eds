@@ -75,7 +75,7 @@ static void isr_set_priority_grouping(
 
 void nisr_module_init(void)
 {
-	nisr_disable();
+	nisr_global_disable();
 	isr_set_priority_grouping(PORT_CONFIG_ISR_SUBPRIORITY);
 												/* Setup priority subgroup.   */
 }
@@ -84,7 +84,7 @@ void nisr_module_init(void)
 
 void nisr_module_term(void)
 {
-	nisr_disable();
+	nisr_global_disable();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

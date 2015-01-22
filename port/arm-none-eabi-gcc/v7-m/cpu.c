@@ -58,13 +58,6 @@ void ncpu_module_term(void)
     ncpu_stop();
 }
 
-
-
-void PORT_KERNEL_HANDLER(void)
-{
-    nkernel_isr();
-}
-
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
  * END of cpu.c

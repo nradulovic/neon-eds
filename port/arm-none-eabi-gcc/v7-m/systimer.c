@@ -57,7 +57,7 @@ void nsystimer_module_term(void)
 }
 
 
-
+#if defined(PORT_SYSTIMER_HANDLER)
 void PORT_SYSTIMER_HANDLER(void)
 {
 	nsystimer_isr();
@@ -65,6 +65,7 @@ void PORT_SYSTIMER_HANDLER(void)
      * TODO: Clear interrupt flag
      */
 }
+#endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************

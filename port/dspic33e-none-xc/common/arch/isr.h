@@ -35,16 +35,16 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <xc.h>
 
 #include "arch/config.h"
+#include "family/profile.h"
 #include "port/compiler.h"
 #include "port/cpu.h"
 
 /*===============================================================  MACRO's  ==*/
 
 #define NISR_MASK_TO_CODE(prio)                                                 \
-    (((prio) << _SR_IPL_POSITION) & _SR_IPL_MASK)
+    (((prio) << (8u - PORT_ISR_PRIO_BITS)) & 0xfful)
 
 #define NISR_MASK_TO_PRIO(code)                                                 \
     (((code) & _SR_IPL_POSITION) >> _SR_IPL_POSITION)
@@ -67,18 +67,9 @@ typedef unsigned int nisr_ctx;
 struct nisr
 {
     uint8_t                     isr_reg;
-    uint8_t                     isr_bit;
-    uint8_t                     prio_reg;
-    uint8_t                     prio_bit;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
-
-extern bool g_isr_is_active;
-extern volatile unsigned int * const g_iec_reg[];
-extern volatile unsigned int * const g_ifs_reg[];
-extern volatile unsigned int * const g_ipc_reg[];
-
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
@@ -87,7 +78,8 @@ extern volatile unsigned int * const g_ipc_reg[];
 PORT_C_INLINE
 void nisr_global_enable(void)
 {
-    INTCON2bits.GIE = 1;
+	__asm __volatile__ (
+		"   cpsie   i                                       \n");
 }
 
 
@@ -100,9 +92,8 @@ void nisr_global_enable(void)
 PORT_C_INLINE
 void nisr_global_disable(void)
 {
-    while (INTCON2bits.GIE == 1) {
-        INTCON2bits.GIE = 0;
-    }
+	__asm __volatile__ (
+		"   cpsid   i                                       \n");
 }
 
 
@@ -119,14 +110,15 @@ void nisr_set_mask(
     nisr_ctx                    new_mask)
 {
 #if (CONFIG_ISR_MAX_PRIO == 0)
-    
-    if (new_mask == 0u) {
-        nisr_global_disable();
-    } else {
-        nisr_global_enable();
-    }
+	__asm __volatile__ (
+		"   msr    basepri, %0                              \n"
+		:
+		: "r"(new_mask));
 #else
-    SET_CPU_IPL(new_mask);
+	__asm __volatile__ (
+		"   msr    primask, %0                              \n"
+		:
+		: "r"(new_mask));
 #endif
 }
 
@@ -139,25 +131,23 @@ PORT_C_INLINE
 nisr_ctx nisr_replace_mask(
     nisr_ctx                    new_mask)
 {
+	nisr_ctx                    old_mask;
 #if (CONFIG_ISR_MAX_PRIO == 0)
-    nisr_ctx                    old_mask;
+    __asm __volatile__ (
+		"   mrs     %0, basepri                             \n"
+		"   msr     basepri, %1                             \n"
+		: "=&r"(old_mask)
+		: "r"(new_mask));
 
-    old_mask = INTCON2bits.GIE;
-    
-    if (new_mask == 0u) {
-        nisr_global_disable();
-    } else {
-        nisr_global_enable();
-    }
-    
-    return (old_mask);
 #else
-    nisr_ctx                    old_mask;
-    
-    SET_AND_SAVE_CPU_IPL(old_mask, new_mask);
+    __asm __volatile__ (
+		"   mrs     %0, primask                             \n"
+		"   msr    primask, %1                              \n"
+		: "=&r"(old_mask)
+		: "r"(new_mask));
+#endif
     
     return (old_mask);
-#endif
 }
 
 
@@ -165,7 +155,7 @@ nisr_ctx nisr_replace_mask(
 PORT_C_INLINE
 void nisr_enable(struct nisr * isr)
 {
-    *g_iec_reg[(isr)->isr_reg] |=  (0x1u << (isr)->isr_bit);
+    (void)isr;
 }
 
 
@@ -173,7 +163,7 @@ void nisr_enable(struct nisr * isr)
 PORT_C_INLINE
 void nisr_disable(struct nisr * isr)
 {
-    *g_iec_reg[(isr)->isr_reg] &= ~(0x1u << (isr)->isr_bit);
+	(void)isr;
 }
 
 
@@ -181,7 +171,7 @@ void nisr_disable(struct nisr * isr)
 PORT_C_INLINE
 void nisr_set(struct nisr * isr)
 {
-    *g_ifs_reg[(isr)->isr_reg] |=  (0x1u << (isr->isr_bit));
+	(void)isr;
 }
 
 
@@ -189,7 +179,7 @@ void nisr_set(struct nisr * isr)
 PORT_C_INLINE
 void nisr_clear(struct nisr * isr)
 {
-    *g_ifs_reg[(isr)->isr_reg] &= ~(0x1u << (isr)->isr_bit);
+	(void)isr;
 }
 
 
@@ -197,12 +187,8 @@ void nisr_clear(struct nisr * isr)
 PORT_C_INLINE
 void nisr_set_prio(struct nisr * isr, ncpu_reg prio)
 {
-    ncpu_reg                    ipc;
-
-    ipc  = *g_ipc_reg[(isr)->prio_reg];
-    ipc &= ~(0x1fu << (isr)->prio_bit);
-    ipc |= ((prio) << (isr)->prio_bit);
-    *g_ipc_reg[(isr)->prio_reg] = ipc;
+	(void)isr;
+	(void)prio;
 }
 
 
@@ -210,7 +196,9 @@ void nisr_set_prio(struct nisr * isr, ncpu_reg prio)
 PORT_C_INLINE
 ncpu_reg nisr_get_prio(struct nisr * isr)
 {
-    return (*g_ipc_reg[(isr)->prio_reg] >> (isr)->prio_bit);
+	(void)isr;
+
+	return (0);
 }
 
 
@@ -218,7 +206,6 @@ ncpu_reg nisr_get_prio(struct nisr * isr)
 PORT_C_INLINE
 void nisr_enter(void)
 {
-    g_isr_is_active = true;
 }
 
 
@@ -235,7 +222,7 @@ void nisr_pend_kernel(void)
 PORT_C_INLINE
 bool nisr_is_active(void)
 {
-    return (g_isr_is_active);
+    return (false);
 }
 
 
