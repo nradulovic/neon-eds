@@ -33,51 +33,23 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
-
-
-static void isr_set_priority_grouping(
-    uint32_t                    grouping);
-
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
-
-bool g_isr_is_active = false;
-
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-
-
-/**@brief       Set Priority Grouping
- * @param       grouping
- *              Priority grouping field.
- * @details     The function sets the priority grouping field using the required
- *              unlock sequence. The parameter grouping is assigned to the field
- *              SCB->AIRCR [10:8] PRIGROUP field. Only values from 0..7 are used.
- *              In case of a conflict between priority grouping and available
- *              priority bits (PORT_ISR_PRIO_BITS), the smallest possible
- *              priority group is set.
- */
-static void isr_set_priority_grouping(
-    uint32_t                    grouping)
-{
-    ncpu_reg                    reg;
-
-    grouping &= 0x07u;
-    reg  = PORT_SCB->AIRCR;
-    reg &= ~(PORT_SCB_AIRCR_VECTKEY_Msk | PORT_SCB_AIRCR_PRIGROUP_Msk);
-    reg |=  (PORT_SCB_AIRCR_VECTKEY_VALUE << PORT_SCB_AIRCR_VECTKEY_Pos);
-    reg |=  (grouping << PORT_SCB_AIRCR_PRIGROUP_Pos);
-    PORT_SCB->AIRCR = reg;
-}
-
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
 void nisr_module_init(void)
 {
+	ncpu_reg                    reg;
+
 	nisr_global_disable();
-	isr_set_priority_grouping(PORT_CONFIG_ISR_SUBPRIORITY);
-												/* Setup priority subgroup.   */
+	reg  = PORT_SCB_AIRCR;
+	reg &= ~(PORT_SCB_AIRCR_VECTKEY | PORT_SCB_AIRCR_PRIGROUP);
+	reg |=   PORT_SCB_AIRCR_VECTKEY_VALUE;
+	reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << PORT_SCB_AIRCR_PRIGROUP_Pos);
+	PORT_SCB_AIRCR = reg;
 }
 
 

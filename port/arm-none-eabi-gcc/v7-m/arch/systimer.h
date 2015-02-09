@@ -50,10 +50,13 @@ typedef unsigned int nsystimer_tick;
 /**@brief       Initialize and start the system timer
  */
 PORT_C_INLINE
-void nsystimer_init(void)
+void nsystimer_init(
+	nsystimer_tick            	val)
 {
-    PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_ENABLE_Msk;     /* Disable timer */
-    PORT_SYSTICK->VAL   = 0u;
+    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;     /* Disable timer */
+    PORT_SYST_RVR  = val;
+    PORT_SYST_CVR  = 0u;
+    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -63,7 +66,7 @@ void nsystimer_init(void)
 PORT_C_INLINE
 void nsystimer_term(void)
 {
-    PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_ENABLE_Msk;
+	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -73,7 +76,7 @@ void nsystimer_term(void)
 PORT_C_INLINE
 nsystimer_tick nsystimer_get_current(void)
 {
-    return (PORT_SYSTICK->VAL);
+    return (PORT_SYST_CVR);
 }
 
 
@@ -83,7 +86,7 @@ nsystimer_tick nsystimer_get_current(void)
 PORT_C_INLINE
 nsystimer_tick nsystimer_get_reload(void)
 {
-    return (PORT_SYSTICK->LOAD);
+    return (PORT_SYST_RVR);
 }
 
 
@@ -94,11 +97,10 @@ PORT_C_INLINE
 void nsystimer_load(
     nsystimer_tick            	val)
 {
-    --val;
-    PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_ENABLE_Msk;
-    PORT_SYSTICK->LOAD  = val;
-    PORT_SYSTICK->VAL   = 0u;
-    PORT_SYSTICK->CTRL |= PORT_SYSTICK_CTRL_ENABLE_Msk;
+	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+	PORT_SYST_RVR  = val;
+    PORT_SYST_CVR  = 0u;
+    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -108,7 +110,7 @@ void nsystimer_load(
 PORT_C_INLINE
 void nsystimer_enable(void)
 {
-    PORT_SYSTICK->CTRL |= PORT_SYSTICK_CTRL_ENABLE_Msk;
+	PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -118,7 +120,7 @@ void nsystimer_enable(void)
 PORT_C_INLINE
 void nsystimer_disable(void)
 {
-    PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_ENABLE_Msk;
+	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -128,7 +130,7 @@ void nsystimer_disable(void)
 PORT_C_INLINE
 void nsystimer_isr_enable(void)
 {
-    PORT_SYSTICK->CTRL |= PORT_SYSTICK_CTRL_TICKINT_Msk;
+	PORT_SYST_CSR |= PORT_SYST_CSR_TICKINT;
 }
 
 
@@ -138,21 +140,12 @@ void nsystimer_isr_enable(void)
 PORT_C_INLINE
 void nsystimer_isr_disable(void)
 {
-    PORT_SCB->ICSR     |= PORT_SCB_ICSR_PENDSTCLR_Msk;
-    PORT_SYSTICK->CTRL &= ~PORT_SYSTICK_CTRL_TICKINT_Msk;
+    PORT_SYST_CSR &= ~PORT_SYST_CSR_TICKINT;
+    PORT_SCB_ICSR |= PORT_SCB_ICSR_PENDSTCLR;
 }
 
 
-
-/**@brief       Initialise System Timer port
- */
 void nsystimer_module_init(void);
-
-
-
-/**@brief       Terminate System Timer port
- */
-void nsystimer_module_term(void);
 
 
 

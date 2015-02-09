@@ -26,8 +26,6 @@
 #define NISR_CODE_TO_PRIO(code)                                                 \
     (((code) & 0xfful) >> (8u - PORT_ISR_PRIO_BITS))
 
-#define nisr_exit()                         (void)0
-
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -41,21 +39,7 @@ extern "C" {
  */
 typedef unsigned int nisr_ctx;
 
-enum nisr_interrupt_no
-{
-    NONMASKABLEINT_IRQN   = -14,        /**<@brief Non Maskable Interrupt     */
-    MEMORYMANAGEMENT_IRQN = -12,        /**<@brief Memory Management          */
-    BUSFAULT_IRQN         = -11,        /**<@brief Bus Fault Interrupt        */
-    USAGEFAULT_IRQN       = -10,        /**<@brief Usage Fault Interrupt      */
-    SVCALL_IRQN           = -5,         /**<@brief SV Call Interrupt          */
-    PENDSV_IRQN           = -2,         /**<@brief Pend SV Interrupt          */
-    SYSTIMER_IRQN         = -1          /**<@brief System Tick Interrupt      */
-};
-
 /*======================================================  GLOBAL VARIABLES  ==*/
-
-extern bool g_isr_is_active;
-
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
@@ -141,47 +125,6 @@ nisr_ctx nisr_replace_mask(
 
     return (old_mask);
 #endif
-}
-
-
-
-PORT_C_INLINE
-void nisr_enter(void)
-{
-    g_isr_is_active = true;
-}
-
-
-
-PORT_C_INLINE
-void nisr_pend_kernel(void)
-{
-    PORT_SCB->ICSR |= PORT_SCB_ICSR_PENDSVSET_Msk;
-}
-
-
-
-PORT_C_INLINE
-bool nisr_is_active(void)
-{
-    return (g_isr_is_active);
-}
-
-
-
-/**@brief       Set Priority for Cortex-M  System Interrupts
- * @param       intrNum
- *              Interrupt number
- * @param       priority
- *              The priority of specified interrupt source. The parameter
- *              priority must be encoded with @ref ES_INTR_PRIO_TO_CODE.
- */
-PORT_C_INLINE
-void nisr_set_priority(
-    enum nisr_interrupt_no      intr_no,
-    uint32_t                    priority)
-{
-    PORT_SCB->SHP[((uint32_t)(intr_no) & 0x0ful) - 4u] = (uint8_t)priority;
 }
 
 

@@ -40,22 +40,14 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-
 void nsystimer_module_init(void)
 {
-	nsystimer_disable();
-	nsystimer_isr_disable();
-	nisr_set_priority(SYSTIMER_IRQN, NISR_PRIO_TO_CODE(CONFIG_ISR_MAX_PRIO));
+	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+	PORT_SYST_CSR &= ~PORT_SYST_CSR_TICKINT;
+	PORT_SYST_CSR |=  PORT_SYST_CSR_CLKSOURCE;
+	PORT_SCB_ICSR |=  PORT_SCB_ICSR_PENDSTCLR;
+	PORT_SCB_SHP_SYSTICK = (uint8_t)NISR_PRIO_TO_CODE(CONFIG_ISR_MAX_PRIO);
 }
-
-
-
-void nsystimer_module_term(void)
-{
-    nsystimer_isr_disable();
-    nsystimer_disable();
-}
-
 
 #if defined(PORT_SYSTIMER_HANDLER)
 void PORT_SYSTIMER_HANDLER(void)

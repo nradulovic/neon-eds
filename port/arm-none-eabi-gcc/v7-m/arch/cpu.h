@@ -33,7 +33,6 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "port/compiler.h"
@@ -78,7 +77,7 @@ typedef   signed int ncpu_ssize;
 PORT_C_INLINE
 void ncpu_stop(void)
 {
-    while (true) {
+    for (;;) {
     __asm__ __volatile__ (
         "@  ncpu_stop                                       \n"
         "   wfe                                             \n");
@@ -142,12 +141,6 @@ void ncpu_sat_decrement(
 /**@brief       Initialise CPU port
  */
 void ncpu_module_init(void);
-
-
-
-/**@brief       Terminate CPU port
- */
-void ncpu_module_term(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

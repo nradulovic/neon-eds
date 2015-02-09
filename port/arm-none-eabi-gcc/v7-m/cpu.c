@@ -48,15 +48,8 @@ void ncpu_module_init(void)
 		"@  ncpu_init                                       \n"
 		"   clrex                                           \n");
 											  /* Clear the exclusive monitor. */
-	nisr_set_priority(PENDSV_IRQN, NISR_PRIO_TO_CODE(CONFIG_ISR_MAX_PRIO));
 }
 
-
-
-void ncpu_module_term(void)
-{
-    ncpu_stop();
-}
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
