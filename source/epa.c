@@ -31,6 +31,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/sys_lock.h"
+#include "port/cpu.h"
 #include "shared/component.h"
 #include "lib/queue.h"
 #include "lib/list.h"
@@ -55,17 +56,7 @@ struct event_fifo
     ncpu_reg                    max;
 };
 
-struct nepa
-{
-    struct nmem *               mem;
-    struct esSm *               sm;
-    struct nthread *            thread;
-    struct event_fifo           event_fifo;
-    const char *                name;
-#if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
-    ndebug_magic                signature;
-#endif
-};
+
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
@@ -281,6 +272,8 @@ struct nevent * epa_fetch_event_i(
 static void epa_dispatch(
     void *                      arg)
 {
+	struct nepa *				epa = arg;
+
 
 }
 
@@ -297,63 +290,54 @@ struct nepa * neds_get_current(void)
     return ((struct nepa *)nthread_get_current()->stack);
 }
 
-struct nepa * esEpaCreate(
-    const struct nepaDefine *   epaDefine,
-    const struct esSmDefine *   smDefine,
+struct nepa * nepa_create(
+    const struct ndefine_epa *  define_epa,
+    const struct ndefine_sm *   define_sm,
     struct nmem *               mem)
 {
     struct nepa *               epa;
-    struct esSm *               sm;
-    struct nthread *            thread;
-    nsys_lock                   sys_lock;
     void *                      event_fifo_buff;
 
-    NREQUIRE(NAPI_POINTER, epaDefine != NULL);
-    NREQUIRE(NAPI_POINTER, smDefine != NULL);
+    NREQUIRE(NAPI_POINTER, define_epa != NULL);
+    NREQUIRE(NAPI_POINTER, define_sm != NULL);
 
     epa = nmem_alloc(mem, sizeof(struct nepa));
 
     if (epa == NULL) {
         goto ERROR_ALLOC_EPA;
     }
-    thread = nmem_alloc(mem, sizeof(nthread));
-
-    if (thread == NULL) {
-        goto ERRIR_ALLOC_THREAD;
-    }
-    event_fifo_buff = nmem_alloc(mem, NQUEUE_SIZEOF(epaDefine->queueSize));
+    event_fifo_buff = nmem_alloc(mem, NQUEUE_SIZEOF(define_epa->queue_size));
 
     if (event_fifo_buff == NULL) {
         goto ERROR_ALLOC_EVENT_FIFO_BUFF;
     }
-    sm = esSmCreate(smDefine, mem);
-
-    if (sm == NULL) {
-        goto ERROR_CREATE_SM;
-    }
     epa->mem    = mem;
-    epa->sm     = sm;
-    epa->thread = thread;
-    epa->name   = epaDefine->name;
-    nthread_init(epa->thread, epa_dispatch, epa, epaDefine->priority);
-    event_fifo_init(&epa->event_fifo, event_fifo_buff, epaDefine->queueSize);
-    nsys_lock_enter(&sys_lock);
-    event_fifo_put_head_i(&epa->event_fifo,
-        (struct nevent *)ES_SMP_EVENT(ES_INIT));
-    nsys_lock_exit(&sys_lock);
+    epa->name   = define_epa->name;
+	event_fifo_init(&epa->event_fifo, event_fifo_buff, define_epa->queue_size);
+	event_fifo_put_head_i(&epa->event_fifo, (struct nevent *)nsmp_event(NSMP_INIT));
+	nthread_init(&epa->thread, epa_dispatch, epa, define_epa->priority);
 
-    NOBLIGATION((*epa)->signature = EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = EPA_SIGNATURE);
 
     return (epa);
-ERROR_CREATE_SM:
-    esSmDestroy(sm);
 ERROR_ALLOC_EVENT_FIFO_BUFF:
-    nmem_free(mem, thread);
-ERRIR_ALLOC_THREAD:
-    nmem_free(mem, epa);
+    nmem_free(epa->mem, epa);
 ERROR_ALLOC_EPA:
 
     return (NULL);
+}
+
+void nepa_init(
+	struct nepa * 				epa,
+	const struct ndefine_epa *	define_epa,
+	const struct ndefine_sm *	define_sm,
+	struct nmem *				mem,
+	void * 						event_fifo_storage)
+{
+	epa->mem  = mem;
+	epa->name = define_epa->name;
+	nsm_init(&epa->sm, define_sm);
+	nthread_init(&epa->thread, epa_dispatch, epa, define_epa->priority);
 }
 
 void esEpaDestroy(
@@ -364,7 +348,7 @@ void esEpaDestroy(
 
     NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-    NOBLIGATION(epa->signature = (esAtomic)~EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = (natomic)~EPA_SIGNATURE);
 
     nsys_lock_enter(&sys_lock);
 
