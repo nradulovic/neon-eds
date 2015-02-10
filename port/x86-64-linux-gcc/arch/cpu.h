@@ -33,8 +33,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <plat/compiler.h>
 #include <stdint.h>
-#include "plat/compiler.h"
 
 /*===============================================================  MACRO's  ==*/
 

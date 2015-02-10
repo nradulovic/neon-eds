@@ -31,9 +31,9 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <arch/systimer_config.h>
+#include <plat/compiler.h>
 #include <stdint.h>
 
-#include "plat/compiler.h"
 #include "family/profile.h"
 
 /*===============================================================  MACRO's  ==*/
