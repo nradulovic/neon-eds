@@ -54,18 +54,30 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-struct nepaDefine {
+struct ndefine_epa {
     const char *        name;
     uint8_t             priority;
-    uint8_t             queueSize;
+    uint8_t             queue_size;
 };
 
-typedef struct nepaDefine nepaDefine;
+typedef struct ndefine_epa nepaDefine;
 
 struct nmem;
 struct nevent;
 struct nepa;
-struct esSmDefine;
+struct ndefine_sm;
+
+struct nepa
+{
+    struct nmem *               mem;
+    struct nsm                  sm;
+    struct nthread              thread;
+    struct event_fifo           event_fifo;
+    const char *                name;
+#if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
+    ndebug_magic                signature;
+#endif
+};
 
 typedef struct nepa nepa;
 
@@ -102,8 +114,8 @@ void nepaGetMem(struct nmem ** mem);
  * @{ *//*--------------------------------------------------------------------*/
 
 nerror nepaCreate(
-    const struct nepaDefine * epaDefine,
-    const struct esSmDefine * smDefine,
+    const struct ndefine_epa * epaDefine,
+    const struct ndefine_sm * smDefine,
     struct nmem *      mem,
     struct nepa **     epa);
 
