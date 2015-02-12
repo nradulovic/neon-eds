@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -100,7 +100,7 @@ static void event_init(
     NREQUIRE(NAPI_OBJECT, event->signature != NEVENT_SIGNATURE);
 
     event->id     = id;
-    event->attrib = 0u;                                                         /* Dogadjaj je dinamican, sa 0 korisnika.                   */
+    event->attrib = NEVENT_ATTR_DYNAMIC;
     event->ref    = 0u;
 
 #if (CONFIG_EVENT_TIMESTAMP == 1)
@@ -176,7 +176,7 @@ void nevent_register_mem(
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     nsys_lock_enter(&sys_lock);
-    NENSURE_INTERNAL(size = nget_mem_size(mem));
+    NENSURE_INTERNAL(size = nget_mem_size_i(mem));
     cnt = g_event_storage.pools;
 
     while (0u < cnt) {
@@ -267,7 +267,7 @@ struct nevent * nevent_create_i(
 
 
 void nevent_destroy(
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     nsys_lock                   sys_lock;
 
@@ -279,14 +279,14 @@ void nevent_destroy(
 
 
 void nevent_destroy_i(
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     NREQUIRE(NAPI_POINTER, event);
     NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
 
     if (nevent_ref_down(event) == 0u) {
-        event_term(event);
-        event_destroy_i(event);
+        event_term((struct nevent *)event);
+        event_destroy_i((struct nevent *)event);
     }
 }
 

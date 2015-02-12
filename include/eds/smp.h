@@ -38,7 +38,7 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "eds/smp_config.h"
+#include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/

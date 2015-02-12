@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -29,8 +29,8 @@
  * @brief       Event object API
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_EVENT_H_
-#define ES_EVENT_H_
+#ifndef NEON_EDS_EVENT_H_
+#define NEON_EDS_EVENT_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -40,7 +40,7 @@
 #include "port/compiler.h"
 #include "port/cpu.h"
 #include "shared/debug.h"
-#include "eds/event_config.h"
+#include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -98,24 +98,23 @@ struct nepa;
  * @api
  */
 struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
-    uint_fast16_t               id;
-/**<@brief Event ID number                                  */
+    uint_fast16_t               id;		/**<@brief Event ID number            */
     uint_fast16_t               ref;
-    uint_fast16_t               attrib;
-/**<@brief Event dynamic attributes                         */
+    uint_fast16_t               attrib; /**<@brief Event dynamic attributes   */
     struct nmem *               mem;
 /**<@brief Event storage                                    */
 #if (CONFIG_EVENT_PRODUCER == 1)  || defined(__DOXYGEN__)
+    									/**<@brief Event producer             */
     struct nepa *               producer;
-/**<@brief Event producer                                   */
 #endif
 #if (CONFIG_EVENT_SIZE == 1)      || defined(__DOXYGEN__)
+    									/**<@brief Event size in bytes        */
     size_t                      size;
-/**<@brief Event size in bytes                              */
 #endif
 #if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
+    									/**<@brief Structure signature, used
+    									 * during development stage only.	  */
     ndebug_magic                signature;
-/**<@brief Structure signature, used during development only*/
 #endif
 };
 
@@ -201,7 +200,7 @@ struct nevent * nevent_create_i(
  * @api
  */
 void nevent_destroy(
-    struct nevent *             event);
+    const struct nevent *       event);
 
 /**@brief       Destroy an event
  * @param       event
@@ -211,7 +210,7 @@ void nevent_destroy(
  * @iclass
  */
 void nevent_destroy_i(
-    struct nevent *             event);
+    const struct nevent *       event);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reservation
@@ -288,4 +287,4 @@ ncpu_reg nevent_ref(
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of event.h
  ******************************************************************************/
-#endif /* ES_EVENT_H_ */
+#endif /* NEON_EDS_EVENT_H_ */

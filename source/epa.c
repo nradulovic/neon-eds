@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -30,250 +30,33 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+
 #include "port/sys_lock.h"
 #include "port/cpu.h"
 #include "shared/component.h"
-#include "lib/queue.h"
-#include "lib/list.h"
-#include "lib/bitop.h"
-#include "vtimer/vtimer.h"
 #include "mem/mem_class.h"
-#include "kernel/kernel.h"
-#include "eds/event.h"
-#include "eds/smp.h"
 #include "eds/epa.h"
-
+#include "eds/event.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-#define EPA_SIGNATURE                   ((ndebug_magic)0xbeef00faul)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
-
-struct event_fifo
-{
-    struct nqueue               qp;
-    ncpu_reg                    max;
-};
-
-
-
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-/*--  Event Queue  -----------------------------------------------------------*/
-
-PORT_C_INLINE
-void event_fifo_init(
-    struct event_fifo *         event_fifo,
-    void **                     buff,
-    size_t                      size);
-
-PORT_C_INLINE
-void event_fifo_term(
-    struct event_fifo *         event_fifo);
-
-PORT_C_INLINE
-void event_fifo_put_tail(
-    struct event_fifo *         event_fifo,
-    struct nevent *            event);
-
-PORT_C_INLINE
-void event_fifo_put_head_i(
-    struct event_fifo *         event_fifo,
-    struct nevent *            event);
-
-PORT_C_INLINE
-struct nevent * event_fifo_get(
-    struct event_fifo *         event_fifo);
-
-PORT_C_INLINE
-bool event_fifo_is_empty(
-    const struct event_fifo *   event_fifo);
-
-PORT_C_INLINE
-bool event_fifo_is_full(
-    const struct event_fifo *   event_fifo);
-
-PORT_C_INLINE
-void ** event_fifo_get_buff(
-    const struct event_fifo *   event_fifo);
-
-/*--  EPA support  -----------------------------------------------------------*/
-
-PORT_C_INLINE
-nerror epa_send_event_i(
-    struct nepa *              epa,
-    struct nevent *            event);
-
-PORT_C_INLINE
-nerror epa_send_ahead_event_i(
-    struct nepa *              epa,
-    struct nevent *            event);
-
-PORT_C_INLINE
-struct nevent * epa_fetch_event_i(
-    struct nepa *              epa);
+static void idle(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
+/**@brief       Provides the basic information about this module
+ */
 static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
+
+static void (* g_idle)(void) = idle;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-/*--  Event Queue  -----------------------------------------------------------*/
-
-PORT_C_INLINE
-void event_fifo_init(
-    struct event_fifo *         event_fifo,
-    void **                     buff,
-    size_t                      size)
+static void idle(void)
 {
-    nqueue_init(&event_fifo->qp, buff, size);
-    event_fifo->max = UINT32_C(0);
-}
-
-PORT_C_INLINE
-void event_fifo_term(
-    struct event_fifo *         event_fifo)
-{
-    nqueue_term(&event_fifo->qp);
-}
-
-PORT_C_INLINE
-void event_fifo_put_tail(
-    struct event_fifo *         event_fifo,
-    struct nevent *             event)
-{
-    uint32_t                    occupied;
-
-    nqueue_put_tail(&event_fifo->qp, event);
-    occupied = nqueue_occupied(&event_fifo->qp);
-
-    if (event_fifo->max < occupied) {
-        event_fifo->max = occupied;
-    }
-}
-
-PORT_C_INLINE
-void event_fifo_put_head_i(
-    struct event_fifo *         event_fifo,
-    struct nevent *             event)
-{
-    uint32_t                    occupied;
-
-    nqueue_put_head(&event_fifo->qp, event);
-    occupied = nqueue_occupied(&event_fifo->qp);
-
-    if (event_fifo->max < occupied) {
-        event_fifo->max = occupied;
-    }
-}
-
-PORT_C_INLINE
-struct nevent * event_fifo_get(
-    struct event_fifo *         event_fifo)
-{
-    return ((struct nevent *)nqueue_get_head(&event_fifo->qp));
-}
-
-PORT_C_INLINE
-bool event_fifo_is_empty(
-    const struct event_fifo *   event_fifo)
-{
-    return (nqueue_is_empty(&event_fifo->qp));
-}
-
-PORT_C_INLINE
-bool event_fifo_is_full(
-    const struct event_fifo * eventQ) {
-
-    return (nqueue_is_full(&eventQ->qp));
-}
-
-PORT_C_INLINE
-void ** event_fifo_get_buff(
-    const struct event_fifo * eventQ) {
-
-    return (nqueue_buffer(&eventQ->qp));
-}
-
-/*--  EPA support  -----------------------------------------------------------*/
-
-PORT_C_INLINE
-nerror epa_send_event_i(
-    struct nepa *              epa,
-    struct nevent *             event)
-{
-    if (event->ref < NEVENT_REF_LIMIT) {
-        nevent_ref_up(event);
-
-        if (event_fifo_is_empty(&epa->event_fifo) == true) {
-            nthread_ready_i(epa->thread);
-            event_fifo_put_tail(&epa->event_fifo, event);
-
-            return (NERROR_NONE);
-        } else if (event_fifo_is_full(&epa->event_fifo) == false) {
-            event_fifo_put_tail(&epa->event_fifo, event);
-
-            return (NERROR_NONE);
-        } else {
-            nevent_destroy_i(event);
-
-            return (NERROR_NO_MEMORY);
-        }
-    }
-
-    return (NERROR_NO_REFERENCE);
-}
-
-PORT_C_INLINE
-nerror epa_send_ahead_event_i(
-    struct nepa *              epa,
-    struct nevent *             event)
-{
-    if (event->ref < NEVENT_REF_LIMIT) {
-        nevent_ref_up(event);
-
-        if (event_fifo_is_empty(&epa->event_fifo) == true) {
-            nthread_ready_i(epa->thread);
-            event_fifo_put_head_i(&epa->event_fifo, event);
-
-            return (NERROR_NONE);
-        } else if (event_fifo_is_full(&epa->event_fifo) == false) {
-            event_fifo_put_head_i(&epa->event_fifo, event);
-
-            return (NERROR_NONE);
-        } else {
-            nevent_destroy_i(event);
-
-            return (NERROR_NO_MEMORY);
-        }
-    }
-
-    return (NERROR_NO_REFERENCE);
-}
-
-PORT_C_INLINE
-struct nevent * epa_fetch_event_i(
-    struct nepa *               epa)
-{
-    struct nevent *             event;
-
-    event = event_fifo_get(&epa->event_fifo);
-
-    if (event_fifo_is_empty(&epa->event_fifo) == true) {
-        nthread_block_i(epa->thread);
-    }
-
-    return (event);
-}
-
-static void epa_dispatch(
-    void *                      arg)
-{
-	struct nepa *				epa = arg;
-
 
 }
 
@@ -281,153 +64,249 @@ static void epa_dispatch(
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
-struct nepa * neds_get_current(void)
+
+void neds_set_idle(
+	void                	 (* idle)(void))
 {
-    /* NOTE: Since pointer loading is atomic operation there is no need to lock
-     *       interrupts here.
-     */
-    
-    return ((struct nepa *)nthread_get_current()->stack);
+	g_idle = idle;
+}
+
+
+
+void neds_run(void)
+{
+	struct nsys_lock            lock;
+	struct nthread *			thread;
+
+	nsys_lock_enter(&lock);
+
+	for (;;) {
+		while ((thread = nsched_thread_fetch_i())) {
+			struct nepa *			epa;
+			const struct nevent *	event;
+			naction					action;
+
+			nsched_thread_remove_i(thread);
+			epa   = THREAD_TO_EPA(thread);
+			event = nequeue_get(&epa->working_fifo);
+			nsys_lock_exit(&lock);
+			action = nsm_dispatch(&epa->sm, event);
+			nsys_lock_enter(&lock);
+
+			if ((action == NACTION_DEFFERED) &&
+				!nequeue_is_full(&epa->deffered_fifo)) {
+				nequeue_put_fifo(&epa->deffered_fifo, event);
+			} else {
+				nevent_destroy_i(event);
+			}
+		}
+		nsys_lock_exit(&lock);
+		g_idle();
+		nsys_lock_enter(&lock);
+	}
+	nsys_lock_exit(&lock);
+}
+
+
+
+void nepa_init(
+	struct nepa *				epa,
+	const struct nepa_define *	define)
+{
+	nsys_lock					sys_lock;
+
+
+	epa->mem = NULL;
+	nequeue_init(&epa->working_fifo, &define->working_fifo);
+	nequeue_put_fifo(&epa->working_fifo, nsmp_event(NSMP_INIT));
+	nequeue_init(&epa->deffered_fifo, &define->deffered_fifo);
+	nsm_init(&epa->sm, &define->sm);
+	nsched_thread_init(&epa->thread, &define->thread);
+	nsys_lock_enter(&sys_lock);
+	nsched_thread_insert_i(&epa->thread);
+	nsys_lock_exit(&sys_lock);
+
+	NOBLIGATION(epa->signature = EPA_SIGNATURE);
+}
+
+
+
+void nepa_term(
+	struct nepa *				epa)
+{
+	nsys_lock					sys_lock;
+
+	nsys_lock_enter(&sys_lock);
+
+    while (!nequeue_is_empty(&epa->working_fifo)) {
+        const struct nevent *   event;
+
+        event = nequeue_get(&epa->working_fifo);
+        nevent_destroy_i(event);
+    }
+
+	while (!nequeue_is_empty(&epa->deffered_fifo)) {
+		const struct nevent * 	event;
+
+		event = nequeue_get(&epa->deffered_fifo);
+		nevent_destroy_i(event);
+	}
+	nsched_thread_term(&epa->thread);
+	nsm_term(&epa->sm);
+	nequeue_term(&epa->deffered_fifo);
+	nequeue_term(&epa->working_fifo);
+	nsys_lock_exit(&sys_lock);
 }
 
 struct nepa * nepa_create(
-    const struct ndefine_epa *  define_epa,
-    const struct ndefine_sm *   define_sm,
+    const struct nepa_define *  define,
     struct nmem *               mem)
 {
     struct nepa *               epa;
-    void *                      event_fifo_buff;
+    struct nepa_define			l_define;
+    struct nequeue_define 		l_working_define;
+    struct nequeue_define		l_deffered_define;
 
-    NREQUIRE(NAPI_POINTER, define_epa != NULL);
-    NREQUIRE(NAPI_POINTER, define_sm != NULL);
+    NREQUIRE(NAPI_POINTER, define != NULL);
 
     epa = nmem_alloc(mem, sizeof(struct nepa));
 
-    if (epa == NULL) {
+    if (!epa) {
         goto ERROR_ALLOC_EPA;
     }
-    event_fifo_buff = nmem_alloc(mem, NQUEUE_SIZEOF(define_epa->queue_size));
 
-    if (event_fifo_buff == NULL) {
-        goto ERROR_ALLOC_EVENT_FIFO_BUFF;
-    }
-    epa->mem    = mem;
-    epa->name   = define_epa->name;
-	event_fifo_init(&epa->event_fifo, event_fifo_buff, define_epa->queue_size);
-	event_fifo_put_head_i(&epa->event_fifo, (struct nevent *)nsmp_event(NSMP_INIT));
-	nthread_init(&epa->thread, epa_dispatch, epa, define_epa->priority);
+	l_working_define.storage = nmem_alloc(mem, define->working_fifo.size);
+	l_working_define.size    = define->working_fifo.size;
 
-    NOBLIGATION(epa->signature = EPA_SIGNATURE);
+	if (!l_working_define.storage) {
+		goto ERROR_ALLOC_WORKING_FIFO_BUFF;
+	}
+	l_deffered_define.storage = NULL;
+	l_deffered_define.size	  = 0;
+
+	if (define->deffered_fifo.size) {
+		l_deffered_define.storage = nmem_alloc(mem, define->deffered_fifo.size);
+		l_deffered_define.size    = define->deffered_fifo.size;
+
+		if (!l_deffered_define.storage) {
+			goto ERROR_ALLOC_DEFFERED_FIFO_BUFF;
+		}
+	}
+	l_define.sm 			= define->sm;
+	l_define.thread 		= define->thread;
+	l_define.working_fifo	= l_working_define;
+	l_define.deffered_fifo  = l_deffered_define;
+	nepa_init(epa, &l_define);
+    epa->mem = mem;
 
     return (epa);
-ERROR_ALLOC_EVENT_FIFO_BUFF:
-    nmem_free(epa->mem, epa);
+ERROR_ALLOC_DEFFERED_FIFO_BUFF:
+	nmem_free(mem, l_working_define.storage);
+ERROR_ALLOC_WORKING_FIFO_BUFF:
+    nmem_free(mem, epa);
 ERROR_ALLOC_EPA:
 
     return (NULL);
 }
 
-void nepa_init(
-	struct nepa * 				epa,
-	const struct ndefine_epa *	define_epa,
-	const struct ndefine_sm *	define_sm,
-	struct nmem *				mem,
-	void * 						event_fifo_storage)
-{
-	epa->mem  = mem;
-	epa->name = define_epa->name;
-	nsm_init(&epa->sm, define_sm);
-	nthread_init(&epa->thread, epa_dispatch, epa, define_epa->priority);
-}
 
-void esEpaDestroy(
+
+void nepa_destroy(
     struct nepa *               epa)
 {
-    nsys_lock                   sys_lock;
-    void **                     event_fifo_buff;
-
     NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-    NOBLIGATION(epa->signature = (natomic)~EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = (ndebug_magic)~EPA_SIGNATURE);
 
-    nsys_lock_enter(&sys_lock);
+    nepa_term(epa);
 
-    while (event_fifo_is_empty(&epa->event_fifo) != true) {
-        struct nevent *         event;
-
-        event = event_fifo_get(&epa->event_fifo);
-        nevent_destroy_i(event);
+    if (nequeue_storage(&epa->deffered_fifo)) {
+    	nmem_free(epa->mem, nequeue_storage(&epa->deffered_fifo));
     }
-    nthread_block_i(epa->thread);
-    nthread_term(epa->thread);
-    nsys_lock_exit(&sys_lock);
-
-    event_fifo_buff = event_fifo_get_buff(&epa->event_fifo);
-    event_fifo_term(&epa->event_fifo);
-    esSmDestroy(epa->sm);
-    nmem_free(epa->mem, event_fifo_buff);
-    nmem_free(epa->mem, epa->thread);
+    nmem_free(epa->mem, nequeue_storage(&epa->working_fifo));
     nmem_free(epa->mem, epa);
 }
 
-nerror esEpaSendEventI(
-    struct nepa *      epa,
-    struct nevent *    event) {
 
-    nerror             error;
 
+nerror nepa_send_event_i(
+    struct nepa *      			epa,
+    struct nevent *    			event)
+{
     NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    error = epa_send_event_i(epa, event);
+    if (nevent_ref(event) < NEVENT_REF_LIMIT) {
+    	nevent_ref_up(event);
 
-    return (error);
+    	if (!nequeue_is_full(&epa->working_fifo)) {
+        	nequeue_put_fifo(&epa->working_fifo, event);
+			nsched_thread_insert_i(&epa->thread);
+
+            return (NERROR_NONE);
+        } else {
+            nevent_destroy_i(event);
+
+            return (NERROR_NO_MEMORY);
+        }
+    }
+
+    return (NERROR_NO_REFERENCE);
 }
 
-nerror esEpaSendEvent(
+nerror nepa_send_event(
     struct nepa *               epa,
     struct nevent *             event)
 {
     nerror                      error;
     nsys_lock                   sys_lock;
 
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-
     nsys_lock_enter(&sys_lock);
-    error = epa_send_event_i(epa, event);
+    error = nepa_send_event_i(epa, event);
     nsys_lock_exit(&sys_lock);
 
     return (error);
 }
 
 
-nerror esEpaSendAheadEventI(
-    struct nepa *      epa,
-    struct nevent *    event) {
-
-    nerror             error;
-
+nerror nepa_send_event_ahead_i(
+    struct nepa *      			epa,
+    struct nevent *    			event)
+{
     NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
 
-    error = epa_send_ahead_event_i(epa, event);
+    if (event->ref < NEVENT_REF_LIMIT) {
+		nevent_ref_up(event);
 
-    return (error);
+		if (nequeue_is_empty(&epa->working_fifo) == true) {
+			nequeue_put_lifo(&epa->working_fifo, event);
+			nsched_thread_insert_i(&epa->thread);
+
+			return (NERROR_NONE);
+		} else if (!nequeue_is_full(&epa->working_fifo) == false) {
+			nequeue_put_lifo(&epa->working_fifo, event);
+
+			return (NERROR_NONE);
+		} else {
+			nevent_destroy_i(event);
+
+			return (NERROR_NO_MEMORY);
+		}
+	}
+
+	return (NERROR_NO_REFERENCE);
 }
 
-nerror esEpaSendAheadEvent(
+nerror nepa_send_event_ahead(
     struct nepa *               epa,
     struct nevent *             event)
 {
     nerror                      error;
     nsys_lock                   sys_lock;
 
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-
     nsys_lock_enter(&sys_lock);
-    error = epa_send_ahead_event_i(epa, event);
+    error = nepa_send_event_ahead_i(epa, event);
     nsys_lock_exit(&sys_lock);
 
     return (error);

@@ -35,17 +35,23 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/compiler.h"
+#include "shared/debug.h"
 #include "shared/error.h"
-#include "eds/epa_config.h"
+#include "shared/config.h"
+#include "kernel/sched.h"
+#include "eds/smp.h"
+#include "eds/equeue.h"
 
 /*===============================================================  MACRO's  ==*/
 
-#define ES_EPA_DEFINE(name, priority, queueSize)                                \
-    {                                                                           \
-        name,                                                                   \
-        priority,                                                               \
-        queueSize                                                               \
-    }
+/**@brief       EPA structure signature.
+ * @details     The signature is used to confirm that a structure passed to a
+ *              function is indeed a nthread thread structure.
+ */
+#define EPA_SIGNATURE                   	((ndebug_magic)0xfeedbeeful)
+
+#define THREAD_TO_EPA(thread_ptr)                                              	\
+    CONTAINER_OF(thread_ptr, struct nepa, thread)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
@@ -54,26 +60,26 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-struct ndefine_epa {
-    const char *        name;
-    uint8_t             priority;
-    uint8_t             queue_size;
-};
-
-typedef struct ndefine_epa nepaDefine;
-
 struct nmem;
 struct nevent;
-struct nepa;
-struct ndefine_sm;
+
+struct nepa_define
+{
+	struct nsm_define   		sm;
+	struct nequeue_define 		working_fifo;
+	struct nequeue_define 		deffered_fifo;
+	struct nthread_define 		thread;
+};
+
+typedef struct nepa_define nepa_define;
 
 struct nepa
 {
-    struct nmem *               mem;
+	struct nmem *               mem;
+	struct nthread              thread;     	/**<@brief Priority queue 	  */
     struct nsm                  sm;
-    struct nthread              thread;
-    struct event_fifo           event_fifo;
-    const char *                name;
+    struct nequeue            	working_fifo;
+    struct nequeue				deffered_fifo;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     ndebug_magic                signature;
 #endif
@@ -85,62 +91,76 @@ typedef struct nepa nepa;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 /*------------------------------------------------------------------------*//**
- * @name        EPA Kernel functions
+ * @name        EPA General functions
  * @{ *//*--------------------------------------------------------------------*/
-
-void neds_init(void);
-
-void neds_term(void);
 
 void neds_run(void);
 
-struct nepa * neds_get_current(void);
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        EPA Resource management
- * @{ *//*--------------------------------------------------------------------*/
 
-nerror nepaResourceAdd(
-    size_t              size,
-    void **             resource);
+void neds_set_idle(
+	void                	 (* idle)(void));
 
-nerror nepaResourceRemove(
-    void *              resource);
 
-void nepaGetMem(struct nmem ** mem);
+
+PORT_C_INLINE
+struct nepa * nepa_get_current(void)
+{
+	return (THREAD_TO_EPA(nsched_get_current()));
+}
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management
  * @{ *//*--------------------------------------------------------------------*/
 
-nerror nepaCreate(
-    const struct ndefine_epa * epaDefine,
-    const struct ndefine_sm * smDefine,
-    struct nmem *      mem,
-    struct nepa **     epa);
 
-nerror nepaDestroy(
-    struct nepa *      epa);
+
+void nepa_init(
+	struct nepa *				epa,
+	const struct nepa_define *	define);
+
+
+
+void nepa_term(
+	struct nepa *				epa);
+
+
+
+struct nepa * nepa_create(
+    const struct nepa_define *  define_epa,
+    struct nmem *               mem);
+
+
+
+void nepa_destroy(
+    struct nepa *               epa);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA Event transport
  * @{ *//*--------------------------------------------------------------------*/
 
-nerror nepaSendEventI(
-    struct nepa *      epa,
-    struct nevent *    event);
 
-nerror nepaSendEvent(
-    struct nepa *      epa,
-    struct nevent *    event);
+nerror nepa_send_event_i(
+    struct nepa *      			epa,
+    struct nevent *    			event);
 
-nerror nepaSendAheadEventI(
-    struct nepa *      epa,
-    struct nevent *    event);
 
-nerror nepaSendAheadEvent(
-    struct nepa *      epa,
-    struct nevent *    event);
+
+nerror nepa_send_event(
+    struct nepa *               epa,
+    struct nevent *             event);
+
+
+
+nerror nepa_send_event_ahead_i(
+    struct nepa *      			epa,
+    struct nevent *    			event);
+
+
+
+nerror nepa_send_event_ahead(
+    struct nepa *               epa,
+    struct nevent *             event);
 
 /**@} *//*------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
