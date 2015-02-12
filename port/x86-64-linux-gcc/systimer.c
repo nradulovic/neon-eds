@@ -35,7 +35,8 @@ static void handler(int sig, siginfo_t *si, void *uc)
 	signal(sig, SIG_IGN);
 }
 
-void nsystimer_init(void)
+void nsystimer_init(
+	nsystimer_tick            	val)
 {
 
 
@@ -57,6 +58,8 @@ void nsystimer_init(void)
     if (timer_create(CLOCK_REALTIME, &sev, &timerid) == -1) {
     	NASSERT_ALWAYS("Failed to create timer");
     }
+
+    nsystimer_load(val);
 }
 
 void nsystimer_term(void)

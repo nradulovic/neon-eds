@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -30,8 +30,8 @@
  * @details     For more details see @ref errors_intro.
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NCOMMON_DEBUG_H_
-#define NCOMMON_DEBUG_H_
+#ifndef NEON_BASE_SHARED_DEBUG_H_
+#define NEON_BASE_SHARED_DEBUG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -253,4 +253,4 @@ PORT_C_NORETURN void hook_at_assert(
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of debug.h
  ******************************************************************************/
-#endif /* NCOMMON_DEBUG_H_ */
+#endif /* NEON_BASE_SHARED_DEBUG_H_ */

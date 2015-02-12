@@ -30,10 +30,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/systimer_config.h>
 #include <plat/compiler.h>
 #include <stdint.h>
 
+#include "shared/config.h"
 #include "family/profile.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -78,7 +78,8 @@ typedef signed long nsystimer_tick;
 
 /**@brief       Initialise and start the system timer
  */
-void nsystimer_init(void);
+void nsystimer_init(
+	nsystimer_tick            	val);
 
 
 

@@ -29,8 +29,8 @@
  * @brief       Compiler
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NCOMMON_COMPILER_H_
-#define NCOMMON_COMPILER_H_
+#ifndef NEON_BASE_SHARED_COMPILER_H_
+#define NEON_BASE_SHARED_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -49,5 +49,5 @@
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of compiler.h
  ******************************************************************************/
-#endif /* NCOMMON_COMPILER_H_ */
+#endif /* NEON_BASE_SHARED_COMPILER_H_ */
 
