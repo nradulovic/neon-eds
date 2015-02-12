@@ -36,6 +36,7 @@
 #include "shared/component.h"
 #include "mem/mem_class.h"
 #include "eds/event.h"
+#include "eds/epa.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
@@ -92,6 +93,7 @@ static struct evtStorage g_event_storage;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
+
 static void event_init(
     struct nevent *             event,
     size_t                      size,
@@ -99,18 +101,14 @@ static void event_init(
 {
     NREQUIRE(NAPI_OBJECT, event->signature != NEVENT_SIGNATURE);
 
-    event->id     = id;
-    event->attrib = NEVENT_ATTR_DYNAMIC;
-    event->ref    = 0u;
-
-#if (CONFIG_EVENT_TIMESTAMP == 1)
-    event->timestamp = NSYSTIMER_GET_CVAL();
-#endif
+    event->id    	 = id;
+    event->attrib 	= NEVENT_ATTR_DYNAMIC;
+    event->ref    	= 0u;
 #if (CONFIG_EVENT_PRODUCER == 1)
-    CONFIG_GET_CURRENT_EPA(&event->producer);
+    event->producer = nepa_get_current();
 #endif
 #if (CONFIG_EVENT_SIZE == 1)
-    event->size = size;
+    event->size 	= size;
 #else
     (void)size;
 #endif
@@ -127,6 +125,8 @@ static void event_term(
     (void)event;
 #endif
 }
+
+
 
 static struct nevent * event_create_i(
     size_t                      size)
@@ -154,6 +154,8 @@ static struct nevent * event_create_i(
     
     return (NULL);
 }
+
+
 
 static void event_destroy_i(
     struct nevent *    event)
@@ -284,7 +286,9 @@ void nevent_destroy_i(
     NREQUIRE(NAPI_POINTER, event);
     NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
 
-    if (nevent_ref_down(event) == 0u) {
+    nevent_ref_down(event);
+
+    if (nevent_ref(event) == 0u) {
         event_term((struct nevent *)event);
         event_destroy_i((struct nevent *)event);
     }

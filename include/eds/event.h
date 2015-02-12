@@ -244,14 +244,12 @@ void nevent_unlock(
  *              Pointer to event
  */
 PORT_C_INLINE
-ncpu_reg nevent_ref_up(
+void nevent_ref_up(
     const struct nevent *       event)
 {
     if (event->attrib) {
         ((struct nevent *)event)->ref++;
     }
-
-    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 /**@brief       Decrements the event reference counter
@@ -259,14 +257,12 @@ ncpu_reg nevent_ref_up(
  *              Pointer to event
  */
 PORT_C_INLINE
-ncpu_reg nevent_ref_down(
+void nevent_ref_down(
     const struct nevent *     	event)
 {
     if (event->attrib) {
         ((struct nevent *)event)->ref--;
     }
-
-    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 
