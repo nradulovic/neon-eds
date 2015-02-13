@@ -160,7 +160,7 @@
  *              velicini)
  */
 #if !defined(CONFIG_EVENT_SIZE)
-# define CONFIG_EVENT_SIZE              0
+# define CONFIG_EVENT_SIZE              1
 #endif
 
 /**
@@ -173,21 +173,12 @@
  *              generatoru)
  */
 #if !defined(OPT_EVT_USE_GENERATOR)
-# define CONFIG_EVENT_PRODUCER          0
+# define CONFIG_EVENT_PRODUCER          1
 #endif
 
 #if !defined(CONFIG_EVENT_STORAGE_NPOOLS)
 # define CONFIG_EVENT_STORAGE_NPOOLS    2
 #endif
-
-#if !defined(CONFIG_GET_CURRENT_EPA)
-# define CONFIG_GET_CURRENT_EPA(epa)                                            \
-    do {                                                                        \
-        extern struct nepa * neds_get_current(void);                            \
-        *epa = neds_get_current();                                              \
-    } while (0)
-#endif
-
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name       	eds: state machine processor
@@ -195,10 +186,6 @@
 
 #if !defined(CONFIG_SMP_HSM)
 # define CONFIG_SMP_HSM                 1
-#endif
-
-#if !defined(CONFIG_SMP_EVENT_ID_BASE)
-# define CONFIG_SMP_EVENT_ID_BASE       0u
 #endif
 
 /**@} *//*--------------------------------------------------------------------*/
