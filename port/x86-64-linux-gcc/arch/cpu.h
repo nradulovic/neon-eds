@@ -117,7 +117,7 @@ uint_fast8_t ncpu_log2(
     extern const uint_fast8_t   g_log2_lookup[256];
 
     if (value > 255) {
-        return (g_log2_lookup[value >> 8] + 8);
+        return ((uint_fast8_t)(g_log2_lookup[value >> 8] + 8u));
     } else {
         return (g_log2_lookup[value]);
     }
