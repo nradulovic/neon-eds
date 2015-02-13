@@ -369,15 +369,15 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     NREQUIRE(NAPI_POINTER, sm_define             != NULL);
     NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
     NREQUIRE(NAPI_USAGE, (sm_define->type == NTYPE_FSM) ||
-    					 (sm_define->type == NTYPE_HSM));
+    					 (sm_define->type == NSM_TYPE_HSM));
 
     sm->state  = sm_define->init_state;
     sm->wspace = sm_define->wspace;
 
-    if (sm_define->type == NTYPE_HSM) {
-        sm->dispatch = &hsm_dispatch;
+    if (sm_define->type == NSM_TYPE_HSM) {
+        sm->vf_dispatch = &hsm_dispatch;
     } else {
-        sm->dispatch = &fsm_dispatch;
+        sm->vf_dispatch = &fsm_dispatch;
     }
     NOBLIGATION(sm->signature = SM_SIGNATURE);
 }
@@ -388,20 +388,10 @@ void nsm_term(struct nsm * sm)
 {
     NREQUIRE(NAPI_POINTER, sm != NULL);
     NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
-    sm->dispatch = NULL;
+    sm->vf_dispatch = NULL;
     sm->state    = NULL;
     sm->wspace   = NULL;
     NOBLIGATION(sm->signature = ~SM_SIGNATURE);
-}
-
-
-
-naction nsm_dispatch(struct nsm * sm, const struct nevent * event)
-{
-    NREQUIRE(NAPI_POINTER, sm != NULL);
-    NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
-
-    return (sm->dispatch(sm, event));
 }
 
 

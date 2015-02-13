@@ -45,12 +45,10 @@
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-struct evtStorage {
-    struct storageInstance {
-        struct nmem *      handle;
-        size_t              block_size;
-    }                   mem[CONFIG_EVENT_STORAGE_NPOOLS];
-    uint_fast8_t        pools;
+struct event_storage
+{
+	struct nmem *      			mem[CONFIG_EVENT_STORAGE_NPOOLS];
+    uint_fast8_t        		pools;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -88,7 +86,7 @@ static void event_destroy_i(
 
 static const NCOMPONENT_DEFINE("Event management", "Nenad Radulovic");
 
-static struct evtStorage g_event_storage;
+static struct event_storage g_event_storage;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
@@ -136,12 +134,13 @@ static struct nevent * event_create_i(
     NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
 
     for (cnt = 0u; cnt < g_event_storage.pools; cnt++) {
+    	struct nmem *       mem;
 
-        if (g_event_storage.mem[cnt].block_size >= size) {
+		mem = g_event_storage.mem[cnt];
+
+        if (nmem_get_size_i(mem) >= size) {
             struct nevent *     event;
-            struct nmem *       mem;
 
-            mem   = g_event_storage.mem[cnt].handle;
             event = nmem_alloc_i(mem, size);
 
             if (event) {
@@ -178,22 +177,17 @@ void nevent_register_mem(
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     nsys_lock_enter(&sys_lock);
-    NENSURE_INTERNAL(size = nget_mem_size_i(mem));
-    cnt = g_event_storage.pools;
+    NENSURE_INTERNAL(size = nmem_get_size_i(mem));
 
-    while (0u < cnt) {
-        g_event_storage.mem[cnt].handle = g_event_storage.mem[cnt - 1].handle;
-        g_event_storage.mem[cnt].block_size =
-            g_event_storage.mem[cnt - 1].block_size;
+    for (cnt = g_event_storage.pools; cnt > 0u; cnt--) {
+        g_event_storage.mem[cnt] = g_event_storage.mem[cnt - 1];
 
-        if (g_event_storage.mem[cnt].block_size <= size) {
+        if (nmem_get_size_i(g_event_storage.mem[cnt]) <= size) {
 
             break;
         }
-        cnt--;
     }
-    g_event_storage.mem[cnt].handle     = mem;
-    g_event_storage.mem[cnt].block_size = size;
+    g_event_storage.mem[cnt] = mem;
     g_event_storage.pools++;
     nsys_lock_exit(&sys_lock);
 }
@@ -209,21 +203,18 @@ void nevent_unregister_mem(
     nsys_lock_enter(&sys_lock);
     cnt = g_event_storage.pools;
 
-    while ((0u < cnt) && (mem != g_event_storage.mem[cnt].handle)) {
+    while ((0u < cnt) && (mem != g_event_storage.mem[cnt])) {
         cnt--;
     }
     g_event_storage.pools--;
 
-    NREQUIRE(NAPI_RANGE, mem == g_event_storage.mem[cnt].handle);
+    NREQUIRE(NAPI_RANGE, mem == g_event_storage.mem[cnt]);
 
     while (cnt < g_event_storage.pools) {
-        g_event_storage.mem[cnt].handle = g_event_storage.mem[cnt + 1].handle;
-        g_event_storage.mem[cnt].block_size =
-            g_event_storage.mem[cnt + 1].block_size;
+        g_event_storage.mem[cnt] = g_event_storage.mem[cnt + 1];
         cnt++;
     }
-    g_event_storage.mem[g_event_storage.pools - 1].handle     = NULL;
-    g_event_storage.mem[g_event_storage.pools - 1].block_size = 0;
+    g_event_storage.mem[g_event_storage.pools - 1] = NULL;
     nsys_lock_exit(&sys_lock);
 }
 

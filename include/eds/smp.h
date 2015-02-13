@@ -48,10 +48,14 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+struct nevent;
+struct nsm;
+
 /**@brief       State machine processor event identifications
  * @api
  */
-enum nsmp_events {
+enum nsmp_events
+{
     NSMP_SUPER          = 0u,           /**<@brief Get the state super state  */
     NSMP_ENTRY          = 1u,           /**<@brief Process state entry        */
     NSMP_EXIT           = 2u,           /**<@brief Process state exit         */
@@ -59,7 +63,8 @@ enum nsmp_events {
     NEVENT_USER_ID      = 15u
 };
 
-enum naction {
+enum naction
+{
     NACTION_SUPER       = 0,
     NACTION_TRANSIT_TO  = 1,
     NACTION_HANDLED     = 2,
@@ -67,20 +72,19 @@ enum naction {
     NACTION_DEFFERED    = 4
 };
 
-enum nsm_type {
-    NTYPE_FSM           = 0,
-    NTYPE_HSM           = 1
+enum nsm_type
+{
+    NSM_TYPE_HSM           = 0,
+    NTYPE_FSM           = 1
 };
 
 typedef uint_fast8_t naction;
 
-struct nevent;
-struct nsm;
-
 typedef naction (nstate) (struct nsm *, const struct nevent *);
 
-struct nsm {
-    naction                  (* dispatch)(struct nsm *, const struct nevent *);
+struct nsm
+{
+    naction                  (* vf_dispatch)(struct nsm *, const struct nevent *);
     nstate *                    state;
     void *                      wspace;
 #if (CONFIG_API_VALIDATION == 1)
@@ -90,7 +94,8 @@ struct nsm {
 
 typedef struct nsm nsm;
 
-struct nsm_define {
+struct nsm_define
+{
     void *                      wspace;
     nstate *                    init_state;
     enum nsm_type               type;
@@ -102,24 +107,37 @@ typedef struct nsm_define nsm_define;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-void nsm_init(struct nsm * sm, const struct nsm_define * sm_define);
+void nsm_init(
+	struct nsm * 				sm,
+	const struct nsm_define * 	sm_define);
 
 
 
-void nsm_term(struct nsm * sm);
-
-
-
-naction nsm_dispatch(struct nsm * sm, const struct nevent * event);
-
-
-
-naction ntop_state(struct nsm * sm, const struct nevent * event);
+void nsm_term(
+	struct nsm * 				sm);
 
 
 
 PORT_C_INLINE
-naction naction_transit_to(struct nsm * sm, nstate * state)
+naction nsm_dispatch(
+	struct nsm * 				sm,
+	const struct nevent * 		event)
+{
+    return (sm->vf_dispatch(sm, event));
+}
+
+
+
+naction ntop_state(
+	struct nsm * 				sm,
+	const struct nevent * 		event);
+
+
+
+PORT_C_INLINE
+naction naction_transit_to(
+	struct nsm * 				sm,
+	nstate * 					state)
 {
     sm->state = state;
 
@@ -129,7 +147,9 @@ naction naction_transit_to(struct nsm * sm, nstate * state)
 
 
 PORT_C_INLINE
-naction naction_super(struct nsm * sm, nstate * state)
+naction naction_super(
+	struct nsm * 				sm,
+	nstate * 					state)
 {
     sm->state = state;
 
@@ -138,7 +158,8 @@ naction naction_super(struct nsm * sm, nstate * state)
 
 
 
-const struct nevent * nsmp_event(enum nsmp_events event_id);
+const struct nevent * nsmp_event(
+	enum nsmp_events 			event_id);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
