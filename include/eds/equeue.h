@@ -89,7 +89,7 @@ void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 
 	nqueue_put_fifo(&queue->queue, (void *)event);
 
-	empty = nqueue_unoccupied(&queue->queue);
+	empty = nqueue_free(&queue->queue);
 
 	if (queue->min > empty) {
 		queue->min = empty;
@@ -111,7 +111,7 @@ void nequeue_put_lifo(
 
 	nqueue_put_lifo(&queue->queue, (void *)event);
 
-	empty = nqueue_unoccupied(&queue->queue);
+	empty = nqueue_free(&queue->queue);
 
 	if (queue->min > empty) {
 		queue->min = empty;
