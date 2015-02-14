@@ -74,8 +74,8 @@ enum naction
 
 enum nsm_type
 {
-    NSM_TYPE_HSM           = 0,
-    NTYPE_FSM           = 1
+    NSM_TYPE_HSM        = 0,
+    NSM_TYPE_FSM        = 1
 };
 
 typedef uint_fast8_t naction;

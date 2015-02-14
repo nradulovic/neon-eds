@@ -368,7 +368,7 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     NREQUIRE(NAPI_POINTER, sm->signature         != SM_SIGNATURE);
     NREQUIRE(NAPI_POINTER, sm_define             != NULL);
     NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
-    NREQUIRE(NAPI_USAGE, (sm_define->type == NTYPE_FSM) ||
+    NREQUIRE(NAPI_USAGE, (sm_define->type == NSM_TYPE_FSM) ||
     					 (sm_define->type == NSM_TYPE_HSM));
 
     sm->state  = sm_define->init_state;
