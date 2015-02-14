@@ -115,7 +115,6 @@ void nepa_init(
 {
 	nsys_lock					sys_lock;
 
-
 	epa->mem = NULL;
 	nequeue_init(&epa->working_fifo, &define->working_fifo);
 	nequeue_put_fifo(&epa->working_fifo, nsmp_event(NSMP_INIT));
