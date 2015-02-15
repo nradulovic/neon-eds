@@ -43,12 +43,14 @@
  */
 #define ERROR_TABLE_(entry)                                                     \
     entry(NERROR_NONE,                  0u,     "no error")                     \
+	entry(NERROR_TIMEOUT,               1u,     "general timeout")              \
+	entry(NERROR_OP_ABORT,              2u,     "operation aborted")            \
     entry(NERROR_OBJECT_NFOUND,         100u,   "object not found")             \
     entry(NERROR_OBJECT_INVALID,        101u,   "object is invalid")            \
     entry(NERROR_DEVICE_FAIL,           201u,   "device failure")               \
     entry(NERROR_DEVICE_BUSY,           202u,   "device is busy")               \
-    entry(NERROR_NO_DEVICE,             203u,   "no free device")               \
-    entry(NERROR_DEVICE_NO_COMM,        204u,   "no comm with the device")      \
+	entry(NERROR_DEVICE_NO_COMM,        203u,   "no communication with device") \
+    entry(NERROR_NO_DEVICE,             204u,   "no free device")               \
     entry(NERROR_NO_MEMORY,             300u,   "no free memory")               \
     entry(NERROR_NO_RESOURCE,           301u,   "no free resource")             \
     entry(NERROR_NO_REFERENCE,          302u,   "no free reference slot")       \
