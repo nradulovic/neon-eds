@@ -42,31 +42,31 @@
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 void nequeue_init(
-	struct nequeue * 			queue,
-	const struct nequeue_define * define)
+    struct nequeue *            queue,
+    const struct nequeue_define * define)
 {
-	ncpu_reg					size;
+    ncpu_reg                    size;
 
-	size = define->size / sizeof(struct nevent * [1]);
+    size = define->size / sizeof(struct nevent * [1]);
 
 #if (CONFIG_REGISTRY == 1)
-	nqueue_init(&queue->queue, define->storage, size);
-	queue->min = size;
+    nqueue_init(&queue->queue, define->storage, size);
+    queue->min = size;
 #else
-	nqueue_init(&queue->queue, define->storage, size);
+    nqueue_init(&queue->queue, define->storage, size);
 #endif
 }
 
 
 
 void nequeue_term(
-	struct nequeue * 			queue)
+    struct nequeue *            queue)
 {
 #if (CONFIG_REGISTRY == 1)
-	nqueue_term(&queue->queue);
-	queue->min = 0;
+    nqueue_term(&queue->queue);
+    queue->min = 0;
 #else
-	nqueue_term(&queue->queue);
+    nqueue_term(&queue->queue);
 #endif
 }
 

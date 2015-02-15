@@ -41,16 +41,16 @@
  */
 #define SM_SIGNATURE                    ((ndebug_magic)0xdaafu)
 
-#define NSMP_EVENT(event)				&g_smp_events[(event)]
+#define NSMP_EVENT(event)               &g_smp_events[(event)]
 
-#define CONFIG_HSM_PATH_DEPTH			8
+#define CONFIG_HSM_PATH_DEPTH           8
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 struct hsm_path
 {
-	nstate *					buff[CONFIG_HSM_PATH_DEPTH];
+    nstate *                    buff[CONFIG_HSM_PATH_DEPTH];
     uint_fast8_t                index;
 };
 
@@ -71,8 +71,8 @@ static nstate * hsm_get_state_super(struct nsm * sm, nstate * state);
  */
 static void hsm_build_path(
     struct nsm *                sm,
-    struct hsm_path *     		entry,
-	struct hsm_path *     		exit);
+    struct hsm_path *           entry,
+    struct hsm_path *           exit);
 
 
 
@@ -158,28 +158,28 @@ static const struct nevent g_smp_events[4] =
 static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
 {
 #if (CONFIG_API_VALIDATION == 1)
-	naction						ret;
+    naction                     ret;
 
-	ret = state(sm, NSMP_EVENT(NSMP_SUPER));
+    ret = state(sm, NSMP_EVENT(NSMP_SUPER));
 
-	NREQUIRE(NAPI_USAGE, ret == NACTION_SUPER);
+    NREQUIRE(NAPI_USAGE, ret == NACTION_SUPER);
 #else
-	state(sm, NSMP_EVENT(NSMP_SUPER));
+    state(sm, NSMP_EVENT(NSMP_SUPER));
 #endif
 
-	return (sm->state);
+    return (sm->state);
 }
 
 
 
 static void hsm_build_path(
     struct nsm *                sm,
-    struct hsm_path *     		entry,
-	struct hsm_path *     		exit)
+    struct hsm_path *           entry,
+    struct hsm_path *           exit)
 {
-	nstate *                	current_state;
-	entry->index = 0;
-	exit->index--;
+    nstate *                    current_state;
+    entry->index = 0;
+    exit->index--;
 
 /*--  path: a) source ?== destination  ---------------------------------------*/
     if (exit->buff[exit->index] == entry->buff[entry->index]) {
@@ -257,7 +257,7 @@ static void hsm_build_path(
 
 static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
 {
-	uint_fast8_t				index = entry->index;
+    uint_fast8_t                index = entry->index;
 
     while (index--) {
 #if (CONFIG_API_VALIDATION == 1)
@@ -265,7 +265,7 @@ static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
 
         ret = entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-        					 (ret == NACTION_HANDLED) ||
+                             (ret == NACTION_HANDLED) ||
                              (ret == NACTION_SUPER));
 #else
         (void)entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
@@ -285,7 +285,7 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 
         ret = exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-        		             (ret == NACTION_HANDLED) ||
+                             (ret == NACTION_HANDLED) ||
                              (ret == NACTION_SUPER));
 #else
         (void)exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
@@ -299,8 +299,8 @@ static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
-    struct hsm_path       		entry;
-    struct hsm_path				exit;
+    struct hsm_path             entry;
+    struct hsm_path             exit;
 
     exit.index = 0u;
     current_state = sm->state;
@@ -338,7 +338,7 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSMP_EXIT));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
-				 	 	 	 (ret == NACTION_HANDLED));
+                             (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSMP_EXIT));
 #endif
@@ -346,7 +346,7 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSMP_ENTRY));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
-	 	 	 	 	 	 	 (ret == NACTION_HANDLED));
+                             (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSMP_ENTRY));
 #endif
@@ -369,7 +369,7 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     NREQUIRE(NAPI_POINTER, sm_define             != NULL);
     NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
     NREQUIRE(NAPI_USAGE, (sm_define->type == NSM_TYPE_FSM) ||
-    					 (sm_define->type == NSM_TYPE_HSM));
+                         (sm_define->type == NSM_TYPE_HSM));
 
     sm->state  = sm_define->init_state;
     sm->wspace = sm_define->wspace;
@@ -408,7 +408,7 @@ naction ntop_state(struct nsm * sm, const struct nevent * event)
 
 const struct nevent * nsmp_event(enum nsmp_events event_id)
 {
-	return (&g_smp_events[event_id]);
+    return (&g_smp_events[event_id]);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

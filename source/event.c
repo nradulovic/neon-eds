@@ -47,8 +47,8 @@
 
 struct event_storage
 {
-	struct nmem *      			mem[CONFIG_EVENT_STORAGE_NPOOLS];
-    uint_fast8_t        		pools;
+    struct nmem *               mem[CONFIG_EVENT_STORAGE_NPOOLS];
+    uint_fast8_t                pools;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -99,14 +99,14 @@ static void event_init(
 {
     NREQUIRE(NAPI_OBJECT, event->signature != NEVENT_SIGNATURE);
 
-    event->id    	 = id;
-    event->attrib 	= NEVENT_ATTR_DYNAMIC;
-    event->ref    	= 0u;
+    event->id        = id;
+    event->attrib   = NEVENT_ATTR_DYNAMIC;
+    event->ref      = 0u;
 #if (CONFIG_EVENT_PRODUCER == 1)
     event->producer = nepa_get_current();
 #endif
 #if (CONFIG_EVENT_SIZE == 1)
-    event->size 	= size;
+    event->size     = size;
 #else
     (void)size;
 #endif
@@ -134,9 +134,9 @@ static struct nevent * event_create_i(
     NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
 
     for (cnt = 0u; cnt < g_event_storage.pools; cnt++) {
-    	struct nmem *       mem;
+        struct nmem *       mem;
 
-		mem = g_event_storage.mem[cnt];
+        mem = g_event_storage.mem[cnt];
 
         if (nmem_get_size_i(mem) >= size) {
             struct nevent *     event;
@@ -290,35 +290,35 @@ void nevent_destroy_i(
 void nevent_lock(
     const struct nevent *       event)
 {
-	NREQUIRE(NAPI_POINTER, event != NULL);
-	NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, event != NULL);
+    NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
 
     if (event->attrib) {
-    	((struct nevent *)event)->attrib = NEVENT_ATTR_RESERVED;
+        ((struct nevent *)event)->attrib = NEVENT_ATTR_RESERVED;
     }
 }
 
 
 
 void nevent_unlock(
-    const struct nevent *      	event)
+    const struct nevent *       event)
 {
     NREQUIRE(NAPI_POINTER, event != NULL);
     NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
 
     if (event->attrib) {
-    	struct nevent * event_ = (struct nevent *)event;
+        struct nevent * event_ = (struct nevent *)event;
 
-    	event_->attrib = NEVENT_ATTR_DYNAMIC;
+        event_->attrib = NEVENT_ATTR_DYNAMIC;
 
-		if (event_->ref == 0u) {
-			struct nsys_lock    sys_lock;
+        if (event_->ref == 0u) {
+            struct nsys_lock    sys_lock;
 
-			event_term(event_);
-			nsys_lock_enter(&sys_lock);
-			event_destroy_i(event_);
-			nsys_lock_exit(&sys_lock);
-		}
+            event_term(event_);
+            nsys_lock_enter(&sys_lock);
+            event_destroy_i(event_);
+            nsys_lock_exit(&sys_lock);
+        }
     }
 }
 

@@ -21,7 +21,7 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief   	State Machine Processor header
+ * @brief       State Machine Processor header
  * @defgroup    eds_smp State Machine Processor
  * @brief       State Machine Processor
  *********************************************************************//** @{ */
@@ -108,20 +108,20 @@ typedef struct nsm_define nsm_define;
 
 
 void nsm_init(
-	struct nsm * 				sm,
-	const struct nsm_define * 	sm_define);
+    struct nsm *                sm,
+    const struct nsm_define *   sm_define);
 
 
 
 void nsm_term(
-	struct nsm * 				sm);
+    struct nsm *                sm);
 
 
 
 PORT_C_INLINE
 naction nsm_dispatch(
-	struct nsm * 				sm,
-	const struct nevent * 		event)
+    struct nsm *                sm,
+    const struct nevent *       event)
 {
     return (sm->vf_dispatch(sm, event));
 }
@@ -129,15 +129,15 @@ naction nsm_dispatch(
 
 
 naction ntop_state(
-	struct nsm * 				sm,
-	const struct nevent * 		event);
+    struct nsm *                sm,
+    const struct nevent *       event);
 
 
 
 PORT_C_INLINE
 naction naction_transit_to(
-	struct nsm * 				sm,
-	nstate * 					state)
+    struct nsm *                sm,
+    nstate *                    state)
 {
     sm->state = state;
 
@@ -148,8 +148,8 @@ naction naction_transit_to(
 
 PORT_C_INLINE
 naction naction_super(
-	struct nsm * 				sm,
-	nstate * 					state)
+    struct nsm *                sm,
+    nstate *                    state)
 {
     sm->state = state;
 
@@ -159,7 +159,7 @@ naction naction_super(
 
 
 const struct nevent * nsmp_event(
-	enum nsmp_events 			event_id);
+    enum nsmp_events            event_id);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

@@ -39,63 +39,63 @@
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 void etimer_handler(
-	void * 						arg);
+    void *                      arg);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 void etimer_handler(
-	void * 						arg)
+    void *                      arg)
 {
-	struct netimer *			timer = arg;
-	struct nevent *				event;
+    struct netimer *            timer = arg;
+    struct nevent *             event;
 
-	event = nevent_create_i(sizeof(struct nevent), timer->event_id);
+    event = nevent_create_i(sizeof(struct nevent), timer->event_id);
 
-	if (event) {
-		nepa_send_event_i(timer->client, event);
-	}
+    if (event) {
+        nepa_send_event_i(timer->client, event);
+    }
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 void netimer_init(
-	struct netimer * 			timer)
+    struct netimer *            timer)
 {
-	ntimer_init(&timer->timer);
+    ntimer_init(&timer->timer);
 }
 
 
 void netimer_after(
-	struct netimer * 			timer,
-	nsystimer_tick              tick,
-	uint16_t     				event_id)
+    struct netimer *            timer,
+    nsystimer_tick              tick,
+    uint16_t                    event_id)
 {
-	timer->client 	= nepa_get_current();
-	timer->event_id = event_id;
-	ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_ONE_SHOT);
+    timer->client   = nepa_get_current();
+    timer->event_id = event_id;
+    ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_ONE_SHOT);
 }
 
 
 
 void netimer_every(
-	struct netimer *			timer,
-	nsystimer_tick				tick,
-	uint16_t    				event_id)
+    struct netimer *            timer,
+    nsystimer_tick              tick,
+    uint16_t                    event_id)
 {
-	timer->client 	= nepa_get_current();
-	timer->event_id = event_id;
-	ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_REPEAT);
+    timer->client   = nepa_get_current();
+    timer->event_id = event_id;
+    ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_REPEAT);
 }
 
 
 
 void netimer_cancel(
-	struct netimer *			timer)
+    struct netimer *            timer)
 {
-	ntimer_cancel(&timer->timer);
+    ntimer_cancel(&timer->timer);
 }
 
 
@@ -103,7 +103,7 @@ void netimer_cancel(
 bool netimer_is_running_i(
     const struct netimer *      timer)
 {
-	return (ntimer_is_running_i(&timer->timer));
+    return (ntimer_is_running_i(&timer->timer));
 }
 
 
@@ -111,7 +111,7 @@ bool netimer_is_running_i(
 nsystimer_tick netimer_remaining(
     const struct netimer *      timer)
 {
-	return (ntimer_remaining(&timer->timer));
+    return (ntimer_remaining(&timer->timer));
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

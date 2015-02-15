@@ -74,7 +74,7 @@
 #define NEVENT_SIGNATURE                ((ndebug_magic)0xdeadfeedul)
 
 /**@brief       Event with identifiers equal to to or higher than this number
- * 				are event reserved for local usage.
+ *              are event reserved for local usage.
  */
 #define NEVENT_LOCAL_ID                 32768u
 
@@ -98,22 +98,22 @@ struct nepa;
  * @api
  */
 struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
-    uint_fast16_t               id;		/**<@brief Event ID number            */
+    uint_fast16_t               id;     /**<@brief Event ID number            */
     uint_fast16_t               ref;
     uint_fast16_t               attrib; /**<@brief Event dynamic attributes   */
     struct nmem *               mem;
 /**<@brief Event storage                                    */
 #if (CONFIG_EVENT_PRODUCER == 1)  || defined(__DOXYGEN__)
-    									/**<@brief Event producer             */
+                                        /**<@brief Event producer             */
     struct nepa *               producer;
 #endif
 #if (CONFIG_EVENT_SIZE == 1)      || defined(__DOXYGEN__)
-    									/**<@brief Event size in bytes        */
+                                        /**<@brief Event size in bytes        */
     size_t                      size;
 #endif
 #if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
-    									/**<@brief Structure signature, used
-    									 * during development stage only.	  */
+                                        /**<@brief Structure signature, used
+                                         * during development stage only.     */
     ndebug_magic                signature;
 #endif
 };
@@ -258,7 +258,7 @@ void nevent_ref_up(
  */
 PORT_C_INLINE
 void nevent_ref_down(
-    const struct nevent *     	event)
+    const struct nevent *       event)
 {
     if (event->attrib) {
         ((struct nevent *)event)->ref--;
@@ -269,9 +269,9 @@ void nevent_ref_down(
 
 PORT_C_INLINE
 ncpu_reg nevent_ref(
-	const struct nevent *		event)
+    const struct nevent *       event)
 {
-	return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
+    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/

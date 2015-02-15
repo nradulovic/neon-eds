@@ -45,9 +45,9 @@ extern "C" {
 
 struct netimer
 {
-	struct ntimer				timer;
-	struct nepa *				client;
-	uint16_t    				event_id;
+    struct ntimer               timer;
+    struct nepa *               client;
+    uint16_t                    event_id;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -55,25 +55,25 @@ struct netimer
 
 
 void netimer_init(
-	struct netimer * 			timer);
+    struct netimer *            timer);
 
 
 void netimer_after(
-	struct netimer * 			timer,
-	nsystimer_tick              tick,
-	uint16_t     				event_id);
+    struct netimer *            timer,
+    nsystimer_tick              tick,
+    uint16_t                    event_id);
 
 
 
 void netimer_every(
-	struct netimer *			timer,
-	nsystimer_tick				tick,
-	uint16_t     				event_id);
+    struct netimer *            timer,
+    nsystimer_tick              tick,
+    uint16_t                    event_id);
 
 
 
 void netimer_cancel(
-	struct netimer *			timer);
+    struct netimer *            timer);
 
 
 

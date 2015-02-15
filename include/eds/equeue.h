@@ -41,7 +41,7 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NEQUEUE_SIZEOF(elements)			(sizeof(struct nevent * [elements]))
+#define NEQUEUE_SIZEOF(elements)            (sizeof(struct nevent * [elements]))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -54,15 +54,15 @@ struct nevent;
 
 struct nequeue_define
 {
-	struct nevent **			storage;
-	size_t						size;
+    struct nevent **            storage;
+    size_t                      size;
 };
 
 struct nequeue
 {
-	struct nqueue				queue;
+    struct nqueue               queue;
 #if (CONFIG_REGISTRY == 1)
-	ncpu_reg                    min;
+    ncpu_reg                    min;
 #endif
 };
 
@@ -71,13 +71,13 @@ struct nequeue
 
 
 void nequeue_init(
-	struct nequeue * 			queue,
-	const struct nequeue_define * define);
+    struct nequeue *            queue,
+    const struct nequeue_define * define);
 
 
 
 void nequeue_term(
-	struct nequeue * 			queue);
+    struct nequeue *            queue);
 
 
 
@@ -85,17 +85,17 @@ PORT_C_INLINE
 void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
-	ncpu_reg					empty;
+    ncpu_reg                    empty;
 
-	nqueue_put_fifo(&queue->queue, (void *)event);
+    nqueue_put_fifo(&queue->queue, (void *)event);
 
-	empty = nqueue_free(&queue->queue);
+    empty = nqueue_free(&queue->queue);
 
-	if (queue->min > empty) {
-		queue->min = empty;
-	}
+    if (queue->min > empty) {
+        queue->min = empty;
+    }
 #else
-	nqueue_put_fifo(&queue->queue, (void *)event);
+    nqueue_put_fifo(&queue->queue, (void *)event);
 #endif
 }
 
@@ -103,21 +103,21 @@ void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 
 PORT_C_INLINE
 void nequeue_put_lifo(
-	struct nequeue * 			queue,
-	const struct nevent * 		event)
+    struct nequeue *            queue,
+    const struct nevent *       event)
 {
 #if (CONFIG_REGISTRY == 1)
-	ncpu_reg					empty;
+    ncpu_reg                    empty;
 
-	nqueue_put_lifo(&queue->queue, (void *)event);
+    nqueue_put_lifo(&queue->queue, (void *)event);
 
-	empty = nqueue_free(&queue->queue);
+    empty = nqueue_free(&queue->queue);
 
-	if (queue->min > empty) {
-		queue->min = empty;
-	}
+    if (queue->min > empty) {
+        queue->min = empty;
+    }
 #else
-	nqueue_put_lifo(&queue->queue, (void *)event);
+    nqueue_put_lifo(&queue->queue, (void *)event);
 #endif
 }
 
@@ -125,35 +125,35 @@ void nequeue_put_lifo(
 
 PORT_C_INLINE
 const struct nevent * nequeue_get(
-	struct nequeue * 			queue)
+    struct nequeue *            queue)
 {
-	return (nqueue_get(&queue->queue));
+    return (nqueue_get(&queue->queue));
 }
 
 
 
 PORT_C_INLINE
 bool nequeue_is_full(
-	const struct nequeue * 		queue)
+    const struct nequeue *      queue)
 {
-	return (nqueue_is_full(&queue->queue));
+    return (nqueue_is_full(&queue->queue));
 }
 
 
 
 PORT_C_INLINE
 bool nequeue_is_empty(
-	const struct nequeue *		queue)
+    const struct nequeue *      queue)
 {
-	return (nqueue_is_empty(&queue->queue));
+    return (nqueue_is_empty(&queue->queue));
 }
 
 
 PORT_C_INLINE
 void * nequeue_storage(
-	const struct nequeue * 		queue)
+    const struct nequeue *      queue)
 {
-	return (nqueue_storage(&queue->queue));
+    return (nqueue_storage(&queue->queue));
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/

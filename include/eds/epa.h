@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Event Processing Agent header
  * @defgroup    eds_epa Event Processing Agent
  * @brief       Event Processing Agent
@@ -48,9 +48,9 @@
  * @details     The signature is used to confirm that a structure passed to a
  *              function is indeed a nthread thread structure.
  */
-#define EPA_SIGNATURE                   	((ndebug_magic)0xfeedbeeful)
+#define EPA_SIGNATURE                       ((ndebug_magic)0xfeedbeeful)
 
-#define THREAD_TO_EPA(thread_ptr)                                              	\
+#define THREAD_TO_EPA(thread_ptr)                                               \
     CONTAINER_OF(thread_ptr, struct nepa, thread)
 
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -65,21 +65,21 @@ struct nevent;
 
 struct nepa_define
 {
-	struct nsm_define   		sm;
-	struct nequeue_define 		working_fifo;
-	struct nequeue_define 		deffered_fifo;
-	struct nthread_define 		thread;
+    struct nsm_define           sm;
+    struct nequeue_define       working_fifo;
+    struct nequeue_define       deffered_fifo;
+    struct nthread_define       thread;
 };
 
 typedef struct nepa_define nepa_define;
 
 struct nepa
 {
-	struct nmem *               mem;
-	struct nthread              thread;     	/**<@brief Priority queue 	  */
+    struct nmem *               mem;
+    struct nthread              thread;         /**<@brief Priority queue     */
     struct nsm                  sm;
-    struct nequeue            	working_fifo;
-    struct nequeue				deffered_fifo;
+    struct nequeue              working_fifo;
+    struct nequeue              deffered_fifo;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     ndebug_magic                signature;
 #endif
@@ -99,14 +99,14 @@ void neds_run(void);
 
 
 void neds_set_idle(
-	void                	 (* idle)(void));
+    void                     (* idle)(void));
 
 
 
 PORT_C_INLINE
 struct nepa * nepa_get_current(void)
 {
-	return (THREAD_TO_EPA(nsched_get_current()));
+    return (THREAD_TO_EPA(nsched_get_current()));
 }
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -116,13 +116,13 @@ struct nepa * nepa_get_current(void)
 
 
 void nepa_init(
-	struct nepa *				epa,
-	const struct nepa_define *	define);
+    struct nepa *               epa,
+    const struct nepa_define *  define);
 
 
 
 void nepa_term(
-	struct nepa *				epa);
+    struct nepa *               epa);
 
 
 
@@ -141,8 +141,8 @@ void nepa_destroy(
 
 
 nerror nepa_send_event_i(
-    struct nepa *      			epa,
-    struct nevent *    			event);
+    struct nepa *               epa,
+    struct nevent *             event);
 
 
 
@@ -153,8 +153,8 @@ nerror nepa_send_event(
 
 
 nerror nepa_send_event_ahead_i(
-    struct nepa *      			epa,
-    struct nevent *    			event);
+    struct nepa *               epa,
+    struct nevent *             event);
 
 
 
