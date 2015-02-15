@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Interface of ARM Cortex compiler port.
  * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
@@ -82,7 +82,7 @@
  */
 #define PORT_C_ROM_VAR
 
-#define PORT_C_PACKED					__attribute__((packed))
+#define PORT_C_PACKED                   __attribute__((packed))
 
 /**@brief       This attribute specifies a minimum alignment (in bytes) for
  *              variables of the specified type.

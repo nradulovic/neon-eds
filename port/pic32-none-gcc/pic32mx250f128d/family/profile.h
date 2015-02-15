@@ -20,8 +20,8 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
- * @brief   	Profile for Microchip PIC32MX250F128
+ * @author      Nenad Radulovic
+ * @brief       Profile for Microchip PIC32MX250F128
  * @addtogroup  pic32-none-gcc
  * @brief       Profile for Microchip PIC32MX250F128
  *********************************************************************//** @{ */

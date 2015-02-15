@@ -18,45 +18,45 @@
 
 static NCOMPONENT_DEFINE("System timer", "Nenad Radulovic");
 
-static struct sigaction 		sa;
-static sigset_t 				mask;
-static struct sigevent 			sev;
-static struct itimerspec 		its;
-static timer_t 					timerid;
+static struct sigaction         sa;
+static sigset_t                 mask;
+static struct sigevent          sev;
+static struct itimerspec        its;
+static timer_t                  timerid;
 
 static void handler(int sig, siginfo_t *si, void *uc)
 {
-	(void)si;
-	(void)uc;
+    (void)si;
+    (void)uc;
 
-	nsys_lock_enter(NULL);
-	nsystimer_isr();
-	nsys_lock_exit(NULL);
-	signal(sig, SIG_IGN);
+    nsys_lock_enter(NULL);
+    nsystimer_isr();
+    nsys_lock_exit(NULL);
+    signal(sig, SIG_IGN);
 }
 
 void nsystimer_init(
-	nsystimer_tick            	val)
+    nsystimer_tick              val)
 {
 
 
-	sa.sa_flags = SA_SIGINFO;
-	sa.sa_sigaction = handler;
-	sigemptyset(&sa.sa_mask);
-	if (sigaction(SIGRTMIN, &sa, NULL) == -1) {
-		NASSERT_ALWAYS("Failed to set handler");
-	}
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGRTMIN);
-	if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
-		NASSERT_ALWAYS("Failed to mask timer");
-	}
-	sev.sigev_notify = SIGEV_SIGNAL;
+    sa.sa_flags = SA_SIGINFO;
+    sa.sa_sigaction = handler;
+    sigemptyset(&sa.sa_mask);
+    if (sigaction(SIGRTMIN, &sa, NULL) == -1) {
+        NASSERT_ALWAYS("Failed to set handler");
+    }
+    sigemptyset(&mask);
+    sigaddset(&mask, SIGRTMIN);
+    if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
+        NASSERT_ALWAYS("Failed to mask timer");
+    }
+    sev.sigev_notify = SIGEV_SIGNAL;
     sev.sigev_signo  = SIGRTMIN;
     sev.sigev_value.sival_ptr = &timerid;
 
     if (timer_create(CLOCK_REALTIME, &sev, &timerid) == -1) {
-    	NASSERT_ALWAYS("Failed to create timer");
+        NASSERT_ALWAYS("Failed to create timer");
     }
 
     nsystimer_load(val);
@@ -64,23 +64,23 @@ void nsystimer_init(
 
 void nsystimer_term(void)
 {
-	if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
-		NASSERT_ALWAYS("Failed to terminate timer");
-	}
+    if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
+        NASSERT_ALWAYS("Failed to terminate timer");
+    }
 }
 
 
 
 nsystimer_tick nsystimer_get_current(void)
 {
-	return (its.it_value.tv_nsec);
+    return (its.it_value.tv_nsec);
 }
 
 
 
 nsystimer_tick nsystimer_get_reload(void)
 {
-	return (its.it_interval.tv_nsec);
+    return (its.it_interval.tv_nsec);
 }
 
 
@@ -94,7 +94,7 @@ void nsystimer_load(
     its.it_interval.tv_nsec = its.it_value.tv_nsec;
 
     if (timer_settime(timerid, 0, &its, NULL) == -1) {
-    	NASSERT_ALWAYS("Failed to setup timer");
+        NASSERT_ALWAYS("Failed to setup timer");
     }
 }
 
@@ -102,18 +102,18 @@ void nsystimer_load(
 
 void nsystimer_enable(void)
 {
-	if (sigprocmask(SIG_UNBLOCK, &mask, NULL) == -1) {
-		NASSERT_ALWAYS("Failed to unmask timer");
-	}
+    if (sigprocmask(SIG_UNBLOCK, &mask, NULL) == -1) {
+        NASSERT_ALWAYS("Failed to unmask timer");
+    }
 }
 
 
 
 void nsystimer_disable(void)
 {
-	if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
-		NASSERT_ALWAYS("Failed to mask timer");
-	}
+    if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1) {
+        NASSERT_ALWAYS("Failed to mask timer");
+    }
 }
 
 

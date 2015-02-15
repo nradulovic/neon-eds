@@ -37,26 +37,26 @@
 /*--  On AIRCR register writes, write 0x5FA, otherwise the write is ignored  -*/
 
 
-#define PORT_SCB_ICSR						(*(volatile unsigned int *)0xE000ED04)
+#define PORT_SCB_ICSR                       (*(volatile unsigned int *)0xE000ED04)
 #define PORT_SCB_ICSR_PENDSTSET             (1ul << 26)
 #define PORT_SCB_ICSR_PENDSTCLR             (1ul << 25)
 
-#define PORT_SCB_AIRCR						(*(volatile unsigned int *)0xE000ED0C)
-#define PORT_SCB_AIRCR_VECTKEY_Pos			16
-#define PORT_SCB_AIRCR_VECTKEY				(0xfffful << 16)
-#define PORT_SCB_AIRCR_VECTKEY_VALUE    	(0x5faul << 16)
-#define PORT_SCB_AIRCR_PRIGROUP_Pos			8
-#define PORT_SCB_AIRCR_PRIGROUP				(0x7ul << 8)
-#define PORT_SCB_SHP_SYSTICK				(*(volatile unsigned char *)0xE000ED22)
+#define PORT_SCB_AIRCR                      (*(volatile unsigned int *)0xE000ED0C)
+#define PORT_SCB_AIRCR_VECTKEY_Pos          16
+#define PORT_SCB_AIRCR_VECTKEY              (0xfffful << 16)
+#define PORT_SCB_AIRCR_VECTKEY_VALUE        (0x5faul << 16)
+#define PORT_SCB_AIRCR_PRIGROUP_Pos         8
+#define PORT_SCB_AIRCR_PRIGROUP             (0x7ul << 8)
+#define PORT_SCB_SHP_SYSTICK                (*(volatile unsigned char *)0xE000ED22)
 
 /*--  SysTick Control / Status Register Definitions  -------------------------*/
-#define PORT_SYST_CSR						(*(volatile unsigned int *)0xE000E010)
-#define PORT_SYST_CSR_CLKSOURCE         	(1ul << 2)
-#define PORT_SYST_CSR_TICKINT           	(1ul << 1)
-#define PORT_SYST_CSR_ENABLE            	(1ul << 0)
+#define PORT_SYST_CSR                       (*(volatile unsigned int *)0xE000E010)
+#define PORT_SYST_CSR_CLKSOURCE             (1ul << 2)
+#define PORT_SYST_CSR_TICKINT               (1ul << 1)
+#define PORT_SYST_CSR_ENABLE                (1ul << 0)
 
-#define PORT_SYST_RVR						(*(volatile unsigned int *)0xE000E014)
-#define PORT_SYST_CVR						(*(volatile unsigned int *)0xE000E018)
+#define PORT_SYST_RVR                       (*(volatile unsigned int *)0xE000E014)
+#define PORT_SYST_CVR                       (*(volatile unsigned int *)0xE000E018)
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

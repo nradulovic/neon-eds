@@ -26,7 +26,7 @@
 #include "arch/systimer.h"
 
 void nsystimer_init(
-	nsystimer_tick            	val);
+    nsystimer_tick              val);
 
 
 /**@brief       Stop and terminate the system timer

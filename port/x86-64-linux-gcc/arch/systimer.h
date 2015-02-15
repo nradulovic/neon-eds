@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Interface of ARM Cortex-M3 System Timer port.
  * @addtogroup  arm-none-eabi-gcc-v7-m
  *********************************************************************//** @{ */
@@ -79,7 +79,7 @@ typedef signed long nsystimer_tick;
 /**@brief       Initialise and start the system timer
  */
 void nsystimer_init(
-	nsystimer_tick            	val);
+    nsystimer_tick              val);
 
 
 

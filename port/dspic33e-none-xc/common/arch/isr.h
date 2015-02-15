@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Port core module header
  * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
@@ -78,8 +78,8 @@ struct nisr
 PORT_C_INLINE
 void nisr_global_enable(void)
 {
-	__asm __volatile__ (
-		"   cpsie   i                                       \n");
+    __asm __volatile__ (
+        "   cpsie   i                                       \n");
 }
 
 
@@ -92,8 +92,8 @@ void nisr_global_enable(void)
 PORT_C_INLINE
 void nisr_global_disable(void)
 {
-	__asm __volatile__ (
-		"   cpsid   i                                       \n");
+    __asm __volatile__ (
+        "   cpsid   i                                       \n");
 }
 
 
@@ -110,15 +110,15 @@ void nisr_set_mask(
     nisr_ctx                    new_mask)
 {
 #if (CONFIG_ISR_MAX_PRIO == 0)
-	__asm __volatile__ (
-		"   msr    basepri, %0                              \n"
-		:
-		: "r"(new_mask));
+    __asm __volatile__ (
+        "   msr    basepri, %0                              \n"
+        :
+        : "r"(new_mask));
 #else
-	__asm __volatile__ (
-		"   msr    primask, %0                              \n"
-		:
-		: "r"(new_mask));
+    __asm __volatile__ (
+        "   msr    primask, %0                              \n"
+        :
+        : "r"(new_mask));
 #endif
 }
 
@@ -131,20 +131,20 @@ PORT_C_INLINE
 nisr_ctx nisr_replace_mask(
     nisr_ctx                    new_mask)
 {
-	nisr_ctx                    old_mask;
+    nisr_ctx                    old_mask;
 #if (CONFIG_ISR_MAX_PRIO == 0)
     __asm __volatile__ (
-		"   mrs     %0, basepri                             \n"
-		"   msr     basepri, %1                             \n"
-		: "=&r"(old_mask)
-		: "r"(new_mask));
+        "   mrs     %0, basepri                             \n"
+        "   msr     basepri, %1                             \n"
+        : "=&r"(old_mask)
+        : "r"(new_mask));
 
 #else
     __asm __volatile__ (
-		"   mrs     %0, primask                             \n"
-		"   msr    primask, %1                              \n"
-		: "=&r"(old_mask)
-		: "r"(new_mask));
+        "   mrs     %0, primask                             \n"
+        "   msr    primask, %1                              \n"
+        : "=&r"(old_mask)
+        : "r"(new_mask));
 #endif
     
     return (old_mask);
@@ -163,7 +163,7 @@ void nisr_enable(struct nisr * isr)
 PORT_C_INLINE
 void nisr_disable(struct nisr * isr)
 {
-	(void)isr;
+    (void)isr;
 }
 
 
@@ -171,7 +171,7 @@ void nisr_disable(struct nisr * isr)
 PORT_C_INLINE
 void nisr_set(struct nisr * isr)
 {
-	(void)isr;
+    (void)isr;
 }
 
 
@@ -179,7 +179,7 @@ void nisr_set(struct nisr * isr)
 PORT_C_INLINE
 void nisr_clear(struct nisr * isr)
 {
-	(void)isr;
+    (void)isr;
 }
 
 
@@ -187,8 +187,8 @@ void nisr_clear(struct nisr * isr)
 PORT_C_INLINE
 void nisr_set_prio(struct nisr * isr, ncpu_reg prio)
 {
-	(void)isr;
-	(void)prio;
+    (void)isr;
+    (void)prio;
 }
 
 
@@ -196,9 +196,9 @@ void nisr_set_prio(struct nisr * isr, ncpu_reg prio)
 PORT_C_INLINE
 ncpu_reg nisr_get_prio(struct nisr * isr)
 {
-	(void)isr;
+    (void)isr;
 
-	return (0);
+    return (0);
 }
 
 

@@ -20,8 +20,8 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***************************************************************************************************************//**
  * @file
- * @author  	Nenad Radulovic
- * @brief   	Family profile for ST-Microelectronics STM32F10x
+ * @author      Nenad Radulovic
+ * @brief       Family profile for ST-Microelectronics STM32F10x
  * @addtogroup  arm-none-eabi-gcc
  * @brief       Family profile for ST-Microelectronics STM32F10x
  *********************************************************************//** @{ */
@@ -50,9 +50,9 @@
  */
 #define NPROFILE_RAM_SIZE               8192u
 
-#define PORT_SYSTIMER_HANDLER       	SysTick_Handler
+#define PORT_SYSTIMER_HANDLER           SysTick_Handler
 
-#define PORT_KERNEL_HANDLER         	PendSV_Handler
+#define PORT_KERNEL_HANDLER             PendSV_Handler
 
 /**@brief       Port constant: interrupt priority bits implemented in MCU
  * @note        It is also recommended to ensure that all priority bits are

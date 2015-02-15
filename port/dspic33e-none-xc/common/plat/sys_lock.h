@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Interface of ARM Cortex critical code section port.
  * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */

@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Software component information header
  * @defgroup    common_component Component
  * @brief       Software component information
@@ -44,7 +44,7 @@
  *              Module author : string
  * @api
  */
-#define NCOMPONENT_DEFINE(description, author)                             	\
+#define NCOMPONENT_DEFINE(description, author)                              \
     PORT_C_ROM struct PORT_C_UNUSED ncomponent_info g_component_info =          \
     {                                                                           \
         description,                                                            \

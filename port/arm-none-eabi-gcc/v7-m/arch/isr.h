@@ -103,7 +103,7 @@ nisr_ctx nisr_replace_mask(
     nisr_ctx                   new_mask)
 {
 #if (CONFIG_ISR_MAX_PRIO != 0)
-	nisr_ctx                   old_mask;
+    nisr_ctx                   old_mask;
 
     __asm __volatile__ (
         "@  nisr_replace_mask                               \n"

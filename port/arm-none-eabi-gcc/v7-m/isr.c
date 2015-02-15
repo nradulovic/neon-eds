@@ -32,7 +32,7 @@
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
-#define PORT_CONFIG_ISR_SUBPRIORITY		0
+#define PORT_CONFIG_ISR_SUBPRIORITY     0
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -45,21 +45,21 @@
 
 void nisr_module_init(void)
 {
-	ncpu_reg                    reg;
+    ncpu_reg                    reg;
 
-	nisr_global_disable();
-	reg  = PORT_SCB_AIRCR;
-	reg &= ~(PORT_SCB_AIRCR_VECTKEY | PORT_SCB_AIRCR_PRIGROUP);
-	reg |=   PORT_SCB_AIRCR_VECTKEY_VALUE;
-	reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << PORT_SCB_AIRCR_PRIGROUP_Pos);
-	PORT_SCB_AIRCR = reg;
+    nisr_global_disable();
+    reg  = PORT_SCB_AIRCR;
+    reg &= ~(PORT_SCB_AIRCR_VECTKEY | PORT_SCB_AIRCR_PRIGROUP);
+    reg |=   PORT_SCB_AIRCR_VECTKEY_VALUE;
+    reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << PORT_SCB_AIRCR_PRIGROUP_Pos);
+    PORT_SCB_AIRCR = reg;
 }
 
 
 
 void nisr_module_term(void)
 {
-	nisr_global_disable();
+    nisr_global_disable();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

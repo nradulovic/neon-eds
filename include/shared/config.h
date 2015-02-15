@@ -20,8 +20,8 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
- * @brief   	Common package configuration header
+ * @author      Nenad Radulovic
+ * @brief       Common package configuration header
  * @addtogroup  common Common
  *********************************************************************//** @{ */
 /**@defgroup    common_cfg Package configuration
@@ -36,7 +36,7 @@
 /*==============================================================  SETTINGS  ==*/
 
 /*------------------------------------------------------------------------*//**
- * @name       	base::shared: Debugging options
+ * @name        base::shared: Debugging options
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Enable/disable Debug module
@@ -71,7 +71,7 @@
 #endif
 
 /*------------------------------------------------------------------------*//**
- * @name       	base::port: Port options
+ * @name        base::port: Port options
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Priority of critical sections in kernel
@@ -104,7 +104,7 @@
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name       	eds: Kernel configuration
+ * @name        eds: Kernel configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Scheduler priority levels
@@ -130,12 +130,12 @@
 #endif
 
 #if !defined(CONFIG_REGISTRY_NAME_SIZE)
-# define CONFIG_REGISTRY_NAME_SIZE			16u
+# define CONFIG_REGISTRY_NAME_SIZE          16u
 #endif
 
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name       	eds: Event object configuration
+ * @name        eds: Event object configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Attributes of event header structure
@@ -181,7 +181,7 @@
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name       	eds: state machine processor
+ * @name        eds: state machine processor
  * @{ *//*--------------------------------------------------------------------*/
 
 #if !defined(CONFIG_SMP_HSM)

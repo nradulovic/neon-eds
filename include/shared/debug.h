@@ -51,7 +51,7 @@
 /**@brief       Static assert macro
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @details     This macro will evaluate the given expression at compile time.
@@ -70,7 +70,7 @@
 /**@brief       Generic assert macro.
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
@@ -87,7 +87,7 @@
 /**@brief       Assert macro that will always execute (no conditional).
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       text
  *              Text : string : a text which will be printed when this assert
  *              macro is executed.
@@ -109,7 +109,7 @@
 /**@brief       Assert macro used for internal execution checking
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
@@ -140,7 +140,7 @@
 /**@brief       Make sure the caller has fulfilled all contract preconditions
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
@@ -159,8 +159,8 @@
 #if    (CONFIG_DEBUG == 1)
 # define NENSURE(expr)                                                          \
     if ((expr) != NERROR_NONE) {                                                \
-    	hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, #expr,      \
-			NAPI_CALL);															\
+        hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, #expr,      \
+            NAPI_CALL);                                                         \
     }
 #else
 # define NENSURE(expr)                      expr
@@ -169,7 +169,7 @@
 /**@brief       Make sure the caller has fulfilled all contract preconditions
  * @param       msg
  *              Message : a standard error message, see
- *            	@ref Standard error messages.
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
@@ -194,7 +194,7 @@
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Standard error messages
  * @brief       These are used throughout Neon software collection in a concise
- * 				way to inform about error details.
+ *              way to inform about error details.
  * @{ *//*--------------------------------------------------------------------*/
 
 #define NAPI_RANGE                          "Value is out of valid range."
@@ -224,8 +224,8 @@ typedef unsigned int ndebug_magic;
  *              Software component information.
  * @param       fn
  *              Function name where the error occurred.
- * @param 		line
- * 				Code line of the error.
+ * @param       line
+ *              Code line of the error.
  * @param       expr
  *              Expression: is pointer to the string containing the expression
  *              that failed to evaluate to `true`.
@@ -233,7 +233,7 @@ typedef unsigned int ndebug_magic;
  *              String containing some information about the error.
  * @note        1) This function may be called only if @ref CONFIG_DEBUG is
  *              active.
- * @details		An assertion has failed. This function should inform the user
+ * @details     An assertion has failed. This function should inform the user
  *              about failed assertion.
  * @api
  */

@@ -20,8 +20,8 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
- * @brief   	Family profile for ST-Microelectronics STM32F10x
+ * @author      Nenad Radulovic
+ * @brief       Family profile for ST-Microelectronics STM32F10x
  * @addtogroup  arm-none-eabi-gcc
  * @brief       Family profile for ST-Microelectronics STM32F10x
  *********************************************************************//** @{ */

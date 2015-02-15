@@ -51,7 +51,7 @@ typedef unsigned int nsystimer_tick;
  */
 PORT_C_INLINE
 void nsystimer_init(
-	nsystimer_tick            	val)
+    nsystimer_tick              val)
 {
     PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;     /* Disable timer */
     PORT_SYST_RVR  = val;
@@ -66,7 +66,7 @@ void nsystimer_init(
 PORT_C_INLINE
 void nsystimer_term(void)
 {
-	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -95,10 +95,10 @@ nsystimer_tick nsystimer_get_reload(void)
  */
 PORT_C_INLINE
 void nsystimer_load(
-    nsystimer_tick            	val)
+    nsystimer_tick              val)
 {
-	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
-	PORT_SYST_RVR  = val;
+    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+    PORT_SYST_RVR  = val;
     PORT_SYST_CVR  = 0u;
     PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
 }
@@ -110,7 +110,7 @@ void nsystimer_load(
 PORT_C_INLINE
 void nsystimer_enable(void)
 {
-	PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
+    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -120,7 +120,7 @@ void nsystimer_enable(void)
 PORT_C_INLINE
 void nsystimer_disable(void)
 {
-	PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
 }
 
 
@@ -130,7 +130,7 @@ void nsystimer_disable(void)
 PORT_C_INLINE
 void nsystimer_isr_enable(void)
 {
-	PORT_SYST_CSR |= PORT_SYST_CSR_TICKINT;
+    PORT_SYST_CSR |= PORT_SYST_CSR_TICKINT;
 }
 
 

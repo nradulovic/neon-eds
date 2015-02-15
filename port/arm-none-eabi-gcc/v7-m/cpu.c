@@ -41,10 +41,10 @@
 
 void ncpu_module_init(void)
 {
-	__asm__ __volatile__(
-		"@  ncpu_init                                       \n"
-		"   clrex                                           \n");
-											  /* Clear the exclusive monitor. */
+    __asm__ __volatile__(
+        "@  ncpu_init                                       \n"
+        "   clrex                                           \n");
+                                              /* Clear the exclusive monitor. */
 }
 
 

@@ -20,7 +20,7 @@
  * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author  	Nenad Radulovic
+ * @author      Nenad Radulovic
  * @brief       Interrupt module header
  * @addtogroup  arm-none-eabi-gcc
  *********************************************************************//** @{ */
@@ -40,23 +40,23 @@
 
 #define nisr_exit()                         (void)0
 
-#define nisr_enter()						(void)0
+#define nisr_enter()                        (void)0
 
-#define nisr_global_enable()				(void)0
+#define nisr_global_enable()                (void)0
 
-#define nisr_global_disable()				(void)0
+#define nisr_global_disable()               (void)0
 
-#define nisr_set_mask(new_mask)				(void)0
+#define nisr_set_mask(new_mask)             (void)0
 
-#define nisr_replace_mask(new_mask)			(void)0
+#define nisr_replace_mask(new_mask)         (void)0
 
-#define nisr_pend_kernel()					(void)0
+#define nisr_pend_kernel()                  (void)0
 
-#define nisr_is_active()					false
+#define nisr_is_active()                    false
 
-#define nisr_module_init()					(void)0
+#define nisr_module_init()                  (void)0
 
-#define nisr_module_term()					(void)0
+#define nisr_module_term()                  (void)0
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
