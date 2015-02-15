@@ -71,7 +71,7 @@ PORT_C_INLINE
 void nsys_lock_enter(
     struct nsys_lock *          lock)
 {
-    lock->isr_ctx = nisr_replace_mask(NISR_PRIO_TO_CODE(CONFIG_ISR_MAX_PRIO));
+    lock->isr_ctx = nisr_replace_mask(NISR_PRIO_TO_CODE(CONFIG_INTR_MAX_ISR_PRIO));
 }
 
 

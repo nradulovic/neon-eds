@@ -27,10 +27,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "family/profile.h"
-#include "arch/port_config.h"
-#include "arch/cpu.h"
-#include "arch/isr.h"
+#include "port/cpu.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/

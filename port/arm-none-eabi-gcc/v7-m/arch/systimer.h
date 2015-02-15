@@ -14,8 +14,8 @@
 #include <stdbool.h>
 
 #include "port/compiler.h"
+#include "shared/config.h"
 #include "family/profile.h"
-#include "arch/port_config.h"
 #include "arch/cortex_m3.h"
 
 /*===============================================================  MACRO's  ==*/
