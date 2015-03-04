@@ -30,6 +30,7 @@
 #include <stdbool.h>
 
 #include "shared/component.h"
+#include "shared/debug.h"
 #include "eds/event.h"
 #include "eds/smp.h"
 
@@ -39,7 +40,7 @@
  * @brief       State machine signature
  * @details     This signature is used only during the debugging process
  */
-#define SM_SIGNATURE                    ((ndebug_magic)0xdaafu)
+#define SM_SIGNATURE                    ((ncpu_reg)0xdaafu)
 
 #define NSMP_EVENT(event)               &g_smp_events[(event)]
 

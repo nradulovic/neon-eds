@@ -39,7 +39,6 @@
 
 #include "port/compiler.h"
 #include "port/cpu.h"
-#include "shared/debug.h"
 #include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -53,7 +52,7 @@
  *              defining a static event in ROM address space.
  * @api
  */
-#define NEVENT_ATTR_RESERVED            ((ncpu_reg)0xff00u | NEVENT_ATTR_DYNAMIC)
+#define NEVENT_ATTR_RESERVED            ((uint16_t)0xff00u | NEVENT_ATTR_DYNAMIC)
 
 /**@brief       Bit mask which defines a constant event
  * @details     When the bits defined in this bit mask are set the given event
@@ -61,17 +60,17 @@
  *              it. Once the event is marked as constant it never can be deleted.
  * @api
  */
-#define NEVENT_ATTR_DYNAMIC             ((ncpu_reg)0x00ffu)
+#define NEVENT_ATTR_DYNAMIC             ((uint16_t)0x00ffu)
 
 /**@brief       This macro defines limit for event ID value
  * @details     An event must have ID which is below this limit.
  * @api
  */
-#define NEVENT_REF_LIMIT                (NCPU_REG_MAX)
+#define NEVENT_REF_LIMIT                (UINT16_MAX)
 
 /**@brief       Event object API signature
  */
-#define NEVENT_SIGNATURE                ((ndebug_magic)0xdeadfeedul)
+#define NEVENT_SIGNATURE                ((ncpu_reg)0xdeadfeedul)
 
 /**@brief       Event with identifiers equal to to or higher than this number
  *              are event reserved for local usage.
@@ -114,7 +113,7 @@ struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
 #if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
                                         /**<@brief Structure signature, used
                                          * during development stage only.     */
-    ndebug_magic                signature;
+    ncpu_reg                    signature;
 #endif
 };
 
