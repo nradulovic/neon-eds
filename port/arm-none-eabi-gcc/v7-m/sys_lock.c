@@ -27,8 +27,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/isr.h"
-#include "arch/cpu.h"
+#include <cortex_m3.h>
+#include "arch/sys_lock.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
@@ -36,16 +36,48 @@
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
+
+/**@brief       Enable all interrupts
+ */
+PORT_C_INLINE
+void nisr_global_enable(void);
+
+
+
+/**@brief       Disable all interrupts
+ */
+PORT_C_INLINE
+void nisr_global_disable(void);
+
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
+
+PORT_C_INLINE
+void nisr_global_enable(void)
+{
+    __asm __volatile__ (
+        "@  nisr_enable                                     \n"
+        "   cpsie   i                                       \n");
+}
+
+
+
+PORT_C_INLINE
+void nisr_global_disable(void)
+{
+    __asm __volatile__ (
+        "@  nisr_disable                                    \n"
+        "   cpsid   i                                       \n");
+}
+
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
-void nisr_module_init(void)
+void nsys_lock_module_init(void)
 {
-    ncpu_reg                    reg;
+    unsigned int                reg;
 
     nisr_global_disable();
     reg  = PORT_SCB_AIRCR;
@@ -53,11 +85,12 @@ void nisr_module_init(void)
     reg |=   PORT_SCB_AIRCR_VECTKEY_VALUE;
     reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << PORT_SCB_AIRCR_PRIGROUP_Pos);
     PORT_SCB_AIRCR = reg;
+    nisr_global_enable();
 }
 
 
 
-void nisr_module_term(void)
+void nsys_lock_module_term(void)
 {
     nisr_global_disable();
 }

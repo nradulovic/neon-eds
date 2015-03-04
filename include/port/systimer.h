@@ -23,7 +23,38 @@
 #ifndef NEON_BASE_PORT_SYSTIMER_H_
 #define NEON_BASE_PORT_SYSTIMER_H_
 
-#include "arch/systimer.h"
+/*=========================================================  INCLUDE FILES  ==*/
+
+#include <stdint.h>
+
+/*===============================================================  MACRO's  ==*/
+
+/**@brief       Core timer one tick value
+ */
+#define NSYSTIMER_ONE_TICK(clock)                                               \
+    (((clock) + (CONFIG_SYSTIMER_EVENT_FREQ / 2)) / CONFIG_SYSTIMER_EVENT_FREQ)
+
+/**@brief       Maximum number of ticks without overflowing the core timer
+ */
+#define NSYSTIMER_MAX_TICKS                                                     \
+    (UINT32_MAX / NSYSTIMER_ONE_TICK)
+
+#define NSYSTIMER_TICK_MAX              UINT32_MAX
+
+/*-------------------------------------------------------  C++ extern base  --*/
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*============================================================  DATA TYPES  ==*/
+
+/**@brief       Core timer hardware register type.
+ */
+typedef uint32_t nsystimer_tick;
+
+/*======================================================  GLOBAL VARIABLES  ==*/
+/*===================================================  FUNCTION PROTOTYPES  ==*/
+
 
 void nsystimer_init(
     nsystimer_tick              val);
@@ -94,4 +125,13 @@ void nsystimer_module_term(void);
  */
 extern void nsystimer_isr(void);
 
+/*--------------------------------------------------------  C++ extern end  --*/
+#ifdef __cplusplus
+}
+#endif
+
+/*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of systimer.h
+ ******************************************************************************/
 #endif /* NEON_BASE_PORT_SYSTIMER_H_ */

@@ -10,20 +10,16 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "port/compiler.h"
 #include "shared/config.h"
 #include "family/profile.h"
-#include "arch/cortex_m3.h"
 
 /*===============================================================  MACRO's  ==*/
 
-#define NISR_PRIO_TO_CODE(prio)                                                 \
+#define NSYS_LOCK_LEVEL_TO_CODE(prio)                                           \
     (((prio) << (8u - PORT_ISR_PRIO_BITS)) & 0xfful)
 
-#define NISR_CODE_TO_PRIO(code)                                                 \
+#define NSYS_LOCK_CODE_TO_LEVEL(code)                                           \
     (((code) & 0xfful) >> (8u - PORT_ISR_PRIO_BITS))
 
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -33,38 +29,20 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Interrupt context type
+/**@brief       Interrupt context structure
  * @details     This type is used to declare variable type which will hold
  *              interrupt context data.
  */
-typedef unsigned int nisr_ctx;
+struct nsys_lock
+{
+    unsigned int                level;
+};
+
+
+typedef struct nsys_lock nsys_lock;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-
-/**@brief       Enable all interrupts
- */
-PORT_C_INLINE
-void nisr_global_enable(void)
-{
-    __asm __volatile__ (
-        "@  nisr_enable                                     \n"
-        "   cpsie   i                                       \n");
-}
-
-
-
-/**@brief       Disable all interrupts
- */
-PORT_C_INLINE
-void nisr_global_disable(void)
-{
-    __asm __volatile__ (
-        "@  nisr_disable                                    \n"
-        "   cpsid   i                                       \n");
-}
-
 
 
 /**@brief       Set the new interrupt priority state
@@ -75,21 +53,21 @@ void nisr_global_disable(void)
  *              disable/enable all interrupts.
  */
 PORT_C_INLINE
-void nisr_set_mask(
-    nisr_ctx                   new_mask)
+void nsys_lock_restore_level(
+    struct nsys_lock *          lock)
 {
-#if (CONFIG_ISR_MAX_PRIO != 0)
+#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
     __asm __volatile__ (
-        "@  nisr_set_mask                                   \n"
+        "@  nsys_restore_level                              \n"
         "   msr    basepri, %0                              \n"
         :
-        : "r"(new_mask));
+        : "r"(lock->level));
 #else
     __asm __volatile__ (
-        "@  nisr_set_mask                                   \n"
+        "@  nsys_restore_level                              \n"
         "   msr    primask, %0                              \n"
         :
-        : "r"(new_mask));
+        : "r"(lock->level));
 #endif
 }
 
@@ -99,45 +77,64 @@ void nisr_set_mask(
  * @return      Current interrupt priority mask
  */
 PORT_C_INLINE
-nisr_ctx nisr_replace_mask(
-    nisr_ctx                   new_mask)
+void nsys_lock_set_level(
+    struct nsys_lock *          ctx,
+    unsigned int                new_mask)
 {
-#if (CONFIG_ISR_MAX_PRIO != 0)
-    nisr_ctx                   old_mask;
-
+#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
     __asm __volatile__ (
-        "@  nisr_replace_mask                               \n"
+        "@  nsys_set_level                                  \n"
         "   mrs     %0, basepri                             \n"
         "   msr     basepri, %1                             \n"
-        : "=&r"(old_mask)
+        : "=&r"(ctx->level)
         : "r"(new_mask));
-
-    return (old_mask);
 #else
-    nisr_ctx                   old_mask;
-
     __asm __volatile__ (
-        "@  nisr_replace_mask                               \n"
+        "@  nsys_set_level                                  \n"
         "   mrs     %0, primask                             \n"
         "   msr    primask, %1                              \n"
-        : "=&r"(old_mask)
+        : "=&r"(ctx->level)
         : "r"(new_mask));
-
-    return (old_mask);
 #endif
 }
 
 
+/**@brief       Enter critical code section
+ * @param       resource
+ *              Interrupt resource, pointer to portable type variable which will
+ *              hold the interrupt context state during the critical code
+ *              section.
+ */
+PORT_C_INLINE
+void nsys_lock_enter(
+    struct nsys_lock *          lock)
+{
+    nsys_lock_set_level(lock, NSYS_LOCK_LEVEL_TO_CODE(CONFIG_SYS_LOCK_MAX_LEVEL));
+}
+
+
+
+/**@brief       Exit critical code section
+ * @param       resource
+ *              Interrupt resource, portable type variable which is holding a
+ *              previously saved interrupt context state.
+ */
+PORT_C_INLINE
+void nsys_lock_exit(
+    struct nsys_lock *          lock)
+{
+    nsys_lock_restore_level(lock);
+}
 
 /**@brief       Initialise port
  */
-void nisr_module_init(void);
+void nsys_lock_module_init(void);
 
 
 
 /**@brief       Terminate port
  */
-void nisr_module_term(void);
+void nsys_lock_module_term(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

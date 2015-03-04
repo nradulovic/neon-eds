@@ -82,8 +82,12 @@
  *              use priority levels but instead it will just disable interrupts
  *              on entry and enable interrupts on exit.
  */
-#if !defined(CONFIG_INTR_MAX_ISR_PRIO)
-# define CONFIG_INTR_MAX_ISR_PRIO       0u
+#if !defined(CONFIG_SYS_LOCK_MAX_LEVEL)
+# define CONFIG_SYS_LOCK_MAX_LEVEL      255u
+#endif
+
+#if !defined(CONFIG_ISR_MAX_PRIO)
+# define CONFIG_ISR_MAX_PRIO            CONFIG_SYS_LOCK_MAX_LEVEL
 #endif
 
 /**@brief       The frequency of clock which is used for the system timer
