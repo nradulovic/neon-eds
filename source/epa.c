@@ -42,7 +42,7 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void idle(void);
+static void idle_handler(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -50,12 +50,12 @@ static void idle(void);
  */
 static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
 
-static void (* g_idle)(void) = idle;
+static void (* g_idle)(void) = idle_handler;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-static void idle(void)
+static void idle_handler(void)
 {
 
 }
