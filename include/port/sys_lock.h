@@ -8,6 +8,6 @@
 #ifndef PORT_SYS_LOCK_H_
 #define PORT_SYS_LOCK_H_
 
-#include "arch/sys_lock.h"
+#include "arch/port_sys_lock.h"
 
 #endif /* PORT_SYS_LOCK_H_ */

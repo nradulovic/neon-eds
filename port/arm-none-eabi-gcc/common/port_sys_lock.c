@@ -27,12 +27,20 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <cortex_m3.h>
-#include "arch/sys_lock.h"
+#include "arch/port_sys_lock.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
 #define PORT_CONFIG_ISR_SUBPRIORITY     0
+
+/*--  On AIRCR register writes, write 0x5FA, otherwise the write is ignored  -*/
+
+#define SCB_AIRCR                       (*(volatile unsigned int *)0xE000ED0C)
+#define SCB_AIRCR_VECTKEY_Pos           16
+#define SCB_AIRCR_VECTKEY               (0xfffful << 16)
+#define SCB_AIRCR_VECTKEY_VALUE         (0x5faul << 16)
+#define SCB_AIRCR_PRIGROUP_Pos          8
+#define SCB_AIRCR_PRIGROUP              (0x7ul << 8)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -40,21 +48,21 @@
 /**@brief       Enable all interrupts
  */
 PORT_C_INLINE
-void nisr_global_enable(void);
+void isr_global_enable(void);
 
 
 
 /**@brief       Disable all interrupts
  */
 PORT_C_INLINE
-void nisr_global_disable(void);
+void isr_global_disable(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 PORT_C_INLINE
-void nisr_global_enable(void)
+void isr_global_enable(void)
 {
     __asm __volatile__ (
         "@  nisr_enable                                     \n"
@@ -64,7 +72,7 @@ void nisr_global_enable(void)
 
 
 PORT_C_INLINE
-void nisr_global_disable(void)
+void isr_global_disable(void)
 {
     __asm __volatile__ (
         "@  nisr_disable                                    \n"
@@ -79,20 +87,20 @@ void nsys_lock_module_init(void)
 {
     unsigned int                reg;
 
-    nisr_global_disable();
-    reg  = PORT_SCB_AIRCR;
-    reg &= ~(PORT_SCB_AIRCR_VECTKEY | PORT_SCB_AIRCR_PRIGROUP);
-    reg |=   PORT_SCB_AIRCR_VECTKEY_VALUE;
-    reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << PORT_SCB_AIRCR_PRIGROUP_Pos);
-    PORT_SCB_AIRCR = reg;
-    nisr_global_enable();
+    isr_global_disable();
+    reg  = SCB_AIRCR;
+    reg &= ~(SCB_AIRCR_VECTKEY | SCB_AIRCR_PRIGROUP);
+    reg |=   SCB_AIRCR_VECTKEY_VALUE;
+    reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << SCB_AIRCR_PRIGROUP_Pos);
+    SCB_AIRCR = reg;
+    isr_global_enable();
 }
 
 
 
 void nsys_lock_module_term(void)
 {
-    nisr_global_disable();
+    isr_global_disable();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

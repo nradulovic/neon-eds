@@ -213,8 +213,6 @@ extern "C" {
 
 struct ncomponent_info;
 
-typedef unsigned int ndebug_magic;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 

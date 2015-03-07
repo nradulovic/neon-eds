@@ -30,10 +30,30 @@
 #include "port/sys_lock.h"
 #include "port/systimer.h"
 #include "family/profile.h"
-#include "cortex_m3.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+/*--  SysTick Control / Status Register Definitions  -------------------------*/
+#define SYST                            ((volatile struct syst *)0xE000E010)
+#define SYST_CSR_CLKSOURCE              (1ul << 2)
+#define SYST_CSR_TICKINT                (1ul << 1)
+#define SYST_CSR_ENABLE                 (1ul << 0)
+
+#define SCB_ICSR                        (*(volatile unsigned int *)0xE000ED04)
+#define SCB_ICSR_PENDSTSET              (1ul << 26)
+#define SCB_ICSR_PENDSTCLR              (1ul << 25)
+#define SCB_SHP_SYSTICK                 (*(volatile unsigned char *)0xE000ED23)
+
 /*======================================================  LOCAL DATA TYPES  ==*/
+
+struct syst
+{
+    volatile unsigned int       csr;
+    volatile unsigned int       rvr;
+    volatile unsigned int       cvr;
+    volatile unsigned int       calib;
+};
+
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -41,15 +61,15 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-/**@brief       Initialize and start the system timer
+/**@brief       Initialise and start the system timer
  */
 void nsystimer_init(
     nsystimer_tick              val)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;     /* Disable timer */
-    PORT_SYST_RVR  = val;
-    PORT_SYST_CVR  = 0u;
-    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
+    SYST->csr &= ~SYST_CSR_ENABLE;                          /* Disable timer  */
+    SYST->rvr  = val;
+    SYST->cvr  = 0u;
+    SYST->csr |=  SYST_CSR_ENABLE;
 }
 
 
@@ -58,7 +78,7 @@ void nsystimer_init(
  */
 void nsystimer_term(void)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+    SYST->csr &= ~SYST_CSR_ENABLE;
 }
 
 
@@ -67,7 +87,7 @@ void nsystimer_term(void)
  */
 nsystimer_tick nsystimer_get_current(void)
 {
-    return (PORT_SYST_CVR);
+    return (SYST->cvr);
 }
 
 
@@ -76,7 +96,7 @@ nsystimer_tick nsystimer_get_current(void)
  */
 nsystimer_tick nsystimer_get_reload(void)
 {
-    return (PORT_SYST_RVR);
+    return (SYST->rvr);
 }
 
 
@@ -86,10 +106,10 @@ nsystimer_tick nsystimer_get_reload(void)
 void nsystimer_load(
     nsystimer_tick              val)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
-    PORT_SYST_RVR  = val;
-    PORT_SYST_CVR  = 0u;
-    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
+    SYST->csr &= ~SYST_CSR_ENABLE;                          /* Disable timer  */
+    SYST->rvr  = val;
+    SYST->cvr  = 0u;
+    SYST->csr |=  SYST_CSR_ENABLE;
 }
 
 
@@ -98,7 +118,7 @@ void nsystimer_load(
  */
 void nsystimer_enable(void)
 {
-    PORT_SYST_CSR |= PORT_SYST_CSR_ENABLE;
+    SYST->csr |= SYST_CSR_ENABLE;
 }
 
 
@@ -107,7 +127,7 @@ void nsystimer_enable(void)
  */
 void nsystimer_disable(void)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
+    SYST->csr &= ~SYST_CSR_ENABLE;
 }
 
 
@@ -116,7 +136,7 @@ void nsystimer_disable(void)
  */
 void nsystimer_isr_enable(void)
 {
-    PORT_SYST_CSR |= PORT_SYST_CSR_TICKINT;
+    SYST->csr |= SYST_CSR_TICKINT;
 }
 
 
@@ -125,28 +145,18 @@ void nsystimer_isr_enable(void)
  */
 void nsystimer_isr_disable(void)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_TICKINT;
-    PORT_SCB_ICSR |= PORT_SCB_ICSR_PENDSTCLR;
+    SYST->csr &= ~SYST_CSR_TICKINT;
+    SCB_ICSR |= SCB_ICSR_PENDSTCLR;
 }
 
 void nsystimer_module_init(void)
 {
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_ENABLE;
-    PORT_SYST_CSR &= ~PORT_SYST_CSR_TICKINT;
-    PORT_SYST_CSR |=  PORT_SYST_CSR_CLKSOURCE;
-    PORT_SCB_ICSR |=  PORT_SCB_ICSR_PENDSTCLR;
-    PORT_SCB_SHP_SYSTICK = (uint8_t)NSYS_LOCK_LEVEL_TO_CODE(CONFIG_SYS_LOCK_MAX_LEVEL);
+    SYST->csr &= ~SYST_CSR_ENABLE;
+    SYST->csr &= ~SYST_CSR_TICKINT;
+    SYST->csr |=  SYST_CSR_CLKSOURCE;
+    SCB_ICSR  |=  SCB_ICSR_PENDSTCLR;
+    SCB_SHP_SYSTICK = (uint8_t)NSYS_LOCK_LEVEL_TO_CODE(CONFIG_SYS_LOCK_MAX_LEVEL);
 }
-
-#if defined(PORT_SYSTIMER_HANDLER)
-void PORT_SYSTIMER_HANDLER(void)
-{
-    nsystimer_isr();
-    /*
-     * TODO: Clear interrupt flag
-     */
-}
-#endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
