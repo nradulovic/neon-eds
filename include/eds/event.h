@@ -38,7 +38,6 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "port/cpu.h"
 #include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -70,7 +69,7 @@
 
 /**@brief       Event object API signature
  */
-#define NEVENT_SIGNATURE                ((ncpu_reg)0xdeadfeedul)
+#define NEVENT_SIGNATURE                ((unsigned int)0xdeadfeedul)
 
 /**@brief       Event with identifiers equal to to or higher than this number
  *              are event reserved for local usage.
@@ -113,7 +112,7 @@ struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
 #if (CONFIG_API_VALIDATION == 1)  || defined(__DOXYGEN__)
                                         /**<@brief Structure signature, used
                                          * during development stage only.     */
-    ncpu_reg                    signature;
+    unsigned int                signature;
 #endif
 };
 
@@ -267,7 +266,7 @@ void nevent_ref_down(
 
 
 PORT_C_INLINE
-ncpu_reg nevent_ref(
+uint_fast16_t nevent_ref(
     const struct nevent *       event)
 {
     return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));

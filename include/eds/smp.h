@@ -88,7 +88,7 @@ struct nsm
     nstate *                    state;
     void *                      wspace;
 #if (CONFIG_API_VALIDATION == 1)
-    ncpu_reg                    signature;
+    unsigned int                signature;
 #endif
 };
 

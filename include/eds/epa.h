@@ -48,7 +48,7 @@
  * @details     The signature is used to confirm that a structure passed to a
  *              function is indeed a nthread thread structure.
  */
-#define EPA_SIGNATURE                       ((ndebug_magic)0xfeedbeeful)
+#define EPA_SIGNATURE                       ((unsigned int)0xfeedbeeful)
 
 #define THREAD_TO_EPA(thread_ptr)                                               \
     CONTAINER_OF(thread_ptr, struct nepa, thread)
@@ -81,7 +81,7 @@ struct nepa
     struct nequeue              working_fifo;
     struct nequeue              deffered_fifo;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
-    ndebug_magic                signature;
+    unsigned int                signature;
 #endif
 };
 

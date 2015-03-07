@@ -40,7 +40,7 @@
  * @brief       State machine signature
  * @details     This signature is used only during the debugging process
  */
-#define SM_SIGNATURE                    ((ncpu_reg)0xdaafu)
+#define SM_SIGNATURE                    ((unsigned int)0xdaafu)
 
 #define NSMP_EVENT(event)               &g_smp_events[(event)]
 

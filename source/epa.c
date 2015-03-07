@@ -215,7 +215,7 @@ void nepa_destroy(
 {
     NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-    NOBLIGATION(epa->signature = (ndebug_magic)~EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = ~EPA_SIGNATURE);
 
     nepa_term(epa);
 
