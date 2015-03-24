@@ -18,14 +18,22 @@
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
- */
+ *//***********************************************************************//**
+ * @file
+ * @author      Nenad Radulovic
+ * @brief       System timer
+ * @defgroup    system_timer_intf System timer
+ * @brief       System timer
+ *********************************************************************//** @{ */
 
-#ifndef NEON_BASE_PORT_SYSTIMER_H_
-#define NEON_BASE_PORT_SYSTIMER_H_
+#ifndef NEON_PORT_SYSTIMER_H_
+#define NEON_PORT_SYSTIMER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+
+#include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -134,4 +142,4 @@ extern void nsystimer_isr(void);
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of systimer.h
  ******************************************************************************/
-#endif /* NEON_BASE_PORT_SYSTIMER_H_ */
+#endif /* NEON_PORT_SYSTIMER_H_ */

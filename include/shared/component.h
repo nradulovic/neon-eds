@@ -44,8 +44,8 @@
  *              Module author : string
  * @api
  */
-#define NCOMPONENT_DEFINE(description, author)                              \
-    PORT_C_ROM struct PORT_C_UNUSED ncomponent_info g_component_info =          \
+#define NCOMPONENT_DEFINE(description, author)                                  \
+    struct PORT_C_UNUSED ncomponent_info g_component_info =                     \
     {                                                                           \
         description,                                                            \
         author,                                                                 \
@@ -64,17 +64,14 @@ extern "C" {
  */
 struct ncomponent_info
 {
-    const PORT_C_ROM char * const PORT_C_ROM_VAR desc;      
-                                        /**<@brief Component description      */
-    const PORT_C_ROM char * const PORT_C_ROM_VAR auth;
-                                        /**<@brief Component author           */
-    const PORT_C_ROM char * const PORT_C_ROM_VAR file;
-                                        /**<@brief Component source file      */
+    const char * const desc;            /**<@brief Component description      */
+    const char * const auth;            /**<@brief Component author           */
+    const char * const file;            /**<@brief Component source file      */
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern PORT_C_UNUSED const PORT_C_ROM struct ncomponent_info g_unknown_component;
+extern PORT_C_UNUSED const struct ncomponent_info g_unknown_component;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/

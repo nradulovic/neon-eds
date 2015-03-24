@@ -89,7 +89,7 @@ typedef enum nerror nerror;
 
 /**@brief       Error text which is associated with error number
  */
-extern const PORT_C_ROM char * const PORT_C_ROM_VAR g_error_text[];
+extern const char * const g_error_text[];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/

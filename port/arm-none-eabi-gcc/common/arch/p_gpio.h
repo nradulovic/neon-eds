@@ -21,18 +21,13 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       System lock
- * @defgroup    syslock_intf System lock
- * @brief       System lock
+ * @brief       Port GPIO
  *********************************************************************//** @{ */
 
-#ifndef NEON_PORT_SYS_LOCK_H_
-#define NEON_PORT_SYS_LOCK_H_
+#ifndef NEON_ARCH_P_GPIO_H_
+#define NEON_ARCH_P_GPIO_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "arch/p_sys_lock.h"
-
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -40,46 +35,8 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
- */
-typedef struct nsys_lock nsys_lock;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise port
- */
-void nsys_lock_module_init(void);
-
-
-
-/**@brief       Terminate port
- */
-void nsys_lock_module_term(void);
-
-
-
-/**@brief       Enter critical code section
- * @param       lock
- *              Interrupt resource lock, pointer to portable type variable which
- *              will hold the interrupt context state during the critical code
- *              section.
- */
-void nsys_lock_enter(
-    struct nsys_lock *          lock);
-
-
-
-/**@brief       Exit critical code section
- * @param       lock
- *              Interrupt resource lock, portable type variable which is holding
- *              a previously saved interrupt context state.
- */
-void nsys_lock_exit(
-    struct nsys_lock *          lock);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
@@ -87,6 +44,6 @@ void nsys_lock_exit(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of sys_lock.h
+ * END of p_gpio.h
  ******************************************************************************/
-#endif /* NEON_PORT_SYS_LOCK_H_ */
+#endif /* NEON_ARCH_P_GPIO_H_ */

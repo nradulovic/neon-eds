@@ -21,65 +21,33 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       System lock
- * @defgroup    syslock_intf System lock
- * @brief       System lock
+ * @brief       Port for stm32f411xe series
  *********************************************************************//** @{ */
 
-#ifndef NEON_PORT_SYS_LOCK_H_
-#define NEON_PORT_SYS_LOCK_H_
+#ifndef PORT_FAMILY_P_STM32F411XE_H_
+#define PORT_FAMILY_P_STM32F411XE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "arch/p_sys_lock.h"
-
 /*===============================================================  MACRO's  ==*/
+
+#define NPROFILE_MAX_CPU_CLOCK          (100ul * 1000000ul)
+#define NPROFILE_MAX_SYSTIMER_VAL       0xfffffful
+#define NPROFILE_RAM_SIZE               (128ul * 1024ul)
+
+#define NPROFILE_AVAILABLE_GPIO                                                 \
+    (NP_EN_MAJOR(1) | NP_EN_MAJOR(3))
+
+#define NPROFILE_AVAILABLE_UART                                                 \
+    (NP_EN_MAJOR(1) | NP_EN_MAJOR(2) | NP_EN_MAJOR(6))
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
- */
-typedef struct nsys_lock nsys_lock;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise port
- */
-void nsys_lock_module_init(void);
-
-
-
-/**@brief       Terminate port
- */
-void nsys_lock_module_term(void);
-
-
-
-/**@brief       Enter critical code section
- * @param       lock
- *              Interrupt resource lock, pointer to portable type variable which
- *              will hold the interrupt context state during the critical code
- *              section.
- */
-void nsys_lock_enter(
-    struct nsys_lock *          lock);
-
-
-
-/**@brief       Exit critical code section
- * @param       lock
- *              Interrupt resource lock, portable type variable which is holding
- *              a previously saved interrupt context state.
- */
-void nsys_lock_exit(
-    struct nsys_lock *          lock);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
@@ -87,6 +55,6 @@ void nsys_lock_exit(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of sys_lock.h
+ * END of p_stm32f411xe.h
  ******************************************************************************/
-#endif /* NEON_PORT_SYS_LOCK_H_ */
+#endif /* PORT_FAMILY_P_STM32F411XE_H_ */

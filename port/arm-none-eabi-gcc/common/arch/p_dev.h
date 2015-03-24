@@ -21,19 +21,27 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       System lock
- * @defgroup    syslock_intf System lock
- * @brief       System lock
+ * @brief       Peripheral definitions
+ * @defgroup    def_group Name
+ * @brief       Brief description
  *********************************************************************//** @{ */
 
-#ifndef NEON_PORT_SYS_LOCK_H_
-#define NEON_PORT_SYS_LOCK_H_
+#ifndef DEVICE_P_DEV_H_
+#define DEVICE_P_DEV_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "arch/p_sys_lock.h"
-
 /*===============================================================  MACRO's  ==*/
+
+#define NP_ATTR_ADDRESS                 1
+#define NP_ATTR_CLOCK                   1
+#define NP_ATTR_ISR                     1
+#define NP_ATTR_MUX                     1
+#define NP_ATTR_RESET                   0
+
+#define ARCH_STM32_APB2                 0
+#define ARCH_STM32_APB1                 1
+#define ARCH_STM32_AHB                  2
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -41,45 +49,33 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
- */
-typedef struct nsys_lock nsys_lock;
+struct np_dev_clock
+{
+    volatile void *             reg;
+    unsigned int                mask;
+};
+
+struct np_dev_rst
+{
+    volatile void *             reg;
+    unsigned int                mask;
+};
+
+struct np_dev_isr
+{
+    unsigned int                irqn;
+    unsigned int                flags;
+};
+
+struct np_dev_mux
+{
+    unsigned int                af;
+    unsigned int                mode;
+    unsigned int                pull;
+};
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise port
- */
-void nsys_lock_module_init(void);
-
-
-
-/**@brief       Terminate port
- */
-void nsys_lock_module_term(void);
-
-
-
-/**@brief       Enter critical code section
- * @param       lock
- *              Interrupt resource lock, pointer to portable type variable which
- *              will hold the interrupt context state during the critical code
- *              section.
- */
-void nsys_lock_enter(
-    struct nsys_lock *          lock);
-
-
-
-/**@brief       Exit critical code section
- * @param       lock
- *              Interrupt resource lock, portable type variable which is holding
- *              a previously saved interrupt context state.
- */
-void nsys_lock_exit(
-    struct nsys_lock *          lock);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
@@ -87,6 +83,6 @@ void nsys_lock_exit(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of sys_lock.h
+ * END of peripheral.h
  ******************************************************************************/
-#endif /* NEON_PORT_SYS_LOCK_H_ */
+#endif /* DEVICE_P_DEV_H_ */

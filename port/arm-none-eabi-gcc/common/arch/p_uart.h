@@ -1,37 +1,37 @@
 /*
- * This file is part of Neon.
+ * This file is part of neon-test.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 nenad
  *
- * Neon is free software: you can redistribute it and/or modify
+ * neon-test is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Neon is distributed in the hope that it will be useful,
+ * neon-test is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
+ * along with neon-test.  If not, see <http://www.gnu.org/licenses/>.
  *
- * web site:    http://github.com/nradulovic
- * e-mail  :    nenad.b.radulovic@gmail.com
+ * web site:    
+ * e-mail  :    
  *//***********************************************************************//**
  * @file
- * @author      Nenad Radulovic
- * @brief       System lock
- * @defgroup    syslock_intf System lock
- * @brief       System lock
+ * @author      nenad
+ * @brief       Brief description
+ * @defgroup    def_group Name
+ * @brief       Brief description
  *********************************************************************//** @{ */
 
-#ifndef NEON_PORT_SYS_LOCK_H_
-#define NEON_PORT_SYS_LOCK_H_
+#ifndef DEVICE_UART_DEVICE_H_
+#define DEVICE_UART_DEVICE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/p_sys_lock.h"
+#include "stm32f4xx.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -41,45 +41,13 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
- */
-typedef struct nsys_lock nsys_lock;
+struct np_dev_uart
+{
+    UART_HandleTypeDef          huart;
+};
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise port
- */
-void nsys_lock_module_init(void);
-
-
-
-/**@brief       Terminate port
- */
-void nsys_lock_module_term(void);
-
-
-
-/**@brief       Enter critical code section
- * @param       lock
- *              Interrupt resource lock, pointer to portable type variable which
- *              will hold the interrupt context state during the critical code
- *              section.
- */
-void nsys_lock_enter(
-    struct nsys_lock *          lock);
-
-
-
-/**@brief       Exit critical code section
- * @param       lock
- *              Interrupt resource lock, portable type variable which is holding
- *              a previously saved interrupt context state.
- */
-void nsys_lock_exit(
-    struct nsys_lock *          lock);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
@@ -87,6 +55,6 @@ void nsys_lock_exit(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of sys_lock.h
+ * END of uart.h
  ******************************************************************************/
-#endif /* NEON_PORT_SYS_LOCK_H_ */
+#endif /* DEVICE_UART_DEVICE_H_ */

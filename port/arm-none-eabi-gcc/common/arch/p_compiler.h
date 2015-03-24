@@ -1,20 +1,20 @@
 /*
- * This file is part of Neon RT Kernel.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2014 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * Neon RT Kernel is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Neon RT Kernel is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -28,8 +28,8 @@
  * @brief       Compiler support
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NPLAT_COMPILER_H_
-#define NPLAT_COMPILER_H_
+#ifndef NEON_ARCH_P_COMPILER_H_
+#define NEON_ARCH_P_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
@@ -57,8 +57,6 @@
 # define PORT_C_FUNC                        __func__
 #elif (__GNUC__ >= 2)
 # define PORT_C_FUNC                        __FUNCTION__
-#else
-# define PORT_C_FUNC                        "unknown"
 #endif
 
 /**@brief       Provides the free file's name which is being compiled
@@ -72,14 +70,6 @@
 /**@brief       Declare a function that will never return
  */
 #define PORT_C_NORETURN                     __attribute__((noreturn))
-
-/**@brief       Declare a variable that will be stored in ROM address space
- */
-#define PORT_C_ROM
-
-/**@brief       Declare a pointer that will be stored in ROM address space
- */
-#define PORT_C_ROM_VAR
 
 #define PORT_C_PACKED                       __attribute__((packed))
 
@@ -114,6 +104,6 @@ extern "C" {
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of compiler.h
+ * END of p_compiler.h
  ******************************************************************************/
-#endif /* NPLAT_COMPILER_H_ */
+#endif /* NEON_ARCH_P_COMPILER_H_ */

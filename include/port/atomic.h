@@ -26,8 +26,8 @@
  * @brief       Atomic operations
  *********************************************************************//** @{ */
 
-#ifndef NEON_BASE_PORT_ATOMIC_H_
-#define NEON_BASE_PORT_ATOMIC_H_
+#ifndef NEON_PORT_ATOMIC_H_
+#define NEON_PORT_ATOMIC_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -42,11 +42,15 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/**@brief       Atomic data structure
+ */
 struct natomic
 {
     ncpu_reg                    counter;
 };
 
+/**@brief       Atomic data type
+ */
 typedef struct natomic natomic;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -60,4 +64,4 @@ typedef struct natomic natomic;
 /** @endcond *//** @} *//******************************************************
  * END of atomic.h
  ******************************************************************************/
-#endif /* NEON_BASE_PORT_ATOMIC_H_ */
+#endif /* NEON_PORT_ATOMIC_H_ */

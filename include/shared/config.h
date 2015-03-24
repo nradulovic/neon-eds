@@ -192,6 +192,27 @@
 # define CONFIG_SMP_HSM                 1
 #endif
 
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        peripheral: Peripheral configuration
+ * @{ *//*--------------------------------------------------------------------*/
+
+
+#if !defined(CONFIG_GPIO)
+# define CONFIG_GPIO                    (0xffff)
+#endif
+
+#if !defined(CONFIG_UART)
+# define CONFIG_UART                    (0xffff)
+#endif
+
+#if !defined(CONFIG_I2C)
+# define CONFIG_I2C                     (0xffff)
+#endif
+
+#if !defined(CONFIG_SPI)
+# define CONFIG_SPI                     (0xffff)
+#endif
+
 /**@} *//*--------------------------------------------------------------------*/
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
