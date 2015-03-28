@@ -266,7 +266,7 @@ void ncore_timer_isr_disable(void)
 
 
 
-void ncore_init(void)
+void nmodule_core_hw_init(void)
 {
     cpu_init();
     sys_lock_init();
@@ -275,7 +275,7 @@ void ncore_init(void)
 
 
 
-void ncore_term(void)
+void nmodule_core_hw_term(void)
 {
     systimer_term();
     sys_lock_term();

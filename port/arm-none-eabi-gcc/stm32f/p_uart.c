@@ -31,16 +31,16 @@
 
 #include <string.h>
 
-#include "base/port/core.h"
 #include "base/port/peripheral.h"
+#include "base/port/profile.h"
+
+/*
+ * Turn off this module if not enabled or available in the current port
+ */
+#if (NPROFILE_EN_UART)
 #include "base/port/uart.h"
 #include "base/shared/debug.h"
 #include "base/shared/component.h"
-
-/*
- * Turn of this module if not enabled or available in the current port
- */
-#if (NPROFILE_EN_UART)
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/

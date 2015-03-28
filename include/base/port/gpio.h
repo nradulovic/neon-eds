@@ -35,7 +35,7 @@
 #include <stdint.h>
 
 #include "base/port/peripheral.h"
-#include "arch/p_gpio.h"
+#include "family/p_gpio.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -119,6 +119,6 @@ bool ngpio_is_id_valid(uint32_t gpio_id);
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of atomic.h
+ * END of gpio.h
  ******************************************************************************/
 #endif /* NEON_PORT_GPIO_H_ */

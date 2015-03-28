@@ -31,8 +31,6 @@
 
 #include "base/port/peripheral.h"
 #include "base/port/profile.h"
-#include "base/port/gpio.h"
-#include "stm32f4xx.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -42,7 +40,56 @@
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+
+void np_clock_enable(const struct np_dev_clock * clock)
+{
+    *(volatile uint32_t *)clock->reg |= clock->mask;
+}
+
+void np_clock_disable(const struct np_dev_clock * clock)
+{
+    *(volatile uint32_t *)clock->reg &= ~clock->mask;
+}
+
+void np_isr_enable(const struct np_dev_isr * isr)
+{
+    NVIC_EnableIRQ(isr->irqn);
+}
+
+void np_isr_disable(const struct np_dev_isr * isr)
+{
+    NVIC_DisableIRQ(isr->irqn);
+}
+
+void np_isr_clear_flag(const struct np_dev_isr * isr)
+{
+    NVIC_ClearPendingIRQ(isr->irqn);
+}
+
+void np_isr_set_flag(const struct np_dev_isr * isr)
+{
+    NVIC_SetPendingIRQ(isr->irqn);
+}
+
+void np_isr_set_prio(const struct np_dev_isr * isr, uint32_t prio)
+{
+    NVIC_SetPriority(isr->irqn, prio);
+}
+
+uint32_t np_isr_get_prio(const struct np_dev_isr * isr)
+{
+    return (NVIC_GetPriority(isr->irqn));
+}
+
+void np_mux_enable(const struct np_dev_mux * mux, uint32_t pin_id)
+{
+}
+
+void np_mux_disable(const struct np_dev_mux * mux, uint32_t pin_id)
+{
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of gpio_device.c
+ * END of peripheral_device.c
  ******************************************************************************/

@@ -150,13 +150,13 @@ void ncpu_sat_decrement(
 
 
 PORT_C_INLINE
-void nsys_lock_enter(
+void ncore_lock_enter(
     struct ncore_lock *          lock)
 {
-#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
+#if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
 
-    new_mask = (((CONFIG_CORE_LOCK_MAX_LEVEL) << (8u - NSYS_LOCK_LEVEL_BITS)) & 0xfful);
+    new_mask = (((CONFIG_CORE_LOCK_MAX_LEVEL) << (8u - NCORE_LOCK_LEVEL_BITS)) & 0xfful);
 
     __asm __volatile__ (
         "@  nsys_lock_enter                                 \n"
@@ -181,10 +181,10 @@ void nsys_lock_enter(
 
 
 PORT_C_INLINE
-void nsys_lock_exit(
+void ncore_lock_exit(
     struct ncore_lock *          lock)
 {
-#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
+#if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     __asm __volatile__ (
         "@  nsys_lock_exit                                  \n"
         "   msr    basepri, %0                              \n"
@@ -198,12 +198,6 @@ void nsys_lock_exit(
         : "r"(lock->level));
 #endif
 }
-
-
-
-/**@brief       Initialise CPU port
- */
-void ncpu_module_init(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

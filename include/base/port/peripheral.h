@@ -32,8 +32,8 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+#include "../../../port/arm-none-eabi-gcc/stm32f/family/p_dev.h"
 
-#include "arch/p_dev.h"
 
 /*===============================================================  MACRO's  ==*/
 

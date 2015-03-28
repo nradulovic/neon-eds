@@ -38,7 +38,7 @@
 #include "base/port/peripheral.h"
 #include "base/port/profile.h"
 #include "base/shared/error.h"
-#include "arch/p_uart.h"
+#include "../../../port/arm-none-eabi-gcc/stm32f/family/p_uart.h"
 
 /*===============================================================  MACRO's  ==*/
 

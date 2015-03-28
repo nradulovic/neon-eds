@@ -31,8 +31,14 @@
 
 #include "base/port/peripheral.h"
 #include "base/port/profile.h"
+
+#if (NPROFILE_EN_UART)
 #include "base/port/uart.h"
+#endif
+
+#if (NPROFILE_EN_GPIO)
 #include "base/port/gpio.h"
+#endif
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/

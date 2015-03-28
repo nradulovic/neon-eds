@@ -89,11 +89,11 @@ typedef struct ncore_lock       ncore_lock;
  *
  *              This function should be called early in boot process.
  */
-void ncore_init(void);
+void nmodule_core_hw_init(void);
 
 
 
-void ncore_term(void);
+void nmodule_core_hw_term(void);
 
 
 

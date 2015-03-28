@@ -29,11 +29,16 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "stm32f4xx.h"
-#include "base/port/core.h"
 #include "base/port/peripheral.h"
 #include "base/port/profile.h"
+
+/*
+ * Turn off this module if not enabled or available in the current port
+ */
+#if (NPROFILE_EN_GPIO)
 #include "base/port/gpio.h"
+#include "base/shared/debug.h"
+#include "base/shared/component.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -44,65 +49,8 @@
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-void np_clock_enable(const struct np_dev_clock * clock)
-{
-    *(volatile uint32_t *)clock->reg |= clock->mask;
-}
-
-void np_clock_disable(const struct np_dev_clock * clock)
-{
-    *(volatile uint32_t *)clock->reg &= ~clock->mask;
-}
-
-void np_isr_enable(const struct np_dev_isr * isr)
-{
-    NVIC_EnableIRQ(isr->irqn);
-}
-
-void np_isr_disable(const struct np_dev_isr * isr)
-{
-    NVIC_DisableIRQ(isr->irqn);
-}
-
-void np_isr_clear_flag(const struct np_dev_isr * isr)
-{
-    NVIC_ClearPendingIRQ(isr->irqn);
-}
-
-void np_isr_set_flag(const struct np_dev_isr * isr)
-{
-    NVIC_SetPendingIRQ(isr->irqn);
-}
-
-void np_isr_set_prio(const struct np_dev_isr * isr, uint32_t prio)
-{
-    NVIC_SetPriority(isr->irqn, prio);
-}
-
-uint32_t np_isr_get_prio(const struct np_dev_isr * isr)
-{
-    return (NVIC_GetPriority(isr->irqn));
-}
-
-void np_mux_enable(const struct np_dev_mux * mux, uint32_t pin_id)
-{
-    const struct np_dev *       dev;
-    GPIO_InitTypeDef            gpio_config;
-
-    gpio_config.Alternate = mux->af;
-    gpio_config.Mode      = mux->mode;
-    gpio_config.Pin       = NP_DEV_ID_TO_MINOR(pin_id);
-    gpio_config.Pull      = mux->pull;
-    gpio_config.Speed     = GPIO_SPEED_FAST;
-
-    HAL_GPIO_Init((GPIO_TypeDef *)np_dev_address(dev), &gpio_config);
-}
-
-void np_mux_disable(const struct np_dev_mux * mux, uint32_t pin_id)
-{
-}
-
+#endif /* NPROFILE_EN_GPIO */
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of peripheral_device.c
+ * END of gpio_device.c
  ******************************************************************************/

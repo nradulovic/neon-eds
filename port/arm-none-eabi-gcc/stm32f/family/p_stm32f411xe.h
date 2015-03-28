@@ -1,51 +1,52 @@
 /*
- * This file is part of neon-test.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 nenad
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * neon-test is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * neon-test is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with neon-test.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
- * web site:    
- * e-mail  :    
+ * web site:    http://github.com/nradulovic
+ * e-mail  :    nenad.b.radulovic@gmail.com
  *//***********************************************************************//**
  * @file
- * @author      nenad
- * @brief       Brief description
- * @defgroup    def_group Name
- * @brief       Brief description
+ * @author      Nenad Radulovic
+ * @brief       Port for stm32f411xe series
  *********************************************************************//** @{ */
 
-#ifndef DEVICE_UART_DEVICE_H_
-#define DEVICE_UART_DEVICE_H_
+#ifndef PORT_FAMILY_P_STM32F411XE_H_
+#define PORT_FAMILY_P_STM32F411XE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "stm32f4xx.h"
 
 /*===============================================================  MACRO's  ==*/
+
+#define NPROFILE_MAX_CPU_CLOCK          (100ul * 1000000ul)
+#define NPROFILE_MAX_SYSTIMER_VAL       0xfffffful
+#define NPROFILE_RAM_SIZE               (128ul * 1024ul)
+
+#define NPROFILE_AVAILABLE_GPIO         0
+
+#define NPROFILE_AVAILABLE_UART         0
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-struct np_dev_uart
-{
-    UART_HandleTypeDef          huart;
-};
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/
@@ -55,6 +56,6 @@ struct np_dev_uart
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of uart.h
+ * END of p_stm32f411xe.h
  ******************************************************************************/
-#endif /* DEVICE_UART_DEVICE_H_ */
+#endif /* PORT_FAMILY_P_STM32F411XE_H_ */

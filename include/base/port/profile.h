@@ -31,9 +31,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "family/p_profile_data.h"
 #include "base/port/peripheral.h"
 #include "base/shared/config.h"
+#include "../../../port/arm-none-eabi-gcc/stm32f/family/p_profile_data.h"
 
 /*===============================================================  MACRO's  ==*/
 
