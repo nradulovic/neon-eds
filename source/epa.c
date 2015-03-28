@@ -30,11 +30,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-
-#include "port/sys_lock.h"
-#include "port/cpu.h"
-#include "shared/component.h"
-#include "mem/mem_class.h"
+#include "base/port/core.h"
+#include "base/shared/component.h"
+#include "kernel/mm/mem.h"
 #include "eds/epa.h"
 #include "eds/event.h"
 
@@ -75,10 +73,10 @@ void neds_set_idle(
 
 void neds_run(void)
 {
-    struct nsys_lock            lock;
+    struct ncore_lock            lock;
     struct nthread *            thread;
 
-    nsys_lock_enter(&lock);
+    ncore_lock_enter(&lock);
 
     for (;;) {
         while ((thread = nsched_thread_fetch_i())) {
@@ -89,9 +87,9 @@ void neds_run(void)
             nsched_thread_remove_i(thread);
             epa   = THREAD_TO_EPA(thread);
             event = nequeue_get(&epa->working_fifo);
-            nsys_lock_exit(&lock);
+            ncore_lock_exit(&lock);
             action = nsm_dispatch(&epa->sm, event);
-            nsys_lock_enter(&lock);
+            ncore_lock_enter(&lock);
 
             if ((action == NACTION_DEFFERED) &&
                 !nequeue_is_full(&epa->deffered_fifo)) {
@@ -100,11 +98,11 @@ void neds_run(void)
                 nevent_destroy_i(event);
             }
         }
-        nsys_lock_exit(&lock);
+        ncore_lock_exit(&lock);
         g_idle();
-        nsys_lock_enter(&lock);
+        ncore_lock_enter(&lock);
     }
-    nsys_lock_exit(&lock);
+    ncore_lock_exit(&lock);
 }
 
 
@@ -113,7 +111,7 @@ void nepa_init(
     struct nepa *               epa,
     const struct nepa_define *  define)
 {
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
     epa->mem = NULL;
     nequeue_init(&epa->working_fifo, &define->working_fifo);
@@ -121,9 +119,9 @@ void nepa_init(
     nequeue_init(&epa->deffered_fifo, &define->deffered_fifo);
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     nsched_thread_insert_i(&epa->thread);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 
     NOBLIGATION(epa->signature = EPA_SIGNATURE);
 }
@@ -133,9 +131,9 @@ void nepa_init(
 void nepa_term(
     struct nepa *               epa)
 {
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
 
     while (!nequeue_is_empty(&epa->working_fifo)) {
         const struct nevent *   event;
@@ -154,7 +152,7 @@ void nepa_term(
     nsm_term(&epa->sm);
     nequeue_term(&epa->deffered_fifo);
     nequeue_term(&epa->working_fifo);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 }
 
 struct nepa * nepa_create(
@@ -258,11 +256,11 @@ nerror nepa_send_event(
     struct nevent *             event)
 {
     nerror                      error;
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     error = nepa_send_event_i(epa, event);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 
     return (error);
 }
@@ -302,11 +300,11 @@ nerror nepa_send_event_ahead(
     struct nevent *             event)
 {
     nerror                      error;
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     error = nepa_send_event_ahead_i(epa, event);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 
     return (error);
 }

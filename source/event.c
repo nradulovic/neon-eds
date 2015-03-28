@@ -32,9 +32,9 @@
 
 #include <stddef.h>
 
-#include "port/sys_lock.h"
-#include "shared/component.h"
-#include "mem/mem_class.h"
+#include "base/port/core.h"
+#include "base/shared/component.h"
+#include "kernel/mm/mem.h"
 #include "eds/event.h"
 #include "eds/epa.h"
 
@@ -170,13 +170,13 @@ static void event_destroy_i(
 void nevent_register_mem(
     struct nmem *               mem)
 {
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
     uint_fast8_t                cnt;
     size_t                      size;
 
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     NENSURE_INTERNAL(size = nmem_get_size_i(mem));
 
     for (cnt = g_event_storage.pools; cnt > 0u; cnt--) {
@@ -189,7 +189,7 @@ void nevent_register_mem(
     }
     g_event_storage.mem[cnt] = mem;
     g_event_storage.pools++;
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 }
 
 
@@ -197,10 +197,10 @@ void nevent_register_mem(
 void nevent_unregister_mem(
     struct nmem *               mem)
 {
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
     uint_fast8_t                cnt;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     cnt = g_event_storage.pools;
 
     while ((0u < cnt) && (mem != g_event_storage.mem[cnt])) {
@@ -215,7 +215,7 @@ void nevent_unregister_mem(
         cnt++;
     }
     g_event_storage.mem[g_event_storage.pools - 1] = NULL;
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 }
 
 
@@ -225,11 +225,11 @@ struct nevent * nevent_create(
     uint16_t                    id)
 {
     struct nevent *             event;
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     event = event_create_i(size);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 
     if (event) {
         event_init(event, size, id);
@@ -262,11 +262,11 @@ struct nevent * nevent_create_i(
 void nevent_destroy(
     const struct nevent *       event)
 {
-    nsys_lock                   sys_lock;
+    ncore_lock                   sys_lock;
 
-    nsys_lock_enter(&sys_lock);
+    ncore_lock_enter(&sys_lock);
     nevent_destroy_i(event);
-    nsys_lock_exit(&sys_lock);
+    ncore_lock_exit(&sys_lock);
 }
 
 
@@ -312,12 +312,12 @@ void nevent_unlock(
         event_->attrib = NEVENT_ATTR_DYNAMIC;
 
         if (event_->ref == 0u) {
-            struct nsys_lock    sys_lock;
+            struct ncore_lock    sys_lock;
 
             event_term(event_);
-            nsys_lock_enter(&sys_lock);
+            ncore_lock_enter(&sys_lock);
             event_destroy_i(event_);
-            nsys_lock_exit(&sys_lock);
+            ncore_lock_exit(&sys_lock);
         }
     }
 }

@@ -70,7 +70,7 @@ void netimer_init(
 
 void netimer_after(
     struct netimer *            timer,
-    nsystimer_tick              tick,
+    ncore_time_tick              tick,
     uint16_t                    event_id)
 {
     timer->client   = nepa_get_current();
@@ -82,7 +82,7 @@ void netimer_after(
 
 void netimer_every(
     struct netimer *            timer,
-    nsystimer_tick              tick,
+    ncore_time_tick              tick,
     uint16_t                    event_id)
 {
     timer->client   = nepa_get_current();
@@ -108,7 +108,7 @@ bool netimer_is_running_i(
 
 
 
-nsystimer_tick netimer_remaining(
+ncore_time_tick netimer_remaining(
     const struct netimer *      timer)
 {
     return (ntimer_remaining(&timer->timer));

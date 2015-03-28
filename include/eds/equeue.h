@@ -34,10 +34,10 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "port/compiler.h"
-#include "port/cpu.h"
-#include "shared/config.h"
-#include "lib/queue.h"
+#include "base/port/compiler.h"
+#include "base/port/core.h"
+#include "base/shared/config.h"
+#include "kernel/lib/queue.h"
 
 /*===============================================================  MACRO's  ==*/
 

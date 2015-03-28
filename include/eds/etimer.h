@@ -33,7 +33,7 @@
 
 #include <stdbool.h>
 
-#include "timer/timer.h"
+#include "kernel/timer.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -60,14 +60,14 @@ void netimer_init(
 
 void netimer_after(
     struct netimer *            timer,
-    nsystimer_tick              tick,
+    ncore_time_tick              tick,
     uint16_t                    event_id);
 
 
 
 void netimer_every(
     struct netimer *            timer,
-    nsystimer_tick              tick,
+    ncore_time_tick              tick,
     uint16_t                    event_id);
 
 
@@ -82,7 +82,7 @@ bool netimer_is_running_i(
 
 
 
-nsystimer_tick netimer_remaining(
+ncore_time_tick netimer_remaining(
     const struct netimer *      timer);
 
 /*--------------------------------------------------------  C++ extern end  --*/

@@ -34,10 +34,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "port/compiler.h"
-#include "shared/debug.h"
-#include "shared/error.h"
-#include "shared/config.h"
+#include "base/port/compiler.h"
+#include "base/shared/debug.h"
+#include "base/shared/error.h"
+#include "base/shared/config.h"
 #include "kernel/sched.h"
 #include "eds/smp.h"
 #include "eds/equeue.h"
