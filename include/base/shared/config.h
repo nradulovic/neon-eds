@@ -21,17 +21,23 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Common package configuration header
- * @addtogroup  common Common
+ * @brief       Components configuration header
+ * @addtogroup  shared Shared
  *********************************************************************//** @{ */
-/**@defgroup    common_cfg Package configuration
- * @brief       Common package configuration
+/**@defgroup    shared_cfg Components configuration header
+ * @brief       Components configuration header
  * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_SHARED_CONFIG_H_
 #define NEON_BASE_SHARED_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
+
+/*
+ * Include the custom configuratin file
+ */
+#include "neon_app_config.h"
+
 /*===============================================================  DEFINES  ==*/
 /*==============================================================  SETTINGS  ==*/
 
@@ -45,7 +51,7 @@
  *              - 1 - Debug options can be enabled individually
  */
 #if !defined(CONFIG_DEBUG)
-# define CONFIG_DEBUG                  1
+# define CONFIG_DEBUG                  	1
 #endif
 
 /**@brief       Enable/disable API arguments validation
@@ -83,7 +89,7 @@
  *              on entry and enable interrupts on exit.
  */
 #if !defined(CONFIG_CORE_LOCK_MAX_LEVEL)
-# define CONFIG_CORE_LOCK_MAX_LEVEL      255u
+# define CONFIG_CORE_LOCK_MAX_LEVEL     255u
 #endif
 
 /**@brief       The frequency of clock which is used for the system timer
@@ -92,7 +98,7 @@
  *              properly manage system tick event generation.
  */
 #if !defined(CONFIG_CORE_TIMER_CLOCK_FREQ)
-# define CONFIG_CORE_TIMER_CLOCK_FREQ     1000000ul
+# define CONFIG_CORE_TIMER_CLOCK_FREQ   0
 #endif
 
 /**@brief       The frequency of system timer tick event
@@ -100,7 +106,7 @@
  *              @ref CONFIG_SYSTIMER_CLOCK_FREQ is properly set.
  */
 #if !defined(CONFIG_CORE_TIMER_EVENT_FREQ)
-# define CONFIG_CORE_TIMER_EVENT_FREQ     100ul
+# define CONFIG_CORE_TIMER_EVENT_FREQ   100ul
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -113,11 +119,11 @@
  *              - Max: 256
  */
 #if !defined(CONFIG_PRIORITY_LEVELS)
-# define CONFIG_PRIORITY_LEVELS             32u
+# define CONFIG_PRIORITY_LEVELS         32u
 #endif
 
 #if !defined(CONFIG_PRIORITY_BUCKETS)
-# define CONFIG_PRIORITY_BUCKETS            32u
+# define CONFIG_PRIORITY_BUCKETS        32u
 #endif
 
 /**@brief       Enable/disable registry
@@ -126,11 +132,11 @@
  *              - 1u - registry is enabled
  */
 #if !defined(CONFIG_REGISTRY)
-# define CONFIG_REGISTRY                    1u
+# define CONFIG_REGISTRY                1u
 #endif
 
 #if !defined(CONFIG_REGISTRY_NAME_SIZE)
-# define CONFIG_REGISTRY_NAME_SIZE          16u
+# define CONFIG_REGISTRY_NAME_SIZE      16u
 #endif
 
 
@@ -172,7 +178,7 @@
  * @note        Podrazumevano podesavanje: 0 (dogadjaji ne koriste atribut o
  *              generatoru)
  */
-#if !defined(OPT_EVT_USE_GENERATOR)
+#if !defined(CONFIG_EVENT_PRODUCER)
 # define CONFIG_EVENT_PRODUCER          1
 #endif
 
@@ -194,19 +200,19 @@
 
 
 #if !defined(CONFIG_GPIO)
-# define CONFIG_GPIO                    (0)
+# define CONFIG_GPIO                    0
 #endif
 
 #if !defined(CONFIG_UART)
-# define CONFIG_UART                    (0)
+# define CONFIG_UART                    0
 #endif
 
 #if !defined(CONFIG_I2C)
-# define CONFIG_I2C                     (0)
+# define CONFIG_I2C                     0
 #endif
 
 #if !defined(CONFIG_SPI)
-# define CONFIG_SPI                     (0)
+# define CONFIG_SPI                     0
 #endif
 
 /**@} *//*--------------------------------------------------------------------*/
@@ -214,15 +220,15 @@
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
 #if ((CONFIG_DEBUG != 1) && (CONFIG_DEBUG != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG is out of range."
+# error "NEON::base::shared: Configuration option CONFIG_DEBUG is out of range: 0 = disabled, 1 = enabled"
 #endif
 
 #if ((CONFIG_API_VALIDATION != 1) && (CONFIG_API_VALIDATION != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range."
+# error "NEON::base::shared: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range: 0 = disabled, 1 = enabled"
 #endif
 
 #if ((CONFIG_ASSERT_INTERNAL != 1) && (CONFIG_ASSERT_INTERNAL != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range."
+# error "NEON::base::shared: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range: 0 = disabled, 1 = enabled"
 #endif
 
 #if (CONFIG_DEBUG == 0) || defined(NDEBUG)
@@ -232,6 +238,10 @@
 # define CONFIG_API_VALIDATION          0
 # undef  CONFIG_ASSERT_INTERNAL
 # define CONFIG_ASSERT_INTERNAL         0
+#endif
+
+#if (CONFIG_CORE_TIMER_CLOCK_FREQ == 0)
+# error "NEON::base::port: Configuration option CONFIG_CORE_TIMER_CLOCK_FREQ is not set!"
 #endif
 
 /** @endcond *//** @} *//** @} *//*********************************************
