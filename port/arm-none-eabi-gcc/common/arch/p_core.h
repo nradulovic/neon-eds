@@ -21,21 +21,21 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Port core module header
- * @addtogroup  arm-none-eabi-gcc
+ * @brief       Port core
+ * @defgroup    port_core_intf Port core
+ * @brief       Port core
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-v7-m-core ARM Cortex M3/M4 CPU module
- * @brief       Port core module
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_ARCH_P_CPU_H_
-#define NEON_ARCH_P_CPU_H_
+#ifndef NEON_ARCH_P_CORE_H_
+#define NEON_ARCH_P_CORE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
 
-#include "port/compiler.h"
+#include "base/port/compiler.h"
+#include "base/port/profile.h"
+#include "base/shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -53,7 +53,9 @@
 
 #define NCPU_SSIZE_MAX                      INT32_MAX
 
-/*------------------------------------------------------  C++ extern begin  --*/
+#define NCORE_LOCK_TO_CODE(level)           (255 - (level))
+
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -67,6 +69,15 @@ typedef unsigned int ncpu_reg;
 typedef unsigned int ncpu_size;
 
 typedef   signed int ncpu_ssize;
+
+/**@brief       Interrupt context structure
+ * @details     This type is used to declare variable type which will hold
+ *              interrupt context data.
+ */
+struct ncore_lock
+{
+    unsigned int                level;
+};
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -138,6 +149,58 @@ void ncpu_sat_decrement(
 
 
 
+PORT_C_INLINE
+void nsys_lock_enter(
+    struct ncore_lock *          lock)
+{
+#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
+    unsigned int                new_mask;
+
+    new_mask = (((CONFIG_CORE_LOCK_MAX_LEVEL) << (8u - NSYS_LOCK_LEVEL_BITS)) & 0xfful);
+
+    __asm __volatile__ (
+        "@  nsys_lock_enter                                 \n"
+        "   mrs     %0, basepri                             \n"
+        "   msr     basepri, %1                             \n"
+        : "=&r"(lock->level)
+        : "r"(new_mask));
+#else
+    unsigned int                new_mask;
+
+    new_mask = 1;
+
+    __asm __volatile__ (
+        "@  nsys_lock_enter                                 \n"
+        "   mrs     %0, primask                             \n"
+        "   msr    primask, %1                              \n"
+        : "=&r"(lock->level)
+        : "r"(new_mask));
+#endif
+}
+
+
+
+PORT_C_INLINE
+void nsys_lock_exit(
+    struct ncore_lock *          lock)
+{
+#if (CONFIG_SYS_LOCK_MAX_LEVEL != 0)
+    __asm __volatile__ (
+        "@  nsys_lock_exit                                  \n"
+        "   msr    basepri, %0                              \n"
+        :
+        : "r"(lock->level));
+#else
+    __asm __volatile__ (
+        "@  nsys_lock_exit                                  \n"
+        "   msr    primask, %0                              \n"
+        :
+        : "r"(lock->level));
+#endif
+}
+
+
+
 /**@brief       Initialise CPU port
  */
 void ncpu_module_init(void);
@@ -148,7 +211,7 @@ void ncpu_module_init(void);
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
- * END of cpu.h
+/** @endcond *//** @} *//******************************************************
+ * END of p_core.h
  ******************************************************************************/
-#endif /* NEON_ARCH_P_CPU_H_ */
+#endif /* NEON_ARCH_P_CORE_H_ */

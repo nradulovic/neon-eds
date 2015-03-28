@@ -21,43 +21,38 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       CPU specific operations
- * @defgroup    cpu_intf CPU specific operations
- * @brief       CPU specific operations
+ * @brief       Compiler header
+ * @defgroup    common_compiler Compiler
+ * @brief       Compiler
  *********************************************************************//** @{ */
+/**@defgroup    common_compiler_intf Interface
+ * @brief       Compiler
+ * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_PORT_CPU_H_
-#define NEON_PORT_CPU_H_
+#ifndef NEON_PORT_COMPILER_H_
+#define NEON_PORT_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/p_cpu.h>
+#include "arch/p_compiler.h"
 
 /*===============================================================  MACRO's  ==*/
-/*-------------------------------------------------------  C++ extern base  --*/
-#ifdef __cplusplus
-extern "C" {
+
+#if !defined(PORT_C_FUNC)
+# define PORT_C_FUNC                    "unknown"
 #endif
 
 /*============================================================  DATA TYPES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise the CPU
- * @details     This function is port specific. It may setup default execution
- *              model for a given CPU, set the performance to default etc.
- *
- *              This function should be called early in boot process.
- */
-void ncpu_module_init(void);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
- * END of cpu.h
+/** @endcond *//** @} *//** @} *//*********************************************
+ * END of compiler.h
  ******************************************************************************/
-#endif /* NEON_PORT_CPU_H_ */
+#endif /* NEON_PORT_COMPILER_H_ */
+

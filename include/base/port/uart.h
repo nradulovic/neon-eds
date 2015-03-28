@@ -31,14 +31,14 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/p_uart.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "port/compiler.h"
-#include "port/peripheral.h"
-#include "port/profile.h"
-#include "shared/error.h"
+#include "base/port/compiler.h"
+#include "base/port/peripheral.h"
+#include "base/port/profile.h"
+#include "base/shared/error.h"
+#include "arch/p_uart.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -142,7 +142,9 @@ void np_uart_rx_stop(
 
 
 void np_uart_tx_start(
-    struct nuart_drv *          drv);
+    struct nuart_drv *          uart_drv,
+    const void *                data,
+    size_t                      size);
 
 
 

@@ -31,11 +31,16 @@
 
 #include <string.h>
 
-#include "port/sys_lock.h"
-#include "shared/debug.h"
-#include "shared/component.h"
-#include "port/peripheral.h"
-#include "port/uart.h"
+#include "base/port/core.h"
+#include "base/port/peripheral.h"
+#include "base/port/uart.h"
+#include "base/shared/debug.h"
+#include "base/shared/component.h"
+
+/*
+ * Turn of this module if not enabled or available in the current port
+ */
+#if (NPROFILE_EN_UART)
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -141,7 +146,7 @@ void np_uart_init(struct nuart_drv * uart_drv, const struct nuart_config * confi
     if (config->flags & NUART_SET_ISR_PRIO) {
         np_drv_isr_set_prio(&uart_drv->p_drv, 0, config->isr_prio);
     } else {
-        np_drv_isr_set_prio(&uart_drv->p_drv, 0, CONFIG_ISR_MAX_PRIO);
+        np_drv_isr_set_prio(&uart_drv->p_drv, 0, CONFIG_SYS_LOCK_MAX_LEVEL);
     }
     np_drv_isr_clear_flag(&uart_drv->p_drv, 0);
     np_drv_isr_enable(&uart_drv->p_drv, 0);
@@ -333,6 +338,7 @@ void USART6_IRQHandler(void)
 }
 #endif /* (NP_EN_UART & NP_EN_MAJOR(6)) */
 
+#endif /* (NPROFILE_EN_UART) */
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of uart_device.c

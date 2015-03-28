@@ -29,10 +29,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "port/peripheral.h"
-#include "port/profile.h"
-#include "port/uart.h"
-#include "port/gpio.h"
+#include "base/port/peripheral.h"
+#include "base/port/profile.h"
+#include "base/port/uart.h"
+#include "base/port/gpio.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -40,7 +40,7 @@
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 /*-- GPIOA  ------------------------------------------------------------------*/
-#if (NPROFILE_EN_GPIO & NP_EN_MAJOR(1)))
+#if (NPROFILE_EN_GPIO & NP_EN_MAJOR(1))
 static struct ngpio_driver              g_gpioa_driver;
 
 static const struct np_dev_clock        g_gpioa_clock =

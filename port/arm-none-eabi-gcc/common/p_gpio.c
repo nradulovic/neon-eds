@@ -29,9 +29,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "mcu/peripheral.h"
-#include "mcu/profile.h"
-#include "mcu/gpio.h"
+#include "base/port/peripheral.h"
+#include "base/port/profile.h"
+#include "base/port/gpio.h"
 #include "stm32f4xx.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/

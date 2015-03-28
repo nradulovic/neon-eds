@@ -82,12 +82,8 @@
  *              use priority levels but instead it will just disable interrupts
  *              on entry and enable interrupts on exit.
  */
-#if !defined(CONFIG_SYS_LOCK_MAX_LEVEL)
-# define CONFIG_SYS_LOCK_MAX_LEVEL      255u
-#endif
-
-#if !defined(CONFIG_ISR_MAX_PRIO)
-# define CONFIG_ISR_MAX_PRIO            CONFIG_SYS_LOCK_MAX_LEVEL
+#if !defined(CONFIG_CORE_LOCK_MAX_LEVEL)
+# define CONFIG_CORE_LOCK_MAX_LEVEL      255u
 #endif
 
 /**@brief       The frequency of clock which is used for the system timer
@@ -95,16 +91,16 @@
  *              HCLK) for counting. Specify here the core clock so the OS can
  *              properly manage system tick event generation.
  */
-#if !defined(CONFIG_SYSTIMER_CLOCK_FREQ)
-# define CONFIG_SYSTIMER_CLOCK_FREQ     1000000ul
+#if !defined(CONFIG_CORE_TIMER_CLOCK_FREQ)
+# define CONFIG_CORE_TIMER_CLOCK_FREQ     1000000ul
 #endif
 
 /**@brief       The frequency of system timer tick event
  * @note        This setting is valid only if configuration option
  *              @ref CONFIG_SYSTIMER_CLOCK_FREQ is properly set.
  */
-#if !defined(CONFIG_SYSTIMER_EVENT_FREQ)
-# define CONFIG_SYSTIMER_EVENT_FREQ     100ul
+#if !defined(CONFIG_CORE_TIMER_EVENT_FREQ)
+# define CONFIG_CORE_TIMER_EVENT_FREQ     100ul
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -198,19 +194,19 @@
 
 
 #if !defined(CONFIG_GPIO)
-# define CONFIG_GPIO                    (0xffff)
+# define CONFIG_GPIO                    (0)
 #endif
 
 #if !defined(CONFIG_UART)
-# define CONFIG_UART                    (0xffff)
+# define CONFIG_UART                    (0)
 #endif
 
 #if !defined(CONFIG_I2C)
-# define CONFIG_I2C                     (0xffff)
+# define CONFIG_I2C                     (0)
 #endif
 
 #if !defined(CONFIG_SPI)
-# define CONFIG_SPI                     (0xffff)
+# define CONFIG_SPI                     (0)
 #endif
 
 /**@} *//*--------------------------------------------------------------------*/

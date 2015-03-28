@@ -34,11 +34,9 @@
 #define NPROFILE_MAX_SYSTIMER_VAL       0xfffffful
 #define NPROFILE_RAM_SIZE               (128ul * 1024ul)
 
-#define NPROFILE_AVAILABLE_GPIO                                                 \
-    (NP_EN_MAJOR(1) | NP_EN_MAJOR(3))
+#define NPROFILE_AVAILABLE_GPIO         0
 
-#define NPROFILE_AVAILABLE_UART                                                 \
-    (NP_EN_MAJOR(1) | NP_EN_MAJOR(2) | NP_EN_MAJOR(6))
+#define NPROFILE_AVAILABLE_UART         0
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

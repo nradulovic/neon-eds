@@ -21,17 +21,18 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       System lock
- * @defgroup    syslock_intf System lock
- * @brief       System lock
+ * @brief       Atomic operations
+ * @defgroup    atomic_intf Atomic operations
+ * @brief       Atomic operations
  *********************************************************************//** @{ */
 
-#ifndef NEON_PORT_SYS_LOCK_H_
-#define NEON_PORT_SYS_LOCK_H_
+#ifndef NEON_PORT_ATOMIC_H_
+#define NEON_PORT_ATOMIC_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "arch/p_sys_lock.h"
+#include "base/port/compiler.h"
+#include "base/port/cpu.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -41,45 +42,19 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
+/**@brief       Atomic data structure
  */
-typedef struct nsys_lock nsys_lock;
+struct natomic
+{
+    ncpu_reg                    counter;
+};
+
+/**@brief       Atomic data type
+ */
+typedef struct natomic natomic;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-/**@brief       Initialise port
- */
-void nsys_lock_module_init(void);
-
-
-
-/**@brief       Terminate port
- */
-void nsys_lock_module_term(void);
-
-
-
-/**@brief       Enter critical code section
- * @param       lock
- *              Interrupt resource lock, pointer to portable type variable which
- *              will hold the interrupt context state during the critical code
- *              section.
- */
-void nsys_lock_enter(
-    struct nsys_lock *          lock);
-
-
-
-/**@brief       Exit critical code section
- * @param       lock
- *              Interrupt resource lock, portable type variable which is holding
- *              a previously saved interrupt context state.
- */
-void nsys_lock_exit(
-    struct nsys_lock *          lock);
-
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
@@ -87,6 +62,6 @@ void nsys_lock_exit(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of sys_lock.h
+ * END of atomic.h
  ******************************************************************************/
-#endif /* NEON_PORT_SYS_LOCK_H_ */
+#endif /* NEON_PORT_ATOMIC_H_ */

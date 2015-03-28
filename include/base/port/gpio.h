@@ -31,11 +31,11 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/p_gpio.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "port/peripheral.h"
+#include "base/port/peripheral.h"
+#include "arch/p_gpio.h"
 
 /*===============================================================  MACRO's  ==*/
 

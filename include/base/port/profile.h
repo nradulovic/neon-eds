@@ -31,8 +31,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <family/p_profile_data.h>
-#include "shared/config.h"
+#include "family/p_profile_data.h"
+#include "base/port/peripheral.h"
+#include "base/shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
