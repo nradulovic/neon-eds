@@ -1,6 +1,6 @@
 # Quick-start guide
 
-Neon Base is a collection of low-level libraries for Neon Real-Time Framework.  
+Neon is a collection of software components for real-time applications.
 
 
 ## TODO list
