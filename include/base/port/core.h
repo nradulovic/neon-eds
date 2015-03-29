@@ -31,22 +31,13 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <arch/p_core.h>
 #include <stdint.h>
 
 #include "base/shared/config.h"
-#include "arch/p_core.h"
+
 
 /*===============================================================  MACRO's  ==*/
-
-/**@brief       Core timer one tick value
- */
-#define NCORE_TIME_ONE_TICK(clock)                                               \
-    (((clock) + (CONFIG_CORE_TIMER_EVENT_FREQ / 2)) / CONFIG_CORE_TIMER_EVENT_FREQ)
-
-/**@brief       Maximum number of ticks without overflowing the core timer
- */
-#define NCORE_TIMER_MAX_TICKS                                                     \
-    (UINT32_MAX / NCORE_TIME_ONE_TICK)
 
 #define NCORE_TIME_TICK_MAX             UINT32_MAX
 
@@ -89,65 +80,31 @@ typedef struct ncore_lock       ncore_lock;
  *
  *              This function should be called early in boot process.
  */
-void nmodule_core_hw_init(void);
+void nmodule_core_init(void);
 
 
 
-void nmodule_core_hw_term(void);
+void nmodule_core_term(void);
 
 
 
-void ncore_timer_init(
-    ncore_time_tick              val);
+uint_fast8_t ncore_log2(
+    ncpu_reg                    value);
+
+
+ncpu_reg ncore_exp2(
+    uint_fast8_t                value);
 
 
 
-/**@brief       Get free counter value
- */
-ncore_time_tick ncore_timer_get_current(void);
+void ncore_sat_increment(
+    ncpu_reg *                  value);
 
 
 
-/**@brief       Get reload counter value
- */
-ncore_time_tick ncore_timer_get_reload(void);
+void ncore_sat_decrement(
+    ncpu_reg *                  value);
 
-
-
-/**@brief       Load the system timer Reload value register
- */
-void ncore_timer_load(
-    ncore_time_tick              tick);
-
-
-
-/**@brief       Enable the system timer
- */
-void ncore_timer_enable(void);
-
-
-
-/**@brief       Disable the system timer
- */
-void ncore_timer_disable(void);
-
-
-
-/**@brief       Disable the system timer interrupt
- */
-void ncore_timer_isr_enable(void);
-
-
-
-/**@brief       Enable the system timer interrupt
- */
-void ncore_timer_isr_disable(void);
-
-
-
-/**@brief       User System Timer ISR
- */
-extern void ncore_timer_isr(void);
 
 
 /**@brief       Enter critical code section
@@ -168,6 +125,24 @@ void ncore_lock_enter(
  */
 void ncore_lock_exit(
     struct ncore_lock *          lock);
+
+
+
+/**@brief       Enable the system timer
+ */
+void ncore_timer_enable(void);
+
+
+
+/**@brief       Disable the system timer
+ */
+void ncore_timer_disable(void);
+
+
+
+/**@brief       User System Timer ISR
+ */
+extern void ncore_timer_isr(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

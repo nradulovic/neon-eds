@@ -92,6 +92,23 @@
 # define CONFIG_CORE_LOCK_MAX_LEVEL     255u
 #endif
 
+
+
+/**@brief       Select the peripheral that will be used as clock source
+ * @details     0 - use dedicated tick timer, often called as System Tick or
+ * 					Core timer
+ * 				1 - use Timer 1
+ * 				2 - use Timer 2...
+ *
+ * 				Check MCU documentation which hardware timers are available.
+ * 				Also make sure that portable layer supports chosen timer.
+ */
+#if !defined(CONFIG_CORE_TIMER_SOURCE)
+# define CONFIG_CORE_TIMER_SOURCE   	0
+#endif
+
+
+
 /**@brief       The frequency of clock which is used for the system timer
  * @details     System timer SysTick uses core clock (sometimes referred to as
  *              HCLK) for counting. Specify here the core clock so the OS can

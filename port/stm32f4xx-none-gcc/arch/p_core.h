@@ -34,7 +34,6 @@
 #include <stdint.h>
 
 #include "base/port/compiler.h"
-#include "base/port/profile.h"
 #include "base/shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -53,7 +52,12 @@
 
 #define NCPU_SSIZE_MAX                      INT32_MAX
 
-#define NCORE_LOCK_TO_CODE(level)           (255 - (level))
+/**@brief       Specify the number of bits used in ISR priority mask. For now
+ *              all STM32F4 series MCU's use 4 bits
+ */
+#define NCORE_LOCK_LEVEL_BITS           	4u
+
+#define NCORE_LOCK_TO_CODE(level)           ((255 - (level)) >> (8 - NCORE_LOCK_LEVEL_BITS))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -83,30 +87,16 @@ struct ncore_lock
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-/**@brief       Stop the further CPU execution
- */
-PORT_C_INLINE
-void ncpu_stop(void)
-{
-    for (;;) {
-    __asm__ __volatile__ (
-        "@  ncpu_stop                                       \n"
-        "   wfe                                             \n");
-    }
-}
-
-
-
 /**@brief       Computes integer logarithm base 2
  */
 PORT_C_INLINE_ALWAYS
-uint_fast8_t ncpu_log2(
+uint_fast8_t ncore_log2(
     ncpu_reg                    value)
 {
     uint_fast8_t                clz;
 
     __asm__ __volatile__ (
-        "@  ncpu_log2                                       \n"
+        "@  ncore_log2                                      \n"
         "   clz    %0, %1                                   \n"
         : "=r"(clz)
         : "r"(value));
@@ -119,7 +109,7 @@ uint_fast8_t ncpu_log2(
 /**@brief       Computes integer exponent base 2
  */
 PORT_C_INLINE_ALWAYS
-ncpu_reg ncpu_exp2(
+ncpu_reg ncore_exp2(
     uint_fast8_t                value)
 {
     return (0x1u << value);
@@ -128,7 +118,7 @@ ncpu_reg ncpu_exp2(
 
 
 PORT_C_INLINE_ALWAYS
-void ncpu_sat_increment(
+void ncore_sat_increment(
     ncpu_reg *                  value)
 {
     if (*value != NCPU_REG_MAX) {
@@ -139,7 +129,7 @@ void ncpu_sat_increment(
 
 
 PORT_C_INLINE_ALWAYS
-void ncpu_sat_decrement(
+void ncore_sat_decrement(
     ncpu_reg *                  value)
 {
     if (*value != 0u) {
