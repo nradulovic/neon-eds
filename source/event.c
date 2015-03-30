@@ -32,9 +32,9 @@
 
 #include <stddef.h>
 
-#include "base/port/core.h"
-#include "base/shared/component.h"
-#include "kernel/mm/mem.h"
+#include "port/core.h"
+#include "shared/component.h"
+#include "mm/mem.h"
 #include "eds/event.h"
 #include "eds/epa.h"
 

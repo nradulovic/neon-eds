@@ -47,7 +47,7 @@ void nequeue_init(
 {
     ncpu_reg                    size;
 
-    size = define->size / sizeof(struct nevent * [1]);
+    size = (ncpu_reg)(define->size / sizeof(struct nevent * [1]));
 
 #if (CONFIG_REGISTRY == 1)
     nqueue_init(&queue->queue, define->storage, size);

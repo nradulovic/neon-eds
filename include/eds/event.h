@@ -37,8 +37,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "base/port/compiler.h"
-#include "base/shared/config.h"
+#include "port/compiler.h"
+#include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 

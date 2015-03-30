@@ -37,8 +37,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "base/port/compiler.h"
-#include "base/shared/config.h"
+#include "port/compiler.h"
+#include "shared/config.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -143,6 +143,18 @@ naction ntop_state(
 
 
 PORT_C_INLINE
+naction naction_super(
+    struct nsm *                sm,
+    nstate *                    state)
+{
+    sm->state = state;
+
+    return (NACTION_SUPER);
+}
+
+
+
+PORT_C_INLINE
 naction naction_transit_to(
     struct nsm *                sm,
     nstate *                    state)
@@ -155,15 +167,18 @@ naction naction_transit_to(
 
 
 PORT_C_INLINE
-naction naction_super(
-    struct nsm *                sm,
-    nstate *                    state)
+naction naction_handled(void)
 {
-    sm->state = state;
-
-    return (NACTION_SUPER);
+    return (NACTION_HANDLED);
 }
 
+
+
+PORT_C_INLINE
+naction naction_ignored(void)
+{
+    return (NACTION_HANDLED);
+}
 
 
 const struct nevent * nsmp_event(

@@ -33,7 +33,7 @@
 
 #include <stdbool.h>
 
-#include "kernel/timer.h"
+#include "misc/timer.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -42,6 +42,8 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
+
+struct nepa;
 
 struct netimer
 {
@@ -60,14 +62,14 @@ void netimer_init(
 
 void netimer_after(
     struct netimer *            timer,
-    ncore_time_tick              tick,
+    ncore_time_tick             tick,
     uint16_t                    event_id);
 
 
 
 void netimer_every(
     struct netimer *            timer,
-    ncore_time_tick              tick,
+    ncore_time_tick             tick,
     uint16_t                    event_id);
 
 

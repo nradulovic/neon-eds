@@ -29,8 +29,8 @@
 
 #include <stdbool.h>
 
-#include "base/shared/component.h"
-#include "base/shared/debug.h"
+#include "shared/component.h"
+#include "shared/debug.h"
 #include "eds/event.h"
 #include "eds/smp.h"
 
