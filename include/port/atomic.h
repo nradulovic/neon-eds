@@ -31,8 +31,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "base/port/compiler.h"
-#include "base/port/cpu.h"
+#include "port/compiler.h"
+#include "port/core.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/

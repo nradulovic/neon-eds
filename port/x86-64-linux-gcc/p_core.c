@@ -38,6 +38,15 @@
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 
+
+static void timer_handler(int signal);
+
+
+
+static void * timer_thread(void * arg);
+
+
+
 static void timer_init(void);
 
 
@@ -46,13 +55,14 @@ static void timer_term(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-struct timeval my_value = {0,10000};
-struct timeval my_interval = {0,10000};
-struct itimerval my_timer;
+static struct itimerval         g_timer;
+static pthread_t                g_timer_thread;
+static pthread_mutex_t          g_timer_lock;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 pthread_mutex_t                 g_global_lock;
+
 
 const uint_fast8_t              g_log2_lookup[256] =
 {
@@ -78,21 +88,35 @@ const uint_fast8_t              g_log2_lookup[256] =
 
 
 
-static void handler(int signal)
+static void timer_handler(int signal)
 {
     (void)signal;
 
-    //ncore_lock_enter(NULL);
-    ncore_timer_isr();
-    //ncore_lock_exit(NULL);
+    pthread_mutex_unlock(&g_timer_lock);
+}
+
+static void * timer_thread(void * arg)
+{
+    for (;;) {
+        pthread_mutex_lock(&g_timer_lock);
+        ncore_lock_enter(NULL);
+        ncore_timer_isr();
+        ncore_lock_exit(NULL);
+    }
+
+    return NULL;
 }
 
 static void timer_init(void)
 {
-    my_timer.it_interval = my_interval;
-    my_timer.it_value    = my_value;
+    static struct timeval       timer_value    = {0, 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ};
+    static struct timeval       timer_interval = {0, 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ};
 
-    setitimer(ITIMER_REAL, &my_timer, 0);
+    g_timer.it_interval = timer_interval;
+    g_timer.it_value    = timer_value;
+
+    pthread_create(&g_timer_thread, NULL, timer_thread, NULL) ;
+    setitimer(ITIMER_REAL, &g_timer, 0);
 }
 
 
@@ -112,7 +136,7 @@ static void timer_term(void)
  */
 void ncore_timer_enable(void)
 {
-    signal(SIGALRM, handler);
+    signal(SIGALRM, timer_handler);
 }
 
 

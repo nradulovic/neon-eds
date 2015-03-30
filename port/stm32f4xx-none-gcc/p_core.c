@@ -26,7 +26,7 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "base/port/core.h"
+#include "port/core.h"
 
 #if (CONFIG_CORE_TIMER_SOURCE != 0)
 # include "stm32f4xx.h"
@@ -298,7 +298,7 @@ void ncore_timer_disable(void)
 
 
 
-void nmodule_core_init(void)
+void ncore_init(void)
 {
     cpu_init();
     lock_init();
@@ -307,7 +307,7 @@ void nmodule_core_init(void)
 
 
 
-void nmodule_core_term(void)
+void ncore_term(void)
 {
     timer_term();
     lock_term();

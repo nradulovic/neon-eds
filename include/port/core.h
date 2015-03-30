@@ -31,11 +31,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/p_core.h>
 #include <stdint.h>
 
-#include "base/shared/config.h"
-
+#include "shared/config.h"
+#include "arch/p_core.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -80,11 +79,11 @@ typedef struct ncore_lock       ncore_lock;
  *
  *              This function should be called early in boot process.
  */
-void nmodule_core_init(void);
+void ncore_init(void);
 
 
 
-void nmodule_core_term(void);
+void ncore_term(void);
 
 
 
