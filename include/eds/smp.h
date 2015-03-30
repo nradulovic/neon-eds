@@ -80,6 +80,14 @@ enum nsm_type
 
 typedef uint_fast8_t naction;
 
+/**@brief       State function prototype
+ * @param       sm
+ *              Pointer to state machine being executed
+ * @param       event
+ *              Pointer to event that has been dispatched to the state machine
+ * @return
+ *              Return action enumerator to the state machine dispatcher.
+ */
 typedef naction (nstate) (struct nsm *, const struct nevent *);
 
 struct nsm

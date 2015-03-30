@@ -86,14 +86,14 @@ void neds_run(void)
 
             nsched_thread_remove_i(thread);
             epa   = THREAD_TO_EPA(thread);
-            event = nequeue_get(&epa->working_fifo);
+            event = nequeue_get(&epa->working_queue);
             ncore_lock_exit(&lock);
             action = nsm_dispatch(&epa->sm, event);
             ncore_lock_enter(&lock);
 
             if ((action == NACTION_DEFFERED) &&
-                !nequeue_is_full(&epa->deffered_fifo)) {
-                nequeue_put_fifo(&epa->deffered_fifo, event);
+                !nequeue_is_full(&epa->deffered_queue)) {
+                nequeue_put_fifo(&epa->deffered_queue, event);
             } else {
                 nevent_destroy_i(event);
             }
@@ -114,9 +114,9 @@ void nepa_init(
     ncore_lock                   sys_lock;
 
     epa->mem = NULL;
-    nequeue_init(&epa->working_fifo, &define->working_fifo);
-    nequeue_put_fifo(&epa->working_fifo, nsmp_event(NSMP_INIT));
-    nequeue_init(&epa->deffered_fifo, &define->deffered_fifo);
+    nequeue_init(&epa->working_queue, &define->working_queue);
+    nequeue_put_fifo(&epa->working_queue, nsmp_event(NSMP_INIT));
+    nequeue_init(&epa->deffered_queue, &define->deffered_queue);
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
     ncore_lock_enter(&sys_lock);
@@ -135,23 +135,23 @@ void nepa_term(
 
     ncore_lock_enter(&sys_lock);
 
-    while (!nequeue_is_empty(&epa->working_fifo)) {
+    while (!nequeue_is_empty(&epa->working_queue)) {
         const struct nevent *   event;
 
-        event = nequeue_get(&epa->working_fifo);
+        event = nequeue_get(&epa->working_queue);
         nevent_destroy_i(event);
     }
 
-    while (!nequeue_is_empty(&epa->deffered_fifo)) {
+    while (!nequeue_is_empty(&epa->deffered_queue)) {
         const struct nevent *   event;
 
-        event = nequeue_get(&epa->deffered_fifo);
+        event = nequeue_get(&epa->deffered_queue);
         nevent_destroy_i(event);
     }
     nsched_thread_term(&epa->thread);
     nsm_term(&epa->sm);
-    nequeue_term(&epa->deffered_fifo);
-    nequeue_term(&epa->working_fifo);
+    nequeue_term(&epa->deffered_queue);
+    nequeue_term(&epa->working_queue);
     ncore_lock_exit(&sys_lock);
 }
 
@@ -172,8 +172,8 @@ struct nepa * nepa_create(
         goto ERROR_ALLOC_EPA;
     }
 
-    l_working_define.storage = nmem_alloc(mem, define->working_fifo.size);
-    l_working_define.size    = define->working_fifo.size;
+    l_working_define.storage = nmem_alloc(mem, define->working_queue.size);
+    l_working_define.size    = define->working_queue.size;
 
     if (!l_working_define.storage) {
         goto ERROR_ALLOC_WORKING_FIFO_BUFF;
@@ -181,9 +181,9 @@ struct nepa * nepa_create(
     l_deffered_define.storage = NULL;
     l_deffered_define.size    = 0;
 
-    if (define->deffered_fifo.size) {
-        l_deffered_define.storage = nmem_alloc(mem, define->deffered_fifo.size);
-        l_deffered_define.size    = define->deffered_fifo.size;
+    if (define->deffered_queue.size) {
+        l_deffered_define.storage = nmem_alloc(mem, define->deffered_queue.size);
+        l_deffered_define.size    = define->deffered_queue.size;
 
         if (!l_deffered_define.storage) {
             goto ERROR_ALLOC_DEFFERED_FIFO_BUFF;
@@ -191,8 +191,8 @@ struct nepa * nepa_create(
     }
     l_define.sm             = define->sm;
     l_define.thread         = define->thread;
-    l_define.working_fifo   = l_working_define;
-    l_define.deffered_fifo  = l_deffered_define;
+    l_define.working_queue   = l_working_define;
+    l_define.deffered_queue  = l_deffered_define;
     nepa_init(epa, &l_define);
     epa->mem = mem;
 
@@ -217,10 +217,10 @@ void nepa_destroy(
 
     nepa_term(epa);
 
-    if (nequeue_storage(&epa->deffered_fifo)) {
-        nmem_free(epa->mem, nequeue_storage(&epa->deffered_fifo));
+    if (nequeue_storage(&epa->deffered_queue)) {
+        nmem_free(epa->mem, nequeue_storage(&epa->deffered_queue));
     }
-    nmem_free(epa->mem, nequeue_storage(&epa->working_fifo));
+    nmem_free(epa->mem, nequeue_storage(&epa->working_queue));
     nmem_free(epa->mem, epa);
 }
 
@@ -236,8 +236,8 @@ nerror nepa_send_event_i(
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
 
-        if (!nequeue_is_full(&epa->working_fifo)) {
-            nequeue_put_fifo(&epa->working_fifo, event);
+        if (!nequeue_is_full(&epa->working_queue)) {
+            nequeue_put_fifo(&epa->working_queue, event);
             nsched_thread_insert_i(&epa->thread);
 
             return (NERROR_NONE);
@@ -276,13 +276,13 @@ nerror nepa_send_event_ahead_i(
     if (event->ref < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
 
-        if (nequeue_is_empty(&epa->working_fifo) == true) {
-            nequeue_put_lifo(&epa->working_fifo, event);
+        if (nequeue_is_empty(&epa->working_queue) == true) {
+            nequeue_put_lifo(&epa->working_queue, event);
             nsched_thread_insert_i(&epa->thread);
 
             return (NERROR_NONE);
-        } else if (!nequeue_is_full(&epa->working_fifo) == false) {
-            nequeue_put_lifo(&epa->working_fifo, event);
+        } else if (!nequeue_is_full(&epa->working_queue) == false) {
+            nequeue_put_lifo(&epa->working_queue, event);
 
             return (NERROR_NONE);
         } else {

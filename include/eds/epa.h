@@ -66,8 +66,8 @@ struct nevent;
 struct nepa_define
 {
     struct nsm_define           sm;
-    struct nequeue_define       working_fifo;
-    struct nequeue_define       deffered_fifo;
+    struct nequeue_define       working_queue;
+    struct nequeue_define       deffered_queue;
     struct nthread_define       thread;
 };
 
@@ -78,8 +78,8 @@ struct nepa
     struct nmem *               mem;
     struct nthread              thread;         /**<@brief Priority queue     */
     struct nsm                  sm;
-    struct nequeue              working_fifo;
-    struct nequeue              deffered_fifo;
+    struct nequeue              working_queue;
+    struct nequeue              deffered_queue;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     unsigned int                signature;
 #endif
