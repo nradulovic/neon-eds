@@ -21,7 +21,7 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Core portable layer
+ * @brief       x86 64 Linux port core source
  *********************************************************************//** @{ */
 
 /*=========================================================  INCLUDE FILES  ==*/
@@ -36,7 +36,6 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
-
 
 
 static void timer_handler(int signal);
@@ -63,7 +62,6 @@ static pthread_mutex_t          g_timer_lock;
 
 pthread_mutex_t                 g_global_lock;
 
-
 const uint_fast8_t              g_log2_lookup[256] =
 {
     0u, 0u, 1u, 1u, 2u, 2u, 2u, 2u, 3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u,
@@ -87,7 +85,8 @@ const uint_fast8_t              g_log2_lookup[256] =
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-
+/**@brief       Timer signal handler for signaling to timer thread
+ */
 static void timer_handler(int signal)
 {
     (void)signal;
@@ -95,6 +94,10 @@ static void timer_handler(int signal)
     pthread_mutex_unlock(&g_timer_lock);
 }
 
+
+
+/**@brief       Timer thread which will execute the core timer isr
+ */
 static void * timer_thread(void * arg)
 {
     (void)arg;
@@ -109,6 +112,10 @@ static void * timer_thread(void * arg)
     return NULL;
 }
 
+
+
+/**@brief       Setup timer thread and start the timer
+ */
 static void timer_init(void)
 {
     static struct timeval       timer_value    = {0, 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ};

@@ -21,12 +21,8 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Interface of ARM Cortex compiler port.
- * @addtogroup  arm-none-eabi-gcc
+ * @brief       Interface for the x86-64 Linux GCC port.
  *********************************************************************//** @{ */
-/**@defgroup    arm-none-eabi-gcc-compiler Compiler support
- * @brief       Compiler support
- * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_ARCH_P_COMPILER_H_
 #define NEON_ARCH_P_COMPILER_H_

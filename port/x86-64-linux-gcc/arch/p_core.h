@@ -22,8 +22,6 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       x86 64 Linux port core
- * @defgroup    x86_64_linux_port_core_intf x86 64 Linux port core
- * @brief       x86 64 Linux port core
  *********************************************************************//** @{ */
 
 #ifndef NEON_ARCH_P_CORE_H_
@@ -53,12 +51,17 @@
 
 #define NCPU_SSIZE_MAX                      INT64_MAX
 
-/**@brief       Specify the number of bits used in ISR priority mask. Since the 
- *              Linux port is not using interrupts then define this to zero.
+/**@brief       Specify the number of bits used in ISR priority mask (NOT USED).
+ * @note        Since the Linux port is not using interrupts then define this
+ *              macro to zero.
  */
-#define NCORE_LOCK_LEVEL_BITS           	1u
+#define NCORE_LOCK_LEVEL_BITS           	0u
 
-#define NCORE_LOCK_TO_CODE(level)           (255 - (level)) 
+/**@brief       Convert Neon priority level to port code (NOT USED)
+ * @note        Since the Linux port is not using interrupts then define this
+ *              macro to zero.
+ */
+#define NCORE_LOCK_TO_CODE(level)           0u
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -67,7 +70,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief General purpose registers are 64bit wide.
+/**@brief       General purpose registers are 64bit wide.
  */
 typedef uint64_t ncpu_reg;
 
@@ -117,6 +120,8 @@ ncpu_reg ncore_exp2(
 
 
 
+/**@brief       Increment integer value with saturation arithmetic
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_sat_increment(
     ncpu_reg *                  value)
@@ -128,6 +133,8 @@ void ncore_sat_increment(
 
 
 
+/**@brief       Decrement integer value with saturation arithmetic
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_sat_decrement(
     ncpu_reg *                  value)
@@ -139,6 +146,8 @@ void ncore_sat_decrement(
 
 
 
+/**@brief       Lock the port core
+ */
 PORT_C_INLINE
 void ncore_lock_enter(
     struct ncore_lock *          lock)
@@ -150,6 +159,8 @@ void ncore_lock_enter(
 
 
 
+/**@brief       Unlock the port core
+ */
 PORT_C_INLINE
 void ncore_lock_exit(
     struct ncore_lock *          lock)
