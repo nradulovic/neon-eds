@@ -21,9 +21,9 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Port core
- * @defgroup    port_core_intf Port core
- * @brief       Port core
+ * @brief       x86 64 Linux port core
+ * @defgroup    x86_64_linux_port_core_intf x86 64 Linux port core
+ * @brief       x86 64 Linux port core
  *********************************************************************//** @{ */
 
 #ifndef NEON_ARCH_P_CORE_H_
@@ -53,12 +53,12 @@
 
 #define NCPU_SSIZE_MAX                      INT64_MAX
 
-/**@brief       Specify the number of bits used in ISR priority mask. For now
- *              all STM32F4 series MCU's use 4 bits
+/**@brief       Specify the number of bits used in ISR priority mask. Since the 
+ *              Linux port is not using interrupts then define this to zero.
  */
-#define NCORE_LOCK_LEVEL_BITS           	4u
+#define NCORE_LOCK_LEVEL_BITS           	1u
 
-#define NCORE_LOCK_TO_CODE(level)           ((255 - (level)) >> (8 - NCORE_LOCK_LEVEL_BITS))
+#define NCORE_LOCK_TO_CODE(level)           (255 - (level)) 
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -67,17 +67,15 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief General purpose registers are 32bit wide.
+/**@brief General purpose registers are 64bit wide.
  */
-typedef unsigned int ncpu_reg;
+typedef uint64_t ncpu_reg;
 
-typedef unsigned int ncpu_size;
+typedef uint64_t ncpu_size;
 
-typedef   signed int ncpu_ssize;
+typedef int64_t  ncpu_ssize;
 
-/**@brief       Interrupt context structure
- * @details     This type is used to declare variable type which will hold
- *              interrupt context data.
+/**@brief       Interrupt context structure - (not used in this port)
  */
 struct ncore_lock
 {
