@@ -21,9 +21,7 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Port core
- * @defgroup    port_core_intf Port core
- * @brief       Port core
+ * @brief       STM32F4xx port core
  *********************************************************************//** @{ */
 
 #ifndef NEON_ARCH_P_CORE_H_
@@ -53,11 +51,14 @@
 #define NCPU_SSIZE_MAX                      INT32_MAX
 
 /**@brief       Specify the number of bits used in ISR priority mask. For now
- *              all STM32F4 series MCU's use 4 bits
+ *              all STM32F4xx series MCU's implement 4 bits
  */
-#define NCORE_LOCK_LEVEL_BITS           	4u
+#define NCORE_LOCK_LEVEL_BITS               4u
 
-#define NCORE_LOCK_TO_CODE(level)           ((255 - (level)) >> (8 - NCORE_LOCK_LEVEL_BITS))
+/**@brief       Convert Neon priority level to port code
+ */
+#define NCORE_LOCK_TO_CODE(level)                                               \
+    ((255 - (level)) >> NCORE_LOCK_LEVEL_BITS)
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -117,6 +118,8 @@ ncpu_reg ncore_exp2(
 
 
 
+/**@brief       Increment integer value with saturation arithmetic
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_sat_increment(
     ncpu_reg *                  value)
@@ -128,6 +131,8 @@ void ncore_sat_increment(
 
 
 
+/**@brief       Decrement integer value with saturation arithmetic
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_sat_decrement(
     ncpu_reg *                  value)
@@ -139,6 +144,8 @@ void ncore_sat_decrement(
 
 
 
+/**@brief       Lock the port core
+ */
 PORT_C_INLINE
 void ncore_lock_enter(
     struct ncore_lock *          lock)
@@ -146,10 +153,10 @@ void ncore_lock_enter(
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
 
-    new_mask = (((CONFIG_CORE_LOCK_MAX_LEVEL) << (8u - NCORE_LOCK_LEVEL_BITS)) & 0xfful);
+    new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
 
     __asm __volatile__ (
-        "@  nsys_lock_enter                                 \n"
+        "@  ncore_lock_enter                                \n"
         "   mrs     %0, basepri                             \n"
         "   msr     basepri, %1                             \n"
         : "=&r"(lock->level)
@@ -160,7 +167,7 @@ void ncore_lock_enter(
     new_mask = 1;
 
     __asm __volatile__ (
-        "@  nsys_lock_enter                                 \n"
+        "@  ncore_lock_enter                                \n"
         "   mrs     %0, primask                             \n"
         "   msr    primask, %1                              \n"
         : "=&r"(lock->level)
@@ -170,19 +177,21 @@ void ncore_lock_enter(
 
 
 
+/**@brief       Unlock the port core
+ */
 PORT_C_INLINE
 void ncore_lock_exit(
     struct ncore_lock *          lock)
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     __asm __volatile__ (
-        "@  nsys_lock_exit                                  \n"
+        "@  ncore_lock_exit                                 \n"
         "   msr    basepri, %0                              \n"
         :
         : "r"(lock->level));
 #else
     __asm __volatile__ (
-        "@  nsys_lock_exit                                  \n"
+        "@  ncore_lock_exit                                 \n"
         "   msr    primask, %0                              \n"
         :
         : "r"(lock->level));

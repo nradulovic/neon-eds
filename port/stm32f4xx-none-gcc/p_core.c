@@ -21,16 +21,13 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Core portable layer
+ * @brief       STM32F4xx port core source
  *********************************************************************//** @{ */
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-
-#if (CONFIG_CORE_TIMER_SOURCE != 0)
-# include "stm32f4xx.h"
-#endif
+#include "stm32f4xx.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
@@ -49,33 +46,37 @@
 
 /*--  Timer Control / Status Register Definitions  ---------------------------*/
 #if (CONFIG_CORE_TIMER_SOURCE == 2)
-#define TIMER 							TIM2
-#define TIMER_RST						RCC->APB1RSTR
-#define TIMER_RST_BIT					RCC_APB1RSTR_TIM2RST
-#define TIMER_CLK						RCC->APB1ENR
-#define TIMER_CLK_BIT					RCC_APB1ENR_TIM2EN
-#define TIMER_IRQN						TIM2_IRQn
+#define TIMER                           TIM2
+#define TIMER_RST                       RCC->APB1RSTR
+#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM2RST
+#define TIMER_CLK                       RCC->APB1ENR
+#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM2EN
+#define TIMER_IRQN                      TIM2_IRQn
+#define TIMER_HANDLER                   TIM2_IRQHandler
 #elif (CONFIG_CORE_TIMER_SOURCE == 3)
-#define TIMER 							TIM3
-#define TIMER_RST						RCC->APB1RSTR
-#define TIMER_RST_BIT					RCC_APB1RSTR_TIM3RST
-#define TIMER_CLK						RCC->APB1ENR
-#define TIMER_CLK_BIT					RCC_APB1ENR_TIM3EN
-#define TIMER_IRQN						TIM3_IRQn
+#define TIMER                           TIM3
+#define TIMER_RST                       RCC->APB1RSTR
+#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM3RST
+#define TIMER_CLK                       RCC->APB1ENR
+#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM3EN
+#define TIMER_IRQN                      TIM3_IRQn
+#define TIMER_HANDLER                   TIM3_IRQHandler
 #elif (CONFIG_CORE_TIMER_SOURCE == 4)
-#define TIMER 							TIM4
-#define TIMER_RST						RCC->APB1RSTR
-#define TIMER_RST_BIT					RCC_APB1RSTR_TIM4RST
-#define TIMER_CLK						RCC->APB1ENR
-#define TIMER_CLK_BIT					RCC_APB1ENR_TIM4EN
-#define TIMER_IRQN						TIM4_IRQn
+#define TIMER                           TIM4
+#define TIMER_RST                       RCC->APB1RSTR
+#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM4RST
+#define TIMER_CLK                       RCC->APB1ENR
+#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM4EN
+#define TIMER_IRQN                      TIM4_IRQn
+#define TIMER_HANDLER                   TIM4_IRQHandler
 #elif (CONFIG_CORE_TIMER_SOURCE == 5)
-#define TIMER 							TIM5
-#define TIMER_RST						RCC->APB1RSTR
-#define TIMER_RST_BIT					RCC_APB1RSTR_TIM5RST
-#define TIMER_CLK						RCC->APB1ENR
-#define TIMER_CLK_BIT					RCC_APB1ENR_TIM5EN
-#define TIMER_IRQN						TIM5_IRQn
+#define TIMER                           TIM5
+#define TIMER_RST                       RCC->APB1RSTR
+#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM5RST
+#define TIMER_CLK                       RCC->APB1ENR
+#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM5EN
+#define TIMER_IRQN                      TIM5_IRQn
+#define TIMER_HANDLER                   TIM5_IRQHandler
 #endif
 
 #define TIMER_CR1_CEN					(0x1u << 0)
@@ -315,6 +316,10 @@ void ncore_term(void)
 }
 
 
+/* NOTE:
+ * This is the STM32F4xx timer interrupt service routine (ISR)
+ * The ISR is changed by macro TIMER_HANDLER depending on the configured timer.
+ */
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
 void SysTick_Handler(void);
 
@@ -322,45 +327,15 @@ void SysTick_Handler(void)
 {
 	ncore_timer_isr();
 }
-#elif (CONFIG_CORE_TIMER_SOURCE == 2)
-void TIM2_IRQHandler(void);
+#else
+void TIMER_HANDLER(void);
 
-void TIM2_IRQHandler(void)
+void TIMER_HANDLER(void)
 {
-	if (TIMER->SR &   TIM_SR_UIF) {
-		TIMER->SR &= ~TIM_SR_UIF;
-		ncore_timer_isr();
-	}
-}
-#elif (CONFIG_CORE_TIMER_SOURCE == 3)
-void TIM3_IRQHandler(void);
-
-void TIM3_IRQHandler(void)
-{
-	if (TIMER->SR &   TIM_SR_UIF) {
-		TIMER->SR &= ~TIM_SR_UIF;
-		ncore_timer_isr();
-	}
-}
-#elif (CONFIG_CORE_TIMER_SOURCE == 4)
-void TIM4_IRQHandler(void);
-
-void TIM4_IRQHandler(void)
-{
-	if (TIMER->SR &   TIM_SR_UIF) {
-		TIMER->SR &= ~TIM_SR_UIF;
-		ncore_timer_isr();
-	}
-}
-#elif (CONFIG_CORE_TIMER_SOURCE == 5)
-void TIM5_IRQHandler(void);
-
-void TIM5_IRQHandler(void)
-{
-	if (TIMER->SR &   TIM_SR_UIF) {
-		TIMER->SR &= ~TIM_SR_UIF;
-		ncore_timer_isr();
-	}
+    if (TIMER->SR &   TIM_SR_UIF) {
+        TIMER->SR &= ~TIM_SR_UIF;
+        ncore_timer_isr();
+    }
 }
 #endif
 
