@@ -97,6 +97,8 @@ static void timer_handler(int signal)
 
 static void * timer_thread(void * arg)
 {
+    (void)arg;
+
     for (;;) {
         pthread_mutex_lock(&g_timer_lock);
         ncore_lock_enter(NULL);
