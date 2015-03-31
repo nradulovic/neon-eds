@@ -31,19 +31,6 @@
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
-#define PORT_CONFIG_ISR_SUBPRIORITY     0
-
-/*--  SysTick Control / Status Register Definitions  -------------------------*/
-#define SYST                            ((volatile struct syst_regs *)0xE000E010)
-#define SYST_CSR_CLKSOURCE              (1ul << 2)
-#define SYST_CSR_TICKINT                (1ul << 1)
-#define SYST_CSR_ENABLE                 (1ul << 0)
-
-#define SCB_ICSR                        (*(volatile unsigned int *)0xE000ED04)
-#define SCB_ICSR_PENDSTSET              (1ul << 26)
-#define SCB_ICSR_PENDSTCLR              (1ul << 25)
-#define SCB_SHP_SYSTICK                 (*(volatile unsigned char *)0xE000ED23)
-
 /*--  Timer Control / Status Register Definitions  ---------------------------*/
 #if (CONFIG_CORE_TIMER_SOURCE == 2)
 #define TIMER                           TIM2
@@ -79,26 +66,7 @@
 #define TIMER_HANDLER                   TIM5_IRQHandler
 #endif
 
-#define TIMER_CR1_CEN					(0x1u << 0)
-
-/*--  On AIRCR register writes, write 0x5FA, otherwise the write is ignored  -*/
-#define SCB_AIRCR                       (*(volatile unsigned int *)0xE000ED0C)
-#define SCB_AIRCR_VECTKEY_Pos           16
-#define SCB_AIRCR_VECTKEY               (0xfffful << 16)
-#define SCB_AIRCR_VECTKEY_VALUE         (0x5faul << 16)
-#define SCB_AIRCR_PRIGROUP_Pos          8
-#define SCB_AIRCR_PRIGROUP              (0x7ul << 8)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
-
-struct syst_regs
-{
-    volatile unsigned int       csr;
-    volatile unsigned int       rvr;
-    volatile unsigned int       cvr;
-    volatile unsigned int       calib;
-};
-
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 
@@ -187,11 +155,7 @@ static void lock_init(void)
     unsigned int                reg;
 
     isr_global_disable();
-    reg  = SCB_AIRCR;
-    reg &= ~(SCB_AIRCR_VECTKEY | SCB_AIRCR_PRIGROUP);
-    reg |=   SCB_AIRCR_VECTKEY_VALUE;
-    reg |=  (PORT_CONFIG_ISR_SUBPRIORITY << SCB_AIRCR_PRIGROUP_Pos);
-    SCB_AIRCR = reg;
+    NVIC_SetPriorityGrouping(NCORE_LOCK_LEVEL_BITS - 1);
     isr_global_enable();
 }
 
@@ -207,32 +171,32 @@ static void lock_term(void)
 static void timer_init(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SYST->csr &= ~SYST_CSR_ENABLE;
-    SYST->csr &= ~SYST_CSR_TICKINT;
-    SYST->csr |=  SYST_CSR_CLKSOURCE;
-    SYST->rvr  =  CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ;
-    SYST->csr  =  0;
-    SCB_ICSR  |=  SCB_ICSR_PENDSTCLR;
-    SCB_SHP_SYSTICK = (uint8_t)NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
+    SysTick->CTRL  = 0;
+    SysTick->LOAD  = CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ - 1;
+    SysTick->VAL   = 0;
+    SCB->ICSR     |= SCB_ICSR_PENDSTCLR_Msk;                /* Clear pending ISR bit */
+    NVIC_SetPriority(SysTick_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
 #else
-    volatile unsigned int 		dummy;
+    volatile unsigned int       dummy;
 
-    TIMER_RST  |=  TIMER_RST_BIT;							/* Reset and enable timer clock */
+    TIMER_RST  |=  TIMER_RST_BIT;                           /* Reset and enable timer clock */
     TIMER_RST  &= ~TIMER_RST_BIT;
-    TIMER_CLK  |=  TIMER_CLK_BIT;
-    dummy       =  TIMER_CLK;
+    TIMER_CLK  |=  TIMER_CLK_BIT;                           /* Enable clock */
+    dummy       =  TIMER_CLK;                               /* Dummy read to generate a small delay */
     (void)dummy;
-    														/* Setup timer */
-    TIMER->ARR  = 1000;
-    TIMER->CNT  = 0;
-    TIMER->DIER = 0;
+                                                            /* Setup timer */
+    TIMER->CR1  = 1;
+    TIMER->ARR  = CONFIG_CORE_TIMER_EVENT_FREQ - 1;
+    TIMER->PSC  = CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ / 2 - 1;
+    TIMER->EGR  = TIM_EGR_UG;
+                                                            /* Setup interrupt */
+    NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
+    NVIC_ClearPendingIRQ(TIMER_IRQN);
+    NVIC_EnableIRQ(TIMER_IRQN);
+                                                            /* Turn of timer */
     TIMER->CR1  = 0;
-    TIMER->PSC  = (CONFIG_CORE_TIMER_CLOCK_FREQ / 1000u) / CONFIG_CORE_TIMER_EVENT_FREQ;
-    														/* Disable timer clock */
+                                                            /* Disable timer clock */
     TIMER_CLK  &= ~TIMER_CLK_BIT;
-															/* Enable interrupt */
-	NVIC->IP[TIMER_IRQN] = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
-	NVIC->ISER[TIMER_IRQN >> 5] = 0x1u << ((TIMER_IRQN & 0x1fu));
 #endif
 }
 
@@ -243,16 +207,16 @@ static void timer_init(void)
 static void timer_term(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SYST->csr &= ~SYST_CSR_ENABLE;
+    SysTick->CTRL = 0;
 #else
-															/* Turn off timer */
-	TIMER->CR1  &= ~TIM_CR1_CEN;
-															/* Disable timer interrupt */
-	TIMER->DIER &= ~TIM_DIER_UIE;
-															/* Disable timer clock */
-	TIMER_CLK   &= ~TIMER_CLK_BIT;
-    														/* Disable interrupt */
-    NVIC->ICER[TIMER_IRQN >> 5] = 0x1u << ((TIMER_IRQN & 0x1fu));
+                                                            /* Disable interrupt */
+    NVIC_DisableIRQ(TIMER_IRQN);
+                                                            /* Turn off timer */
+    TIMER->CR1  &= ~TIM_CR1_CEN;
+                                                            /* Disable timer interrupt */
+    TIMER->DIER &= ~TIM_DIER_UIE;
+                                                            /* Disable timer clock */
+    TIMER_CLK   &= ~TIMER_CLK_BIT;
 #endif
 }
 
@@ -265,7 +229,9 @@ static void timer_term(void)
 void ncore_timer_enable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SYST->csr |=  (SYST_CSR_ENABLE | SYST_CSR_TICKINT);
+                                                            /* Enable interrupt and Timer */
+    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
+                    SysTick_CTRL_ENABLE_Msk;
 #else
     volatile unsigned int 		dummy;
     														/* Enable timer clock */
@@ -286,7 +252,7 @@ void ncore_timer_enable(void)
 void ncore_timer_disable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SYST->csr &= ~(SYST_CSR_ENABLE | SYST_CSR_TICKINT);
+    SysTick->CTRL = 0;
 #else
     														/* Turn off timer */
     TIMER->CR1  &= ~TIM_CR1_CEN;
@@ -316,11 +282,18 @@ void ncore_term(void)
 }
 
 
-/* NOTE:
- * This is the STM32F4xx timer interrupt service routine (ISR)
- * The ISR is changed by macro TIMER_HANDLER depending on the configured timer.
- */
+
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
+/* NOTE 1:
+ * This is the STM32F4xx SysTick ISR
+ * The ISR is used only when the SysTick timer is configured as core timer.
+ *
+ * NOTE 2:
+ * When the STM32F4xx HAL is enabled it will use the SysTick Handler by default.
+ * The HAL_Init() will setup the SysTick ISR at highest priority. Since Neon
+ * must use the interrupt with lower priority (as defined by macro
+ * CONFIG_CORE_LOCK_MAX_LEVEL) then another timer must be selected as core timer.
+ */
 void SysTick_Handler(void);
 
 void SysTick_Handler(void)
@@ -328,6 +301,10 @@ void SysTick_Handler(void)
 	ncore_timer_isr();
 }
 #else
+/* NOTE:
+ * This is the STM32F4xx timer ISR
+ * The ISR is changed by macro TIMER_HANDLER depending on the configured timer.
+ */
 void TIMER_HANDLER(void);
 
 void TIMER_HANDLER(void)
