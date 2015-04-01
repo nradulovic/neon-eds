@@ -1,54 +1,41 @@
-# Quick-start guide
+# Neon Base Quick-start guide
 
 Neon is a collection of software components for real-time applications.
 
+# Using Base
 
-## TODO list
+## Configuration
 
-- test, test, test...
-
-
-# Using Base system
-
-## Configuration and ports
-
-Configuration is done in two group of files: 
-- the port independent settings are located in 'include/nbase_config.h'
-- the port dependent settings are located in the port directory
-
+Configuration is done in `neon_app_config.h` header file. The file is included
+by `base/include/shared/config.h` file, which is in included in all other Neon
+components.
 
 ## Building
 
-The base system was built using arm-none-eabi GCC v4.7.3 compiler toolchain 
-(from https://launchpad.net/gcc-arm-embedded/+download) and binary was 
-downloaded to the MCU using _texane_ gdb-server. There are no makefiles, it is 
-assumed that IDE will generate them for you.
+### Include paths
 
-#### Example for STM32F10x family port
+- `base/include` - standard Neon include path
+- `port/_port-name_` - where the _port-name_ is the directory of port that is 
+used.
 
-There are two groups of source files which need to be compiled for ARMv7-M 
-architecture: 
-- `mem.c`, `dbg.c` in `./src` source directory and 
-- `cpu.c`, `intr.c` in `./port/arm-none-eabi-gcc/v7-m` port directory.
+### Source files
 
-The following include paths are needed:
-- `./inc`
-- `./port/arm-none-eabi-gcc/v7-m`
-- `./port/arm-none-eabi-gcc/stm32f10x`
+- `port/_port-name_/p_core.c` - main port source file. Ports may have additional
+    source files located in `port/_port-name_` directory which need to be 
+    compiled.
+    
+### Project dependencies
+
+Neon Base does not depend on additional Neon components.
 
 ## Documentation
 
-Doxygen configuration and full documentation source files are available in `/doc` 
-directory. Go to the directory `doc` create a directory named `kernel` and than 
-run doxygen:
+Doxygen configuration and full documentation source files are available in root
+Neon project in `documentiontion/base` directory. Documentation files are built
+using doxygen tool.
 
     # doxygen doxyfile-base
 
-This will generate HTML, LaTex and man documentation in `./doc/base` directory.
-
-
-## Running
-
-To successfully use and run kernel you will need to study the documentation. The 
-documentation is still being written and some examples will be added later.
+This will generate HTML, LaTex and man documentation in `documentation/base` 
+directory.
 
