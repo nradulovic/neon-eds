@@ -32,7 +32,7 @@
 #include <stdint.h>
 
 #include "port/compiler.h"
-#include "shared/config.h"
+#include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
