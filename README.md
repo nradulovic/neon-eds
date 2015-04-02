@@ -92,10 +92,6 @@ by `base/config.h` header file, which is in included by all Neon components.
     source files located in `port/_port-name_` directory which need to be 
     compiled.
     
-### Project dependencies
-
-Neon EDS does not depend on any additional components.
-
 ## Documentation
 
 Doxygen configuration and full documentation source files are available in root
