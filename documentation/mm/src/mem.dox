@@ -1,0 +1,109 @@
+/** @file */
+/** @defgroup mem Memory management */
+/** @{
+@defgroup mem_intf API
+@defgroup mem_impl Implementation
+@defgroup mem_cfg  Configuration
+@} */
+/** @addtogroup mem
+@brief          Memory Management overview
+
+@section        mem_index Sadrzaj
+- @ref mem_smem
+- @ref mem_dmem
+- @ref mem_pmem
+- @ref mem_configuration
+
+@section        mem_smem Staticki memorijski menadzer
+Staticki memorijski menadzer moze samo da alocira memoriju i jednom alocirana
+memorija se ne moze osloboditi. Koristi se kada je potrebno staticki alocirati
+objekte koji se nikada ne brisu. Ovaj memorijski menadzer je najjednostavniji i 
+najbrzi, pa se preporucuje za mikroprocesore sa ogranicenim performansama. 
+Potrosnja memorije iznosi samo 4-8 bajtova za ceo memorijski menadzer i ne 
+postoji dodatna potrosnja memorije prilikom alociranja.
+
+Staticni memorijski menadzer je jedinstven za embedded sistem. Ne mogu postojati
+vise instanci staticnog alokatora. Velicina memorije koja se predaje staticnom
+alokatoru na koriscenje se podesava opcijom @ref OPT_MEM_SMEM_SIZE.
+
+@section        mem_dmem Dinamicki memorijski menadzer
+
+Dinamicki memorijski menadzer je po funkcionalnosti identican sa funkcijama 
+standardne C biblioteke malloc/free, sa tom izmenom da je prilagodjen za rad sa
+embedded sistemima. 
+
+Za razliku od staticnog alokatora, koji je jedinstven za sistem, u jednom 
+embedded sistemu mogu postojati nekoliko instanci dinamickih alokatora.
+Razliciti dinamicki alokatori se referenciraju strukturom tipa 
+@ref esDMemHandle_T. Pogledati primer @ref dmem_two_buffs.c.
+    
+@subsection     mem_ff_alloc First Fit algoritam
+
+U ovom algoritmu, alokator cuva listu slobodnih blokova i po prijemu zahteva za 
+memoriju, skenira duz liste za prvim blokom koji je dovoljno veliki da opsluzi 
+zahtev. Ako je izabrani blok dovoljno veci nego sto je zahtevano onda se blok 
+deli na dva dela, jedan deo se predaje korisniku, a drugi blok se postavlja 
+nazad u listu slobodnih blokova. Kada se vrsi reciklaza blokova, najpre se 
+proveravaju susedni blokovi da li su zauzeti. Susedni blokovi koji su slobodni 
+spajaju se sa blokom koji se reciklira i na taj nacin formira novi, veci blok.
+
+@subsection     mem_ff_specs Specifikacije first fit alokatora
+
+- Maksimalno vreme izvrsavanja operacije alokacije bloka @b nije unapred 
+poznato. Zbog navedene cinjenice alokator nije pogodan za hard real-time
+sisteme.
+- Maksimalno vreme izvrsavanja operacije dealokacije bloka je unapred poznato. 
+- Ukupno minimalno zauzece RAM memorije (Cortex-M3 arch): @b 28B
+
+@section        mem_pmem Pool memorijski menadzer
+
+Pool memorijski menadzer je vrlo slican dinamickom memorijskom menadzeru sa tom
+razlikom sto ne moze da se zatrazi proizvoljna kolicina memorije. Potrazivanje
+memorije se vrsi unapred definisanom velicinom bloka koja vazi za datu instancu 
+pool memorije.
+
+Podrzano je postojanje veceg broja razlicitih instanci, koje se referenciraju
+strukturama tipa @ref esPMemHandle_T. Pogledati primer @ref pmem_two_buffs.c.
+
+@subsection     mem_pool_specs Specifikacije pool alokatora
+
+- Maksimalno vreme izvrsavanja operacije alokacije bloka @b je unapred 
+poznato. Zbog navedene cinjenice alokator @b je pogodan za hard real-time
+sisteme.
+- Maksimalno vreme izvrsavanja operacije dealokacije bloka je unapred poznato. 
+- Ukupno minimalno zauzece RAM memorije (Cortex-M3 arch): @b 12B
+    
+@section        mem_configuration Konfiguracija Memory Management modula
+
+Konfiguracija se vrsi u datoteci mem_config.h. Navodjenje opcija se vrsi u
+sekciji DEFINES.
+
+Na primer, ako je potrebno dodeliti 1024B memorije static alokatoru onda se u 
+datoteci mem_config.h u sekciji @c @b DEFINES unosi sledece:
+
+@code
+
+    :
+    :
+    
+/*===============================================================  DEFINES  ==*/
+    
+    :
+    :
+    
+#define OPT_MEM_SMEM_SIZE               1024U
+
+    :
+    :
+    
+/*==============================================================  SETTINGS  ==*/,
+
+    :
+    :
+    
+@endcode
+
+Za opcije Memory Management modula pogledati @ref mem_cfg.
+    
+*/
+ 

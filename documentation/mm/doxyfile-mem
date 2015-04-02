@@ -1,0 +1,11 @@
+@INCLUDE            =   doxyfile-generic
+PROJECT_NAME        =   "eSolid - Memory Management"
+PROJECT_BRIEF       =   "Event Based System"
+INPUT               =   ../doc/src/mem_mainpage.dox                             \
+                        ../doc/src/mem_example.dox                              \
+                        ../doc/src/mem.dox                                      \
+                        ../inc/mem/mem.h                                        \  
+                        ../inc/mem/mem_cfg.h                                    \
+                        ../src/mem.c                                            \
+                        ../README.md
+OUTPUT_DIRECTORY    =   ../doc/mem

@@ -1,0 +1,49 @@
+/** @file */
+
+/** @example dmem_init1.c
+This is an example how to initialize Dynamic Memory Manager. In this example a 
+char buffer of BUFFER_SIZE size is used to hold the data for Dynamic Memory 
+Manager. BUFFER_SIZE is set to 1024 so total buffer size is 1024 bytes. Keep in 
+mind that Dynamic Memory Manager needs some parts of the buffer to keep track of 
+its users so the available memory is slighty smaller then what is specified in 
+BUFFER_SIZE macro.
+**/
+
+/** @example dmem_init2.c
+This is a more advanced example of Dynamic Memory initialization. First it
+initializes the static memory and requires 1024 bytes from it for data storage.
+**/
+
+/** @example dmem_two_buffs.c
+In this example two independent Dynamic Memory buffers are created. Each buffer
+is used for its own purpose. This can have the benefit of reducing memory 
+fragmentation. Lets say that the data needed to be saved is 40 bytes in size,
+while commands are only one integer in size. So by putting small data (commands)
+in one buffer and large data in other buffer the fragmentation can be reduced. 
+**/
+
+/** @example pmem_init1.c
+This example creates a memory pool which holds 10 dataBlock structures. The pool
+is referenced with myPool handle, and all pool data is hold in poolStorage[]
+array. Before using the pool it must be first initialized by esPMemInit() 
+function. After initialization all pool memory functions can be used. Note that
+pool memory created here cannot be destroyed.
+**/
+
+/** @example pmem_init2.c
+This example uses Static memory manager to allocate storage for pool memory. 
+Before allocating the memory the required size of memory is calculated by 
+following formula: sizeof(/Pool Element/) * /Number of elements/. Use of 
+ES_BIT_ALIGN_UP() macro is highly recommended because all pool functions require
+that all data access is aligned. Static memory allocator always returns aligned
+value so there is no need to apply any alignment calculations to it.
+**/
+
+/** @example pmem_init3.c
+This example is very similar to pmem_init2.c. The only difference is how the
+required pool storage size is calculated.  
+**/
+
+/** @example pmem_two_buffs.c
+TODO
+**/
