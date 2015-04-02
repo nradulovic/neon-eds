@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -22,16 +22,12 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Virtual timer header
- * @details     Based on virtual timers found in ChibiOS/RT
  * @defgroup    base_vtimer Virtual timer
  * @brief       Virtual timer
  *********************************************************************//** @{ */
-/**@defgroup    base_vtimer_intf Interface
- * @brief       Virtual timer API
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NTIMER_H
-#define NTIMER_H
+#ifndef NEON_TIMER_TIMER_H_
+#define NEON_TIMER_TIMER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -39,8 +35,8 @@
 
 #include "port/compiler.h"
 #include "port/core.h"
-#include "shared/config.h"
-#include "shared/list.h"
+#include "base/config.h"
+#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -168,7 +164,7 @@ ncore_time_tick ntimer_remaining(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
+/** @endcond *//** @} *//******************************************************
  * END of ntimer.h
  ******************************************************************************/
-#endif /* NTIMER_H */
+#endif /* NEON_TIMER_TIMER_H_ */

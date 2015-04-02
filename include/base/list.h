@@ -26,8 +26,8 @@
  * @brief       Linked lists
  *********************************************************************//** @{ */
 
-#ifndef NLIST_H_
-#define NLIST_H_
+#ifndef NEON_BASE_LIST_H_
+#define NEON_BASE_LIST_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -151,4 +151,4 @@ struct ndlist * ndlist_prev(
 /** @endcond *//** @} *//******************************************************
  * END of list.h
  ******************************************************************************/
-#endif /* NLIST_H_ */
+#endif /* NEON_BASE_LIST_H_ */

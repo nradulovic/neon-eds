@@ -26,8 +26,8 @@
  * @brief       Event queue
  *********************************************************************//** @{ */
 
-#ifndef NEON_EDS_EQUEUE_H_
-#define NEON_EDS_EQUEUE_H_
+#ifndef NEON_EP_EQUEUE_H_
+#define NEON_EP_EQUEUE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -36,8 +36,8 @@
 
 #include "port/compiler.h"
 #include "port/core.h"
-#include "shared/config.h"
-#include "shared/queue.h"
+#include "base/config.h"
+#include "base/queue.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -165,4 +165,4 @@ void * nequeue_storage(
 /** @endcond *//** @} *//******************************************************
  * END of equeue.h
  ******************************************************************************/
-#endif /* NEON_EDS_EQUEUE_H_ */
+#endif /* NEON_EP_EQUEUE_H_ */

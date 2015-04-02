@@ -26,15 +26,15 @@
  * @brief       Memory class
  *********************************************************************//** @{ */
 
-#ifndef NEON_MEM_CLASS_H_
-#define NEON_MEM_CLASS_H_
+#ifndef NEON_MEM_H_
+#define NEON_MEM_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "shared/debug.h"
+#include "base/debug.h"
 
 /*===============================================================  MACRO's  ==*/
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -121,4 +121,4 @@ size_t nmem_get_size_i(
 /** @endcond *//** @} *//******************************************************
  * END of mem_class.h
  ******************************************************************************/
-#endif /* NEON_MEM_CLASS_H_ */
+#endif /* NEON_MEM_H_ */

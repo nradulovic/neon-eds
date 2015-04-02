@@ -26,8 +26,8 @@
  * @brief       Generic queue
  *********************************************************************//** @{ */
 
-#ifndef NEON_LIB_QUEUE_H_
-#define NEON_LIB_QUEUE_H_
+#ifndef NEON_BASE_QUEUE_H_
+#define NEON_BASE_QUEUE_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -201,5 +201,5 @@ bool nqueue_is_empty(
 /** @endcond *//** @} *//******************************************************
  * END of queue.h
  ******************************************************************************/
-#endif /* NEON_LIB_QUEUE_H_ */
+#endif /* NEON_BASE_QUEUE_H_ */
 

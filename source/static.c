@@ -22,17 +22,17 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Static Memory management implementation
- * @addtogroup  mem_static
+ * @addtogroup  mm_static
  *********************************************************************//** @{ */
-/**@defgroup    mem_static_impl Implementation
+/**@defgroup    mm_static_impl Implementation
  * @brief       Static Memory management implementation
  * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "shared/component.h"
-#include "shared/bitop.h"
+#include "base/component.h"
+#include "base/bitop.h"
 #include "mm/static.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/

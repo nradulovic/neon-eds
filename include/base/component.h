@@ -29,8 +29,8 @@
  * @brief       Software component information
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_BASE_SHARED_COMPONENT_H_
-#define NEON_BASE_SHARED_COMPONENT_H_
+#ifndef NEON_BASE_COMPONENT_H_
+#define NEON_BASE_COMPONENT_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -83,4 +83,4 @@ extern PORT_C_UNUSED const struct ncomponent_info g_unknown_component;
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of component.h
  ******************************************************************************/
-#endif /* NEON_BASE_SHARED_COMPONENT_H_ */
+#endif /* NEON_BASE_COMPONENT_H_ */

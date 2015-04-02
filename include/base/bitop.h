@@ -26,8 +26,8 @@
  * @brief       Common bit/logic operations
  *********************************************************************//** @{ */
 
-#ifndef NBITOP_H_
-#define NBITOP_H_
+#ifndef NEON_BASE_BITOP_H_
+#define NEON_BASE_BITOP_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -183,4 +183,4 @@ bool bitop_is_power_of2(unsigned int value)
 /** @endcond *//** @} *//******************************************************
  * END of nbitop.h
  ******************************************************************************/
-#endif /* NBITOP_H_ */
+#endif /* NEON_BASE_BITOP_H_ */

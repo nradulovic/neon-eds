@@ -21,18 +21,21 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Implementacija State Machine Processor objekta.
- * @addtogroup  smp_impl
+ * @brief       State Machine Processor Implementation
+ * @addtogroup  ep_impl
  *********************************************************************//** @{ */
+/**@defgroup    ep_impl Implementation
+ * @brief       State Machine Processor Implementation
+ * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
 
-#include "shared/component.h"
-#include "shared/debug.h"
-#include "eds/event.h"
-#include "eds/smp.h"
+#include "base/component.h"
+#include "base/debug.h"
+#include "ep/event.h"
+#include "ep/smp.h"
 
 /*=========================================================  LOCAL DEFINES  ==*/
 

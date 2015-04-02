@@ -25,12 +25,9 @@
  * @defgroup    eds_event Event object
  * @brief       Event object
  *********************************************************************//** @{ */
-/**@defgroup    eds_event_intf Interface
- * @brief       Event object API
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_EDS_EVENT_H_
-#define NEON_EDS_EVENT_H_
+#ifndef NEON_EP_EVENT_H_
+#define NEON_EP_EVENT_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -38,7 +35,7 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "shared/config.h"
+#include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -278,7 +275,7 @@ uint_fast16_t nevent_ref(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
+/** @endcond *//** @} *//******************************************************
  * END of event.h
  ******************************************************************************/
-#endif /* NEON_EDS_EVENT_H_ */
+#endif /* NEON_EP_EVENT_H_ */

@@ -26,14 +26,14 @@
  * @brief       Event timer
  *********************************************************************//** @{ */
 
-#ifndef NEON_EDS_ETIMER_H_
-#define NEON_EDS_ETIMER_H_
+#ifndef NEON_EP_ETIMER_H_
+#define NEON_EP_ETIMER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
 
-#include "misc/timer.h"
+#include "timer/timer.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -96,4 +96,4 @@ ncore_time_tick netimer_remaining(
 /** @endcond *//** @} *//******************************************************
  * END of etimer.h
  ******************************************************************************/
-#endif /* NEON_EDS_ETIMER_H_ */
+#endif /* NEON_EP_ETIMER_H_ */

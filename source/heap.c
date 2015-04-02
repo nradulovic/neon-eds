@@ -22,18 +22,18 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Heap Memory management implementation
- * @addtogroup  mem_heap
+ * @addtogroup  mm_heap
  *********************************************************************//** @{ */
-/**@defgroup    mem_heap_impl Implementation
+/**@defgroup    mm_heap_impl Implementation
  * @brief       Heap Memory management implementation
  * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "shared/component.h"
-#include "shared/debug.h"
-#include "shared/bitop.h"
+#include "base/component.h"
+#include "base/debug.h"
+#include "base/bitop.h"
 #include "mm/heap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/

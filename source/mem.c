@@ -22,9 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Memory class implementation
- * @addtogroup  mem_class
+ * @addtogroup  mm_mem
  *********************************************************************//** @{ */
-/**@defgroup    mem_class_impl Implementation
+/**@defgroup    mm_mem_impl Implementation
  * @brief       Memory class Implementation
  * @{ *//*--------------------------------------------------------------------*/
 

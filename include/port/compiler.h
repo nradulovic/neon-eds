@@ -25,16 +25,13 @@
  * @defgroup    common_compiler Compiler
  * @brief       Compiler
  *********************************************************************//** @{ */
-/**@defgroup    common_compiler_intf Interface
- * @brief       Compiler
- * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_PORT_COMPILER_H_
 #define NEON_PORT_COMPILER_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <arch/p_compiler.h>
+#include "arch/p_compiler.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -51,7 +48,7 @@
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
+/** @endcond *//** @} *//******************************************************
  * END of compiler.h
  ******************************************************************************/
 #endif /* NEON_PORT_COMPILER_H_ */

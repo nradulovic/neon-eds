@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -25,22 +25,19 @@
  * @defgroup    eds_epa Event Processing Agent
  * @brief       Event Processing Agent
  *********************************************************************//** @{ */
-/**@defgroup    eds_epa_intf Interface
- * @brief       Event Processing Agent API
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef ES_EPA_H_
-#define ES_EPA_H_
+#ifndef NEON_EP_EPA_H_
+#define NEON_EP_EPA_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/compiler.h"
-#include "shared/debug.h"
-#include "shared/error.h"
-#include "shared/config.h"
+#include "base/debug.h"
+#include "base/error.h"
+#include "base/config.h"
 #include "sched/sched.h"
-#include "eds/smp.h"
-#include "eds/equeue.h"
+#include "ep/smp.h"
+#include "ep/equeue.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -168,7 +165,7 @@ nerror nepa_send_event_ahead(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
+/** @endcond *//** @} *//******************************************************
  * END of epa.h
  ******************************************************************************/
-#endif /* ES_EPA_H_ */
+#endif /* NEON_EP_EPA_H_ */

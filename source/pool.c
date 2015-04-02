@@ -22,17 +22,17 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Pool Memory management implementation
- * @addtogroup  mem_pool
+ * @addtogroup  mm_pool
  *********************************************************************//** @{ */
-/**@defgroup    mem_pool_impl Implementation
+/**@defgroup    mm_pool_impl Implementation
  * @brief       Pool Memory management implementation
  * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "shared/component.h"
-#include "shared/bitop.h"
+#include "base/component.h"
+#include "base/bitop.h"
 #include "mm/pool.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/

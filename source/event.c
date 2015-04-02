@@ -22,9 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Event object implementation
- * @addtogroup  eds_event
+ * @addtogroup  ep_event
  *********************************************************************//** @{ */
-/**@defgroup    eds_event_impl Implementation
+/**@defgroup    ep_event_impl Implementation
  * @brief       Event object Implementation
  * @{ *//*--------------------------------------------------------------------*/
 
@@ -33,10 +33,10 @@
 #include <stddef.h>
 
 #include "port/core.h"
-#include "shared/component.h"
+#include "base/component.h"
 #include "mm/mem.h"
-#include "eds/event.h"
-#include "eds/epa.h"
+#include "ep/event.h"
+#include "ep/epa.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 

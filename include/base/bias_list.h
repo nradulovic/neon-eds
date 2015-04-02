@@ -26,8 +26,8 @@
  * @brief       Bias linked lists
  *********************************************************************//** @{ */
 
-#ifndef NLIB_BIAS_LIST_H_
-#define NLIB_BIAS_LIST_H_
+#ifndef NEON_BASE_BIAS_LIST_H_
+#define NEON_BASE_BIAS_LIST_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -36,7 +36,7 @@
 #include <stdint.h>
 
 #include "port/compiler.h"
-#include "shared/list.h"
+#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -186,5 +186,5 @@ void nbias_list_set_bias(
 /** @endcond *//** @} *//******************************************************
  * END of bias_list.h
  ******************************************************************************/
-#endif /* NLIB_BIAS_LIST_H_ */
+#endif /* NEON_BASE_BIAS_LIST_H_ */
 

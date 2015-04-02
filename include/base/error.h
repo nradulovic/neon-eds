@@ -29,8 +29,8 @@
  * @brief       Error enumeration
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_SHARED_ERROR_H_
-#define NEON_SHARED_ERROR_H_
+#ifndef NEON_BASE_ERROR_H_
+#define NEON_BASE_ERROR_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -100,4 +100,4 @@ extern const char * const g_error_text[];
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of error.h
  ******************************************************************************/
-#endif /* NEON_SHARED_ERROR_H_ */
+#endif /* NEON_BASE_ERROR_H_ */

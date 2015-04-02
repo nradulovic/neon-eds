@@ -30,15 +30,15 @@
  * @details     For more details see @ref errors_intro.
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_BASE_SHARED_DEBUG_H_
-#define NEON_BASE_SHARED_DEBUG_H_
+#ifndef NEON_BASE_DEBUG_H_
+#define NEON_BASE_DEBUG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
 
 #include "port/compiler.h"
-#include "shared/config.h"
+#include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -252,4 +252,4 @@ void hook_at_assert(
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of debug.h
  ******************************************************************************/
-#endif /* NEON_BASE_SHARED_DEBUG_H_ */
+#endif /* NEON_BASE_DEBUG_H_ */

@@ -22,9 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Scheduler implementation
- * @addtogroup  sched
+ * @addtogroup  sched_sched
  *********************************************************************//** @{ */
-/**@defgroup    sched_impl Implementation
+/**@defgroup    sched_sched_impl Implementation
  * @brief       Scheduler Implementation
  * @{ *//*--------------------------------------------------------------------*/
 
@@ -33,8 +33,8 @@
 #include <string.h>
 
 #include "port/core.h"
-#include "shared/component.h"
-#include "shared/bitop.h"
+#include "base/component.h"
+#include "base/bitop.h"
 #include "sched/prio_queue.h"
 #include "sched/sched.h"
 

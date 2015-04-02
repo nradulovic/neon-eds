@@ -30,9 +30,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "eds/epa.h"
-#include "eds/event.h"
-#include "eds/etimer.h"
+#include "ep/epa.h"
+#include "ep/event.h"
+#include "ep/etimer.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/

@@ -26,15 +26,15 @@
  * @brief       Scheduler
  *********************************************************************//** @{ */
 
-#ifndef NEON_EDS_SCHED_H_
-#define NEON_EDS_SCHED_H_
+#ifndef NEON_SCHED_SCHED_H_
+#define NEON_SCHED_SCHED_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "shared/config.h"
-#include "shared/bias_list.h"
-#include "shared/list.h"
+#include "base/config.h"
+#include "base/bias_list.h"
+#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -122,4 +122,4 @@ struct nthread * nsched_get_current(void);
 /** @endcond *//** @} *//******************************************************
  * END of sched.h
  ******************************************************************************/
-#endif /* NEON_EDS_SCHED_H_ */
+#endif /* NEON_SCHED_SCHED_H_ */

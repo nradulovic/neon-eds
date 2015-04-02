@@ -1,20 +1,20 @@
 /*
- * This file is part of Neon RT Kernel.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2014 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * Neon RT Kernel is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Neon RT Kernel is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with Neon RT Kernel.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -25,12 +25,9 @@
  * @defgroup    priority_queue Priority queue
  * @brief       Priority queue
  *********************************************************************//** @{ */
-/**@defgroup    priority_queue_intf Interface
- * @brief       Public interface
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NPRIO_QUEUE_H
-#define NPRIO_QUEUE_H
+#ifndef NEON_SCHED_PRIO_QUEUE_H
+#define NEON_SCHED_PRIO_QUEUE_H
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -38,9 +35,9 @@
 
 #include "port/compiler.h"
 #include "port/core.h"
-#include "shared/bitop.h"
-#include "shared/config.h"
-#include "shared/bias_list.h"
+#include "base/bitop.h"
+#include "base/config.h"
+#include "base/bias_list.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -330,7 +327,7 @@ bool nprio_queue_is_empty(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//** @} *//*********************************************
+/** @endcond *//** @} *//******************************************************
  * END of nprio_queue.h
  ******************************************************************************/
-#endif /* NPRIO_QUEUE_H */
+#endif /* NEON_SCHED_PRIO_QUEUE_H */

@@ -33,7 +33,6 @@
 
 #include <stdint.h>
 
-#include "shared/config.h"
 #include "arch/p_core.h"
 
 /*===============================================================  MACRO's  ==*/

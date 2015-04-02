@@ -28,8 +28,8 @@
  * @brief       Components configuration header
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_BASE_SHARED_CONFIG_H_
-#define NEON_BASE_SHARED_CONFIG_H_
+#ifndef NEON_BASE_CONFIG_H_
+#define NEON_BASE_CONFIG_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -264,4 +264,4 @@
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of config.h
  ******************************************************************************/
-#endif /* NEON_BASE_SHARED_CONFIG_H_ */
+#endif /* NEON_BASE_CONFIG_H_ */

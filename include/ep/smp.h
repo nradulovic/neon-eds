@@ -1,20 +1,20 @@
 /*
- * This file is part of eSolid.
+ * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2013 Nenad Radulovic
+ * Copyright (C) 2010 - 2015 Nenad Radulovic
  *
- * eSolid is free software: you can redistribute it and/or modify
+ * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * eSolid is distributed in the hope that it will be useful,
+ * Neon is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with eSolid.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Neon.  If not, see <http://www.gnu.org/licenses/>.
  *
  * web site:    http://github.com/nradulovic
  * e-mail  :    nenad.b.radulovic@gmail.com
@@ -25,12 +25,9 @@
  * @defgroup    eds_smp State Machine Processor
  * @brief       State Machine Processor
  *********************************************************************//** @{ */
-/**@defgroup    eds_smp_intf Interface
- * @brief       State Machine Processor API
- * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEDS_SMP_H_
-#define NEDS_SMP_H_
+#ifndef NEON_EP_SMP_H_
+#define NEON_EP_SMP_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -38,7 +35,7 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
-#include "shared/config.h"
+#include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -193,4 +190,4 @@ const struct nevent * nsmp_event(
 /** @endcond *//** @} *//******************************************************
  * END of smp.h
  ******************************************************************************/
-#endif /* NEDS_SMP_H_ */
+#endif /* NEON_EP_SMP_H_ */

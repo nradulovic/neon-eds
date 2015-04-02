@@ -31,10 +31,10 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "shared/component.h"
+#include "base/component.h"
 #include "mm/mem.h"
-#include "eds/epa.h"
-#include "eds/event.h"
+#include "ep/epa.h"
+#include "ep/event.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
