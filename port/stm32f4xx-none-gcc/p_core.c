@@ -184,10 +184,10 @@ static void timer_init(void)
     TIMER_CLK  |=  TIMER_CLK_BIT;                           /* Enable clock */
     dummy       =  TIMER_CLK;                               /* Dummy read to generate a small delay */
     (void)dummy;
-                                                            /* Setup timer */
+                                                            /* Setup timer at clock frequency 10kHz*/
     TIMER->CR1  = 1;
-    TIMER->ARR  = CONFIG_CORE_TIMER_EVENT_FREQ - 1;
-    TIMER->PSC  = CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ / 2 - 1;
+    TIMER->ARR  = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ);
+    TIMER->PSC  = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 10000u;
     TIMER->EGR  = TIM_EGR_UG;
                                                             /* Setup interrupt */
     NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
