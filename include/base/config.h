@@ -257,7 +257,7 @@
 # define CONFIG_ASSERT_INTERNAL         0
 #endif
 
-#if (CONFIG_CORE_TIMER_CLOCK_FREQ == 0)
+#if !defined(CONFIG_CORE_TIMER_CLOCK_FREQ)
 # error "NEON::base::port: Configuration option CONFIG_CORE_TIMER_CLOCK_FREQ is not set!"
 #endif
 
