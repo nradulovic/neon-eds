@@ -30,12 +30,17 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include "base/debug.h"
+#include "base/component.h"
 #include "ep/equeue.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
+
+static const NCOMPONENT_DEFINE("Event Queue", "Nenad Radulovic");
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
@@ -47,6 +52,9 @@ void nequeue_init(
 {
     ncpu_reg                    size;
 
+    NREQUIRE(NAPI_POINTER, queue != NULL);
+    NREQUIRE(NAPI_OBJECT,  queue->signature != NSIGNATURE_EQUEUE);
+
     size = (ncpu_reg)(define->size / sizeof(struct nevent * [1]));
 
 #if (CONFIG_REGISTRY == 1)
@@ -55,6 +63,7 @@ void nequeue_init(
 #else
     nqueue_init(&queue->queue, define->storage, size);
 #endif
+    NOBLIGATION(queue->signature = NSIGNATURE_EQUEUE);
 }
 
 
@@ -62,12 +71,16 @@ void nequeue_init(
 void nequeue_term(
     struct nequeue *            queue)
 {
+    NREQUIRE(NAPI_POINTER, queue != NULL);
+    NREQUIRE(NAPI_OBJECT,  queue->signature == NSIGNATURE_EQUEUE);
+
 #if (CONFIG_REGISTRY == 1)
     nqueue_term(&queue->queue);
     queue->min = 0;
 #else
     nqueue_term(&queue->queue);
 #endif
+    NOBLIGATION(queue->signature = ~NSIGNATURE_EQUEUE);
 }
 
 

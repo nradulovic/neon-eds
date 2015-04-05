@@ -64,6 +64,9 @@ struct nequeue
 #if (CONFIG_REGISTRY == 1)
     ncpu_reg                    min;
 #endif
+#if (CONFIG_API_VALIDATION == 1)
+    unsigned int                signature;
+#endif
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
