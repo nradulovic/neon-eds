@@ -22,9 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Event Processing Agent implementation
- * @addtogroup  eds_epa
+ * @addtogroup  ep_epa
  *********************************************************************//** @{ */
-/**@defgroup    eds_epa_impl Implementation
+/**@defgroup    ep_epa_impl Implementation
  * @brief       Event Processing Agent Implementation
  * @{ *//*--------------------------------------------------------------------*/
 
@@ -55,7 +55,7 @@ static void (* g_idle)(void) = idle_handler;
 
 static void idle_handler(void)
 {
-
+    ncore_idle();
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
@@ -71,29 +71,69 @@ void neds_set_idle(
 
 
 
+void * nepa_new_storage(size_t size)
+{
+    struct nepa *               epa;
+    void *                      storage;
+
+    epa = nepa_get_current();
+
+    NASSERT_INTERNAL(NAPI_OBJECT, N_IS_MEM_OBJECT(epa->mem));
+
+    storage = nmem_zalloc(epa->mem, size);
+
+    return (storage);
+}
+
+
+
+void nepa_delete_storage(void * storage)
+{
+    struct nepa *               epa;
+
+    epa = nepa_get_current();
+
+    NASSERT_INTERNAL(NAPI_OBJECT, N_IS_MEM_OBJECT(epa->mem));
+
+    nmem_free(epa->mem, storage);
+}
+
+
+
 void neds_run(void)
 {
-    struct ncore_lock            lock;
+    struct ncore_lock           lock;
     struct nthread *            thread;
 
     ncore_lock_enter(&lock);
 
     for (;;) {
+                                                            /* Fetch a new thread
+                                                             * ready for execution.
+                                                             */
         while ((thread = nsched_thread_fetch_i())) {
             struct nepa *           epa;
             const struct nevent *   event;
             naction                 action;
 
             nsched_thread_remove_i(thread);
-            epa   = THREAD_TO_EPA(thread);
+                                                            /* Get EPA pointer */
+            epa   = NTHREAD_TO_EPA(thread);
+                                                            /* Get Event pointer */
             event = nequeue_get(&epa->working_queue);
             ncore_lock_exit(&lock);
+                                                            /* Dispatch the state
+                                                             * machine
+                                                             */
             action = nsm_dispatch(&epa->sm, event);
             ncore_lock_enter(&lock);
 
-            if ((action == NACTION_DEFFERED) &&
-                !nequeue_is_full(&epa->deffered_queue)) {
-                nequeue_put_fifo(&epa->deffered_queue, event);
+            if ((action == NACTION_DEFERRED) &&
+                !nequeue_is_full(&epa->deferred_queue)) {
+                                                            /* Put the event back
+                                                             * in deferred queue
+                                                             */
+                nequeue_put_fifo(&epa->deferred_queue, event);
             } else {
                 nevent_destroy_i(event);
             }
@@ -111,19 +151,26 @@ void nepa_init(
     struct nepa *               epa,
     const struct nepa_define *  define)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
+
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature != NSIGNATURE_EPA);
+    NREQUIRE(NAPI_POINTER, define != NULL);
 
     epa->mem = NULL;
     nequeue_init(&epa->working_queue, &define->working_queue);
-    nequeue_put_fifo(&epa->working_queue, nsmp_event(NSMP_INIT));
-    nequeue_init(&epa->deffered_queue, &define->deffered_queue);
+    nequeue_put_fifo(&epa->working_queue, nsm_event(NSM_INIT));
+
+    if (define->deffered_queue.size) {
+        nequeue_init(&epa->deferred_queue, &define->deffered_queue);
+    }
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
     ncore_lock_enter(&sys_lock);
     nsched_thread_insert_i(&epa->thread);
     ncore_lock_exit(&sys_lock);
 
-    NOBLIGATION(epa->signature = EPA_SIGNATURE);
+    NOBLIGATION(epa->signature = NSIGNATURE_EPA);
 }
 
 
@@ -131,7 +178,10 @@ void nepa_init(
 void nepa_term(
     struct nepa *               epa)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
+
+    NREQUIRE(NAPI_POINTER, epa != NULL);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
 
     ncore_lock_enter(&sys_lock);
 
@@ -142,18 +192,22 @@ void nepa_term(
         nevent_destroy_i(event);
     }
 
-    while (!nequeue_is_empty(&epa->deffered_queue)) {
+    while (!nequeue_is_empty(&epa->deferred_queue)) {
         const struct nevent *   event;
 
-        event = nequeue_get(&epa->deffered_queue);
+        event = nequeue_get(&epa->deferred_queue);
         nevent_destroy_i(event);
     }
     nsched_thread_term(&epa->thread);
     nsm_term(&epa->sm);
-    nequeue_term(&epa->deffered_queue);
+    nequeue_term(&epa->deferred_queue);
     nequeue_term(&epa->working_queue);
     ncore_lock_exit(&sys_lock);
+
+    NOBLIGATION(epa->signature = ~NSIGNATURE_EPA);
 }
+
+
 
 struct nepa * nepa_create(
     const struct nepa_define *  define,
@@ -166,24 +220,27 @@ struct nepa * nepa_create(
 
     NREQUIRE(NAPI_POINTER, define != NULL);
 
-    epa = nmem_alloc(mem, sizeof(struct nepa));
+    epa = nmem_zalloc(mem, sizeof(struct nepa));
 
     if (!epa) {
         goto ERROR_ALLOC_EPA;
     }
-
-    l_working_define.storage = nmem_alloc(mem, define->working_queue.size);
+    l_working_define.storage = NULL;
     l_working_define.size    = define->working_queue.size;
+                                                            /* Check if size != 0 in order to avoid
+                                                             * calling malloc() with 0 bytes */
+    if (l_working_define.size) {
+        l_working_define.storage = nmem_alloc(mem, l_working_define.size);
 
-    if (!l_working_define.storage) {
-        goto ERROR_ALLOC_WORKING_FIFO_BUFF;
+        if (!l_working_define.storage) {
+            goto ERROR_ALLOC_WORKING_FIFO_BUFF;
+        }
     }
     l_deffered_define.storage = NULL;
-    l_deffered_define.size    = 0;
+    l_deffered_define.size    = define->deffered_queue.size;
 
-    if (define->deffered_queue.size) {
-        l_deffered_define.storage = nmem_alloc(mem, define->deffered_queue.size);
-        l_deffered_define.size    = define->deffered_queue.size;
+    if (l_deffered_define.size) {
+        l_deffered_define.storage = nmem_alloc(mem, l_deffered_define.size);
 
         if (!l_deffered_define.storage) {
             goto ERROR_ALLOC_DEFFERED_FIFO_BUFF;
@@ -191,8 +248,8 @@ struct nepa * nepa_create(
     }
     l_define.sm             = define->sm;
     l_define.thread         = define->thread;
-    l_define.working_queue   = l_working_define;
-    l_define.deffered_queue  = l_deffered_define;
+    l_define.working_queue  = l_working_define;
+    l_define.deffered_queue = l_deffered_define;
     nepa_init(epa, &l_define);
     epa->mem = mem;
 
@@ -212,13 +269,12 @@ void nepa_destroy(
     struct nepa *               epa)
 {
     NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
-    NOBLIGATION(epa->signature = ~EPA_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
 
     nepa_term(epa);
 
-    if (nequeue_storage(&epa->deffered_queue)) {
-        nmem_free(epa->mem, nequeue_storage(&epa->deffered_queue));
+    if (nequeue_storage(&epa->deferred_queue)) {
+        nmem_free(epa->mem, nequeue_storage(&epa->deferred_queue));
     }
     nmem_free(epa->mem, nequeue_storage(&epa->working_queue));
     nmem_free(epa->mem, epa);
@@ -231,7 +287,7 @@ nerror nepa_send_event_i(
     struct nevent *             event)
 {
     NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
 
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
@@ -251,6 +307,8 @@ nerror nepa_send_event_i(
     return (NERROR_NO_REFERENCE);
 }
 
+
+
 nerror nepa_send_event(
     struct nepa *               epa,
     struct nevent *             event)
@@ -266,23 +324,20 @@ nerror nepa_send_event(
 }
 
 
+
 nerror nepa_send_event_ahead_i(
     struct nepa *               epa,
     struct nevent *             event)
 {
     NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == EPA_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
 
-    if (event->ref < NEVENT_REF_LIMIT) {
+    if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
 
-        if (nequeue_is_empty(&epa->working_queue) == true) {
+        if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_lifo(&epa->working_queue, event);
             nsched_thread_insert_i(&epa->thread);
-
-            return (NERROR_NONE);
-        } else if (!nequeue_is_full(&epa->working_queue) == false) {
-            nequeue_put_lifo(&epa->working_queue, event);
 
             return (NERROR_NONE);
         } else {
@@ -295,12 +350,14 @@ nerror nepa_send_event_ahead_i(
     return (NERROR_NO_REFERENCE);
 }
 
+
+
 nerror nepa_send_event_ahead(
     struct nepa *               epa,
     struct nevent *             event)
 {
     nerror                      error;
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
 
     ncore_lock_enter(&sys_lock);
     error = nepa_send_event_ahead_i(epa, event);
