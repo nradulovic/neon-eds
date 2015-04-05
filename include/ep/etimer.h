@@ -33,6 +33,7 @@
 
 #include <stdbool.h>
 
+#include "base/config.h"
 #include "timer/timer.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -50,6 +51,9 @@ struct netimer
     struct ntimer               timer;
     struct nepa *               client;
     uint16_t                    event_id;
+#if (CONFIG_API_VALIDATION == 1)
+    unsigned int                signature;
+#endif
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
