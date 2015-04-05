@@ -39,22 +39,14 @@
 
 /*=========================================================  LOCAL DEFINES  ==*/
 
-/**
- * @brief       State machine signature
- * @details     This signature is used only during the debugging process
- */
-#define SM_SIGNATURE                    ((unsigned int)0xdaafu)
-
 #define NSMP_EVENT(event)               &g_smp_events[(event)]
-
-#define CONFIG_HSM_PATH_DEPTH           8
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 struct hsm_path
 {
-    nstate *                    buff[CONFIG_HSM_PATH_DEPTH];
+    nstate *                    buff[CONFIG_SMP_HSM_PATH_DEPTH];
     uint_fast8_t                index;
 };
 
@@ -97,7 +89,7 @@ static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
 static const struct nevent g_smp_events[4] =
 {
     {
-        NSMP_SUPER,
+        NSM_SUPER,
         0,
         0,
         NULL,
@@ -108,10 +100,10 @@ static const struct nevent g_smp_events[4] =
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NEVENT_SIGNATURE
+        NSIGNATURE_EVENT
 #endif
     }, {
-        NSMP_ENTRY,
+        NSM_ENTRY,
         0,
         0,
         NULL,
@@ -122,10 +114,10 @@ static const struct nevent g_smp_events[4] =
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NEVENT_SIGNATURE
+        NSIGNATURE_EVENT
 #endif
     }, {
-        NSMP_EXIT,
+        NSM_EXIT,
         0,
         0,
         NULL,
@@ -136,10 +128,10 @@ static const struct nevent g_smp_events[4] =
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NEVENT_SIGNATURE
+        NSIGNATURE_EVENT
 #endif
     }, {
-        NSMP_INIT,
+        NSM_INIT,
         0,
         0,
         NULL,
@@ -150,7 +142,7 @@ static const struct nevent g_smp_events[4] =
         sizeof(struct nevent),
 #endif
 #if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NEVENT_SIGNATURE
+        NSIGNATURE_EVENT
 #endif
     }
 };
@@ -164,11 +156,11 @@ static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
 #if (CONFIG_API_VALIDATION == 1)
     naction                     ret;
 
-    ret = state(sm, NSMP_EVENT(NSMP_SUPER));
+    ret = state(sm, NSMP_EVENT(NSM_SUPER));
 
     NREQUIRE(NAPI_USAGE, ret == NACTION_SUPER);
 #else
-    state(sm, NSMP_EVENT(NSMP_SUPER));
+    state(sm, NSMP_EVENT(NSM_SUPER));
 #endif
 
     return (sm->state);
@@ -267,12 +259,12 @@ static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
 #if (CONFIG_API_VALIDATION == 1)
         naction                 ret;
 
-        ret = entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
+        ret = entry->buff[index](sm, NSMP_EVENT(NSM_ENTRY));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
                              (ret == NACTION_HANDLED) ||
                              (ret == NACTION_SUPER));
 #else
-        (void)entry->buff[index](sm, NSMP_EVENT(NSMP_ENTRY));
+        (void)entry->buff[index](sm, NSMP_EVENT(NSM_ENTRY));
 #endif
     }
 }
@@ -287,12 +279,12 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 #if (CONFIG_API_VALIDATION == 1)
         naction                 ret;
 
-        ret = exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
+        ret = exit->buff[count](sm, NSMP_EVENT(NSM_EXIT));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
                              (ret == NACTION_HANDLED) ||
                              (ret == NACTION_SUPER));
 #else
-        (void)exit->buff[count](sm, NSMP_EVENT(NSMP_EXIT));
+        (void)exit->buff[count](sm, NSMP_EVENT(NSM_EXIT));
 #endif
     }
 }
@@ -319,7 +311,7 @@ static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
         hsm_build_path(sm, &entry, &exit);
         hsm_path_exit(sm, &exit);
         hsm_path_enter(sm, &entry);
-        ret = entry.buff[0](sm, NSMP_EVENT(NSMP_INIT));
+        ret = entry.buff[0](sm, NSMP_EVENT(NSM_INIT));
         exit.buff[0]  = entry.buff[0];
         current_state = entry.buff[0];
         exit.index = 1u;
@@ -340,21 +332,21 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
 
     while ((ret = current_state(sm, event)) == NACTION_TRANSIT_TO) {
 #if (CONFIG_API_VALIDATION == 1)
-        ret = current_state(sm, NSMP_EVENT(NSMP_EXIT));
+        ret = current_state(sm, NSMP_EVENT(NSM_EXIT));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
                              (ret == NACTION_HANDLED));
 #else
-        (void)current_state(sm, NSMP_EVENT(NSMP_EXIT));
+        (void)current_state(sm, NSMP_EVENT(NSM_EXIT));
 #endif
         current_state = sm->state;
 #if (CONFIG_API_VALIDATION == 1)
-        ret = current_state(sm, NSMP_EVENT(NSMP_ENTRY));
+        ret = current_state(sm, NSMP_EVENT(NSM_ENTRY));
         NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
                              (ret == NACTION_HANDLED));
 #else
-        (void)current_state(sm, NSMP_EVENT(NSMP_ENTRY));
+        (void)current_state(sm, NSMP_EVENT(NSM_ENTRY));
 #endif
-        event = NSMP_EVENT(NSMP_INIT);
+        event = NSMP_EVENT(NSM_INIT);
     }
     NREQUIRE(NAPI_USAGE, ret != NACTION_SUPER);
     sm->state = current_state;
@@ -369,7 +361,7 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
 void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
 {
     NREQUIRE(NAPI_POINTER, sm                    != NULL);
-    NREQUIRE(NAPI_POINTER, sm->signature         != SM_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, sm->signature         != NSIGNATURE_SM);
     NREQUIRE(NAPI_POINTER, sm_define             != NULL);
     NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
     NREQUIRE(NAPI_USAGE, (sm_define->type == NSM_TYPE_FSM) ||
@@ -383,7 +375,7 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     } else {
         sm->vf_dispatch = &fsm_dispatch;
     }
-    NOBLIGATION(sm->signature = SM_SIGNATURE);
+    NOBLIGATION(sm->signature = NSIGNATURE_SM);
 }
 
 
@@ -391,11 +383,12 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
 void nsm_term(struct nsm * sm)
 {
     NREQUIRE(NAPI_POINTER, sm != NULL);
-    NREQUIRE(NAPI_OBJECT,  sm->signature == SM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  sm->signature == NSIGNATURE_SM);
+
     sm->vf_dispatch = NULL;
-    sm->state    = NULL;
-    sm->wspace   = NULL;
-    NOBLIGATION(sm->signature = ~SM_SIGNATURE);
+    sm->state       = NULL;
+    sm->wspace      = NULL;
+    NOBLIGATION(sm->signature = ~NSIGNATURE_SM);
 }
 
 
@@ -410,7 +403,7 @@ naction ntop_state(struct nsm * sm, const struct nevent * event)
 
 
 
-const struct nevent * nsmp_event(enum nsmp_events event_id)
+const struct nevent * nsm_event(enum nsm_event event_id)
 {
     return (&g_smp_events[event_id]);
 }

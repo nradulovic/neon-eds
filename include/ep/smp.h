@@ -38,6 +38,26 @@
 #include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
+
+#define nsm_wspace(sm)                  ((sm)->wspace)
+
+#define nsm_set_wspace(sm, wspace_ptr)  (sm)->wspace = (wspace_ptr)
+
+#define naction_super(sm, state_ptr)                                            \
+    ((sm)->state = (state_ptr), NACTION_SUPER)
+
+#define naction_transit_to(sm, state_ptr)                                       \
+    ((sm)->state = (state_ptr), NACTION_TRANSIT_TO)
+
+#define naction_handled()                                                       \
+    (NACTION_HANDLED)
+
+#define naction_ignored()                                                       \
+    (NACTION_IGNORED)
+
+#define naction_deferred()                                                      \
+    (NACTION_DEFERRED)
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -48,34 +68,44 @@ extern "C" {
 struct nevent;
 struct nsm;
 
-/**@brief       State machine processor event identifications
+/**@brief       State machine event identifications
  * @api
  */
-enum nsmp_events
+enum nsm_event
 {
-    NSMP_SUPER          = 0u,           /**<@brief Get the state super state  */
-    NSMP_ENTRY          = 1u,           /**<@brief Process state entry        */
-    NSMP_EXIT           = 2u,           /**<@brief Process state exit         */
-    NSMP_INIT           = 3u,           /**<@brief Process state init         */
+    NSM_SUPER           = 0u,           /**<@brief Get the state super state  */
+    NSM_ENTRY           = 1u,           /**<@brief Process state entry        */
+    NSM_EXIT            = 2u,           /**<@brief Process state exit         */
+    NSM_INIT            = 3u,           /**<@brief Process state init         */
     NEVENT_USER_ID      = 15u
 };
 
-enum naction
-{
-    NACTION_SUPER       = 0,
-    NACTION_TRANSIT_TO  = 1,
-    NACTION_HANDLED     = 2,
-    NACTION_IGNORED     = 3,
-    NACTION_DEFFERED    = 4
-};
-
+/**@brief       State machine types
+ */
 enum nsm_type
 {
-    NSM_TYPE_HSM        = 0,
-    NSM_TYPE_FSM        = 1
+    NSM_TYPE_HSM        = 0,            /**<@brief Hierarchical State Machine */
+    NSM_TYPE_FSM        = 1             /**<@brief Finite State Machine       */
 };
 
-typedef uint_fast8_t naction;
+/**@brief       Returned actions of the state machine
+ * @note        Do not use this enumerator directly but use the appropriate
+ *              naction_*() function.
+ * @napi
+ */
+enum naction
+{
+    NACTION_SUPER       = 0,            /**<@brief Returns super state        */
+    NACTION_TRANSIT_TO  = 1,            /**<@brief Transit to a state         */
+    NACTION_HANDLED     = 2,            /**<@brief Event is handled           */
+    NACTION_IGNORED     = 3,            /**<@brief Event is ignored           */
+    NACTION_DEFERRED    = 4             /**<@brief Defer this event           */
+};
+
+/**@brief       State machine action type
+ * @api
+ */
+typedef enum naction naction;
 
 /**@brief       State function prototype
  * @param       sm
@@ -139,47 +169,8 @@ naction ntop_state(
 
 
 
-PORT_C_INLINE
-naction naction_super(
-    struct nsm *                sm,
-    nstate *                    state)
-{
-    sm->state = state;
-
-    return (NACTION_SUPER);
-}
-
-
-
-PORT_C_INLINE
-naction naction_transit_to(
-    struct nsm *                sm,
-    nstate *                    state)
-{
-    sm->state = state;
-
-    return (NACTION_TRANSIT_TO);
-}
-
-
-
-PORT_C_INLINE
-naction naction_handled(void)
-{
-    return (NACTION_HANDLED);
-}
-
-
-
-PORT_C_INLINE
-naction naction_ignored(void)
-{
-    return (NACTION_HANDLED);
-}
-
-
-const struct nevent * nsmp_event(
-    enum nsmp_events            event_id);
+const struct nevent * nsm_event(
+    enum nsm_event            event_id);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
