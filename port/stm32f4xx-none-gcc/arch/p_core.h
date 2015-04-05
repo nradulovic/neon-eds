@@ -60,6 +60,10 @@
 #define NCORE_LOCK_TO_CODE(level)                                               \
     ((255 - (level)) >> NCORE_LOCK_LEVEL_BITS)
 
+#define ncore_os_ready(thread)
+
+#define ncore_os_block(thread)
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {

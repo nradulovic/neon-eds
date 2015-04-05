@@ -224,6 +224,32 @@ static void timer_term(void)
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
+void ncore_init(void)
+{
+    cpu_init();
+    lock_init();
+    timer_init();
+}
+
+
+
+void ncore_term(void)
+{
+    timer_term();
+    lock_term();
+    cpu_term();
+}
+
+
+
+void ncore_idle(void)
+{
+    __asm__ __volatile__(
+        "   wfe                                         \n");
+}
+
+
+
 /**@brief       Enable the system timer
  */
 void ncore_timer_enable(void)
@@ -261,24 +287,6 @@ void ncore_timer_disable(void)
     														/* Disable timer clock */
     TIMER_CLK   &= ~TIMER_CLK_BIT;
 #endif
-}
-
-
-
-void ncore_init(void)
-{
-    cpu_init();
-    lock_init();
-    timer_init();
-}
-
-
-
-void ncore_term(void)
-{
-    timer_term();
-    lock_term();
-    cpu_term();
 }
 
 
