@@ -39,10 +39,6 @@
 #include "ep/epa.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-#define EVENT_STORAGE_HEAP              0
-#define EVENT_STORAGE_POOL              1
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 struct event_storage
@@ -53,31 +49,35 @@ struct event_storage
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-/**@brief       Initialize new event
+
+/**@brief       Initialise new event
  * @param       size
  *              The size of event
  * @param       id
  *              Event identification
  * @param       event
- *              Event to initialize
- * @inline
+ *              Event to initialise
  */
 static void event_init(
     struct nevent *             event,
     size_t                      size,
     uint16_t                    id);
 
+
+
 /**@brief       Terminate an event
  * @param       event
  *              Event to terminate
- * @inline
  */
 static void event_term(
     struct nevent *             event);
 
 
+
 static struct nevent * event_create_i(
     size_t                      size);
+
+
 
 static void event_destroy_i(
     struct nevent *             event);
@@ -97,9 +97,12 @@ static void event_init(
     size_t                      size,
     uint16_t                    id)
 {
-    NREQUIRE(NAPI_OBJECT, event->signature != NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, event->signature != NSIGNATURE_EVENT);
+    /* NOTE:
+     * Size parameter is already checked by event_create_i()
+     */
 
-    event->id        = id;
+    event->id       = id;
     event->attrib   = NEVENT_ATTR_DYNAMIC;
     event->ref      = 0u;
 #if (CONFIG_EVENT_PRODUCER == 1)
@@ -110,17 +113,19 @@ static void event_init(
 #else
     (void)size;
 #endif
-    NOBLIGATION(event->signature = NEVENT_SIGNATURE);
+    NOBLIGATION(event->signature = NSIGNATURE_EVENT);
 }
+
+
 
 static void event_term(
     struct nevent *    event) {
 
-    NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
-    NOBLIGATION(event->signature = ~NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NOBLIGATION(event->signature = ~NSIGNATURE_EVENT);
 
 #if (CONFIG_API_VALIDATION == 0)
-    (void)event;
+    (void)event;                                            /* Remove compiler warning */
 #endif
 }
 
@@ -133,6 +138,7 @@ static struct nevent * event_create_i(
 
     NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
 
+#if (CONFIG_EVENT_STORAGE_NPOOLS != 1)
     for (cnt = 0u; cnt < g_event_storage.pools; cnt++) {
         struct nmem *       mem;
 
@@ -152,6 +158,19 @@ static struct nevent * event_create_i(
     }
     
     return (NULL);
+#else
+    struct nmem *               mem;
+
+    mem = g_event_storage.mem[0];
+
+    event = nmem_alloc_i(mem, size);
+
+    if (event) {
+        event->mem = mem;
+    }
+
+    return (event);
+#endif
 }
 
 
@@ -170,11 +189,12 @@ static void event_destroy_i(
 void nevent_register_mem(
     struct nmem *               mem)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
     uint_fast8_t                cnt;
     size_t                      size;
 
-    NREQUIRE(NAPI_POINTER, mem != NULL);
+    NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
+    NREQUIRE(NAPI_USAGE, g_event_storage.pools < CONFIG_EVENT_STORAGE_NPOOLS);
 
     ncore_lock_enter(&sys_lock);
     NENSURE_INTERNAL(size = nmem_get_size_i(mem));
@@ -197,8 +217,11 @@ void nevent_register_mem(
 void nevent_unregister_mem(
     struct nmem *               mem)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
     uint_fast8_t                cnt;
+
+    NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
+    NREQUIRE(NAPI_USAGE, g_event_storage.pools != 0);
 
     ncore_lock_enter(&sys_lock);
     cnt = g_event_storage.pools;
@@ -206,9 +229,9 @@ void nevent_unregister_mem(
     while ((0u < cnt) && (mem != g_event_storage.mem[cnt])) {
         cnt--;
     }
-    g_event_storage.pools--;
-
     NREQUIRE(NAPI_RANGE, mem == g_event_storage.mem[cnt]);
+
+    g_event_storage.pools--;
 
     while (cnt < g_event_storage.pools) {
         g_event_storage.mem[cnt] = g_event_storage.mem[cnt + 1];
@@ -262,7 +285,7 @@ struct nevent * nevent_create_i(
 void nevent_destroy(
     const struct nevent *       event)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
 
     ncore_lock_enter(&sys_lock);
     nevent_destroy_i(event);
@@ -274,8 +297,7 @@ void nevent_destroy(
 void nevent_destroy_i(
     const struct nevent *       event)
 {
-    NREQUIRE(NAPI_POINTER, event);
-    NREQUIRE(NAPI_OBJECT, event->signature == NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
     nevent_ref_down(event);
 
@@ -290,8 +312,7 @@ void nevent_destroy_i(
 void nevent_lock(
     const struct nevent *       event)
 {
-    NREQUIRE(NAPI_POINTER, event != NULL);
-    NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
     if (event->attrib) {
         ((struct nevent *)event)->attrib = NEVENT_ATTR_RESERVED;
@@ -303,8 +324,7 @@ void nevent_lock(
 void nevent_unlock(
     const struct nevent *       event)
 {
-    NREQUIRE(NAPI_POINTER, event != NULL);
-    NREQUIRE(NAPI_OBJECT,  event->signature == NEVENT_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
     if (event->attrib) {
         struct nevent * event_ = (struct nevent *)event;
