@@ -34,7 +34,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 /*
- * Include the custom configuratin file
+ * Include the custom configuration file
  */
 #include "neon_app_config.h"
 
@@ -209,6 +209,10 @@
 
 #if !defined(CONFIG_SMP_HSM)
 # define CONFIG_SMP_HSM                 1
+#endif
+
+#if !defined(CONFIG_SMP_HSM_PATH_DEPTH)
+#define CONFIG_SMP_HSM_PATH_DEPTH       8
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**

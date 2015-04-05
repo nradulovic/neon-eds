@@ -33,7 +33,7 @@
 #include <pthread.h>
 
 #include "port/compiler.h"
-#include "shared/config.h"
+#include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -87,6 +87,7 @@ struct ncore_lock
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
+extern pthread_mutex_t          g_idle_lock;
 extern pthread_mutex_t          g_global_lock;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -142,6 +143,24 @@ void ncore_sat_decrement(
     if (*value != 0u) {
         (*value)--;
     }
+}
+
+
+
+PORT_C_INLINE
+void ncore_os_ready(void * thread)
+{
+    (void)thread;
+
+    pthread_mutex_unlock(&g_idle_lock);
+}
+
+
+
+PORT_C_INLINE
+void ncore_os_block(void * thread)
+{
+    (void)thread;
 }
 
 

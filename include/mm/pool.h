@@ -26,8 +26,8 @@
  * @brief       Pool Memory management
  *********************************************************************//** @{ */
 
-#ifndef NEON_MEM_POOL_H_
-#define NEON_MEM_POOL_H_
+#ifndef NEON_MM_POOL_H_
+#define NEON_MM_POOL_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -151,4 +151,4 @@ void npool_free(
 /** @endcond *//** @} *//******************************************************
  * END of pool.h
  ******************************************************************************/
-#endif /* NEON_MEM_POOL_H_ */
+#endif /* NEON_MM_POOL_H_ */

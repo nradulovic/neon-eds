@@ -22,7 +22,7 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Event Processing Agent header
- * @defgroup    eds_epa Event Processing Agent
+ * @defgroup    ep_epa Event Processing Agent
  * @brief       Event Processing Agent
  *********************************************************************//** @{ */
 
@@ -32,7 +32,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/compiler.h"
-#include "base/debug.h"
 #include "base/error.h"
 #include "base/config.h"
 #include "sched/sched.h"
@@ -41,13 +40,17 @@
 
 /*===============================================================  MACRO's  ==*/
 
-/**@brief       EPA structure signature.
- * @details     The signature is used to confirm that a structure passed to a
- *              function is indeed a nthread thread structure.
+/**@brief       Validate the pointer to Event Processing Agent object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
  */
-#define EPA_SIGNATURE                       ((unsigned int)0xfeedbeeful)
+#define N_IS_EPA_OBJECT(epa_obj)                                                \
+    (((epa_obj) != NULL) && ((epa_obj)->signature == NSIGNATURE_EPA))
 
-#define THREAD_TO_EPA(thread_ptr)                                               \
+/**@brief       Returns EPA address from pointer to thread
+ */
+#define NTHREAD_TO_EPA(thread_ptr)                                              \
     CONTAINER_OF(thread_ptr, struct nepa, thread)
 
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -73,10 +76,10 @@ typedef struct nepa_define nepa_define;
 struct nepa
 {
     struct nmem *               mem;
-    struct nthread              thread;         /**<@brief Priority queue     */
+    struct nthread              thread;  /**<@brief Thread                    */
     struct nsm                  sm;
     struct nequeue              working_queue;
-    struct nequeue              deffered_queue;
+    struct nequeue              deferred_queue;
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     unsigned int                signature;
 #endif
@@ -103,8 +106,16 @@ void neds_set_idle(
 PORT_C_INLINE
 struct nepa * nepa_get_current(void)
 {
-    return (THREAD_TO_EPA(nsched_get_current()));
+    return (NTHREAD_TO_EPA(nsched_get_current()));
 }
+
+
+
+void * nepa_new_storage(size_t size);
+
+
+
+void nepa_delete_storage(void * storage);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management

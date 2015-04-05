@@ -36,11 +36,6 @@
 #include "mm/pool.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Signature for pool_mem memory manager
- */
-#define POOL_MEM_SIGNATURE              ((unsigned int)0xdeadbee2u)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Pool allocator header structure
@@ -75,7 +70,7 @@ static void * pool_alloc_i(
     size_t                      size)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == POOL_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_POOL);
 
     (void)size;
 
@@ -100,7 +95,7 @@ static void pool_free_i(
     void *                      mem)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == POOL_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_POOL);
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     struct pool_block *         block;
@@ -126,7 +121,7 @@ void npool_init(
     struct pool_block *         block;
 
     NREQUIRE(NAPI_POINTER, pool != NULL);
-    NREQUIRE(NAPI_OBJECT,  pool->mem_class.signature != POOL_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  pool->mem_class.signature != NSIGNATURE_POOL);
     NREQUIRE(NAPI_POINTER, array != NULL);
     NREQUIRE(NAPI_RANGE,   block_size != 0u);
     NREQUIRE(NAPI_RANGE,   block_size <= array_size);
@@ -146,7 +141,7 @@ void npool_init(
         block = block->next;
     }
     block->next = NULL;
-    NOBLIGATION(pool->mem_class.signature = POOL_MEM_SIGNATURE);
+    NOBLIGATION(pool->mem_class.signature = NSIGNATURE_POOL);
 }
 
 

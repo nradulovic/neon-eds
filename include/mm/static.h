@@ -26,8 +26,8 @@
  * @brief       Static Memory Management
  *********************************************************************//** @{ */
 
-#ifndef NEON_MEM_STATIC_H_
-#define NEON_MEM_STATIC_H_
+#ifndef NEON_MM_STATIC_H_
+#define NEON_MM_STATIC_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -44,7 +44,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Static memory instance handle structure
+/**@brief       Static memory object structure
  * @details     This structure holds information about static memory instance.
  * @api
  */
@@ -63,8 +63,8 @@ typedef struct nstatic nstatic;
 
 
 /**@brief       Initializes static memory instance
- * @param       static_mem
- *              Pointer to handle type variable, see @ref nstatic.
+ * @param       static_obj
+ *              Pointer to static object
  * @param       storage
  *              Storage memory reserved for static memory manager.
  * @param       size
@@ -74,36 +74,36 @@ typedef struct nstatic nstatic;
  * @api
  */
 void nstatic_init(
-    struct nstatic *            static_mem,
+    struct nstatic *            static_obj,
     void *                      storage,
     size_t                      size);
 
 
 
 /**@brief       Allocates static memory of get_size @c get_size
- * @param       static_mem
- *              Pointer to static memory instance, see @ref nstatic.
+ * @param       static_obj
+ *              Pointer to static object
  * @param       size
  *              The size of requested memory in bytes.
  * @return      Pointer to free memory of requested get_size.
  * @iclass
  */
 void * nstatic_alloc_i(
-    struct nstatic *            static_mem,
+    struct nstatic *            static_obj,
     size_t                      size);
 
 
 
 /**@brief       Allocates static memory of get_size @c get_size
- * @param       static_mem
- *              Pointer to static memory instance, see @ref nstatic.
+ * @param       static_obj
+ *              Pointer to static object
  * @param       size
  *              The size of requested memory in bytes.
  * @return      Pointer to free memory of requested get_size.
  * @api
  */
 void * nstatic_alloc(
-    struct nstatic *            static_mem,
+    struct nstatic *            static_obj,
     size_t                      size);
 
 /*--------------------------------------------------------  C++ extern end  --*/
@@ -115,4 +115,4 @@ void * nstatic_alloc(
 /** @endcond *//** @} *//******************************************************
  * END of static.h
  ******************************************************************************/
-#endif /* NEON_MEM_STATIC_H_ */
+#endif /* NEON_MM_STATIC_H_ */

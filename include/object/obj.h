@@ -21,96 +21,73 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Heap Memory management
- * @defgroup    mem_heap Heap Memory management
- * @brief       Heap Memory management
+ * @brief       Object management header
+ * @defgroup    object_obj Object management
+ * @brief       Object management
  *********************************************************************//** @{ */
 
-#ifndef NEON_MM_HEAP_H_
-#define NEON_MM_HEAP_H_
+#ifndef NEON_OBJECT_OBJ_H_
+#define NEON_OBJECT_OBJ_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stddef.h>
 
-#include "mm/mem.h"
+#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
-/*------------------------------------------------------  C++ extern begin  --*/
+/*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Heap memory instance structure
- * @details     This structure holds information about dynamic memory instance.
- * @see         nheap_init()
- * @api
- */
-struct nheap
+struct nmem;
+struct nobj_component;
+
+struct nobj_class
 {
-    struct nmem                 mem_class;
+    size_t                      size;
+    struct nobj_component *  (* ctor)(struct nobj_component * component, struct nmem * mem, void * arg);
+    struct nobj_component *  (* dtor)(struct nobj_component * component, struct nmem * mem);
 };
 
-/**@brief       Heap memory instance type
- * @api
- */
-typedef struct nheap nheap;
+struct nobj_component
+{
+    const struct nobj_class *   class;
+    struct ndlist               list;
+};
+
+struct nobj_object
+{
+    struct nobj_component       component;
+    struct nmem *               mem;
+};
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-/**@brief       Initialize heap structure instance
- * @param       heap
- *              Pointer to heap structure instance, see @ref nheap.
- * @param       storage
- *              Pointer to reserved memory space. Usually this will be an array
- *              of bytes which are statically alloacated.
- * @param       Size of storage reserved memory in bytes.
- * @details     This function must be called before @c heap structure can be
- *              used by other functions.
- * @api
- */
-void nheap_init(
-    struct nheap *              heap,
-    void *                      storage,
-    size_t                      size);
+struct nobj_object * nobj_create(
+    const struct nobj_class *   obj_class,
+    struct nmem *               mem,
+    void *                      arg);
 
 
 
-/**@brief       Terminate heap instance
- * @param       heap
- *              Pointer to heap structure instance
- * @api
- */
-void nheap_term(
-    struct nheap *              heap);
+void nobj_delete(struct nobj_object * object);
 
 
 
-void * nheap_alloc_i(
-    struct nheap *              heap,
-    size_t                      size);
+struct nobj_component * nobj_add_component(
+    const struct nobj_class *   component_class,
+    struct nobj_object *        object,
+    void *                      arg);
 
 
 
-void * nheap_alloc(
-    struct nheap *              heap,
-    size_t                      size);
-
-
-
-void nheap_free_i(
-    struct nheap *              heap,
-    void *                      mem);
-
-
-
-void nheap_free(
-    struct nheap *              heap,
-    void *                      mem);
+void nobj_remove_component(struct nobj_component * component);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
@@ -119,6 +96,6 @@ void nheap_free(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of heap.h
+ * END of obj.h
  ******************************************************************************/
-#endif /* NEON_MM_HEAP_H_ */
+#endif /* NEON_OBJECT_OBJ_H_ */

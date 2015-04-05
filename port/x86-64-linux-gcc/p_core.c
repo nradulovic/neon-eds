@@ -26,16 +26,25 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
 #include <sys/time.h>
 
 #include "port/core.h"
-#include "shared/config.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
+
+
+static void lock_init(void);
+
+
+
+static void lock_term(void);
+
 
 
 static void timer_handler(int signal);
@@ -54,12 +63,13 @@ static void timer_term(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static struct itimerval         g_timer;
+static struct sigaction         g_sigaction;
 static pthread_t                g_timer_thread;
 static pthread_mutex_t          g_timer_lock;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
+pthread_mutex_t                 g_idle_lock;
 pthread_mutex_t                 g_global_lock;
 
 const uint_fast8_t              g_log2_lookup[256] =
@@ -85,11 +95,30 @@ const uint_fast8_t              g_log2_lookup[256] =
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
+
+static void lock_init(void)
+{
+    pthread_mutexattr_t         attr;
+
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&g_global_lock, &attr);
+}
+
+
+
+static void lock_term(void)
+{
+    pthread_mutex_destroy(&g_global_lock);
+}
+
+
+
 /**@brief       Timer signal handler for signaling to timer thread
  */
-static void timer_handler(int signal)
+static void timer_handler(int sig_no)
 {
-    (void)signal;
+    (void)sig_no;
 
     pthread_mutex_unlock(&g_timer_lock);
 }
@@ -118,14 +147,17 @@ static void * timer_thread(void * arg)
  */
 static void timer_init(void)
 {
-    static struct timeval       timer_value    = {0, 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ};
-    static struct timeval       timer_interval = {0, 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ};
+    pthread_mutex_init(&g_timer_lock, NULL);
+    pthread_create(&g_timer_thread, NULL, timer_thread, NULL);
 
-    g_timer.it_interval = timer_interval;
-    g_timer.it_value    = timer_value;
+    memset (&g_sigaction, '\0', sizeof(g_sigaction));
 
-    pthread_create(&g_timer_thread, NULL, timer_thread, NULL) ;
-    setitimer(ITIMER_REAL, &g_timer, 0);
+    g_sigaction.sa_handler = &timer_handler;
+
+    if (sigaction(SIGALRM, &g_sigaction, NULL) < 0) {
+        perror ("sigaction");
+        exit(1);
+    }
 }
 
 
@@ -134,18 +166,59 @@ static void timer_init(void)
  */
 static void timer_term(void)
 {
-    signal(SIGALRM, SIG_DFL);
+    ncore_timer_disable();
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
+void ncore_init(void)
+{
+    pthread_mutexattr_t         attr;
+
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&g_idle_lock, NULL);
+
+    lock_init();
+    timer_init();
+}
+
+
+
+void ncore_term(void)
+{
+    pthread_mutex_destroy(&g_idle_lock);
+
+    timer_term();
+    lock_term();
+}
+
+
+
+void ncore_idle(void)
+{
+    pthread_mutex_lock(&g_idle_lock);
+}
+
+
+
 /**@brief       Enable the system timer
  */
 void ncore_timer_enable(void)
 {
-    signal(SIGALRM, timer_handler);
+    struct itimerval            timer;
+
+    timer.it_value.tv_sec     = 0;
+    timer.it_value.tv_usec    = 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ;
+    timer.it_interval.tv_sec  = 0;
+    timer.it_interval.tv_usec = 1000000 / CONFIG_CORE_TIMER_EVENT_FREQ;
+
+    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
+        perror("error calling setitimer()");
+        exit(1);
+    }
 }
 
 
@@ -154,23 +227,15 @@ void ncore_timer_enable(void)
  */
 void ncore_timer_disable(void)
 {
-    signal(SIGALRM, SIG_DFL);
+    struct itimerval            timer;
+
+    memset(&timer, 0, sizeof(timer));
+
+    if (setitimer(ITIMER_REAL, &timer, NULL) == -1) {
+        perror("error calling setitimer()");
+        exit(1);
+    }
 }
-
-
-
-void ncore_init(void)
-{
-    timer_init();
-}
-
-
-
-void ncore_term(void)
-{
-    timer_term();
-}
-
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 

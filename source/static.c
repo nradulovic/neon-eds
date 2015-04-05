@@ -36,11 +36,6 @@
 #include "mm/static.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Signature for static memory manager
- */
-#define STATIC_MEM_SIGNATURE            ((ncpu_reg)0xdeadbee0u)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
@@ -68,7 +63,7 @@ static void * static_alloc_i(
     size_t                      size)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_POINTER, mem_class->signature == STATIC_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STATIC);
 
     size = NALIGN_UP(size, NCPU_DATA_ALIGNMENT);
 
@@ -97,30 +92,31 @@ static void static_free_i(
 
 
 void nstatic_init(
-    struct nstatic *            static_mem,
+    struct nstatic *            static_obj,
     void *                      storage,
     size_t                      size)
 {
-    NREQUIRE(NAPI_POINTER, static_mem != NULL);
+    NREQUIRE(NAPI_POINTER, static_obj != NULL);
+    NREQUIRE(NAPI_OBJECT,  static_obj->mem_class.signature != NSIGNATURE_STATIC);
     NREQUIRE(NAPI_POINTER, storage != NULL);
     NREQUIRE(NAPI_RANGE,   size > NCPU_DATA_ALIGNMENT);
 
-    static_mem->mem_class.base     = storage;
-    static_mem->mem_class.size     = NALIGN(size, NCPU_DATA_ALIGNMENT);
-    static_mem->mem_class.free     = NALIGN(size, NCPU_DATA_ALIGNMENT);
-    static_mem->mem_class.vf_alloc = static_alloc_i;
-    static_mem->mem_class.vf_free  = static_free_i;
+    static_obj->mem_class.base     = storage;
+    static_obj->mem_class.size     = NALIGN(size, NCPU_DATA_ALIGNMENT);
+    static_obj->mem_class.free     = NALIGN(size, NCPU_DATA_ALIGNMENT);
+    static_obj->mem_class.vf_alloc = static_alloc_i;
+    static_obj->mem_class.vf_free  = static_free_i;
 
-    NOBLIGATION(static_mem->mem_class.signature = STATIC_MEM_SIGNATURE);
+    NOBLIGATION(static_obj->mem_class.signature = NSIGNATURE_STATIC);
 }
 
 
 
 void * nstatic_alloc_i(
-    struct nstatic *            static_mem,
+    struct nstatic *            static_obj,
     size_t                      size)
 {
-    return (static_alloc_i(&static_mem->mem_class, size));
+    return (static_alloc_i(&static_obj->mem_class, size));
 }
 
 

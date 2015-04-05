@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "port/core.h"
+#include "base/debug.h"
 #include "base/component.h"
 #include "base/bitop.h"
 #include "sched/prio_queue.h"
@@ -56,6 +57,8 @@ struct sched_ctx
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
+
+static const NCOMPONENT_DEFINE("Scheduler", "Nenad Radulovic");
 
 static struct sched_ctx         g_sched_ctx;
 
@@ -87,6 +90,9 @@ void nsched_thread_init(
     struct nthread *            thread,
     const struct nthread_define * define)
 {
+    NREQUIRE(NAPI_POINTER, thread != NULL);
+    NREQUIRE(NAPI_OBJECT,  thread->signature != NSIGNATURE_THREAD);
+
     nbias_list_init(&thread->node, define->priority);
     thread->ref = 0;
 
@@ -97,7 +103,9 @@ void nsched_thread_init(
         strncpy(thread->name, define->name, sizeof(thread->name));
     }
     ndlist_init(&thread->registry_node);
-#endif
+#endif /* (CONFIG_REGISTRY == 1) */
+
+    NOBLIGATION(thread->signature = NSIGNATURE_THREAD);
 }
 
 
@@ -105,7 +113,10 @@ void nsched_thread_init(
 void nsched_thread_term(struct nthread * thread)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
+
+    NREQUIRE(NAPI_POINTER, thread != NULL);
+    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
     ncore_lock_enter(&sys_lock);
 
@@ -115,18 +126,24 @@ void nsched_thread_term(struct nthread * thread)
     }
     nbias_list_term(&thread->node);
     ncore_lock_exit(&sys_lock);
+
+    NOBLIGATION(thread->signature = ~NSIGNATURE_THREAD);
 }
 
 
 
 void nsched_thread_insert_i(struct nthread * thread)
 {
+    NREQUIRE(NAPI_POINTER, thread != NULL);
+    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
+
     ncore_sat_increment(&thread->ref);
 
     if (thread->ref == 1u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_insert(&ctx->run_queue, &thread->node);
+        ncore_os_ready(thread);
     }
 }
 
@@ -134,6 +151,9 @@ void nsched_thread_insert_i(struct nthread * thread)
 
 void nsched_thread_remove_i(struct nthread * thread)
 {
+    NREQUIRE(NAPI_POINTER, thread != NULL);
+    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
+
     if (thread->ref == 1u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 

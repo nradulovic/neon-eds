@@ -30,6 +30,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include "base/debug.h"
+#include "base/component.h"
 #include "ep/epa.h"
 #include "ep/event.h"
 #include "ep/etimer.h"
@@ -42,6 +44,9 @@ void etimer_handler(
     void *                      arg);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
+
+static const NCOMPONENT_DEFINE("Event Timer", "Nenad Radulovic");
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
@@ -64,13 +69,16 @@ void etimer_handler(
 void netimer_init(
     struct netimer *            timer)
 {
+    NREQUIRE(NAPI_POINTER, timer != NULL);
+    NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_ETIMER);
+
     ntimer_init(&timer->timer);
 }
 
 
 void netimer_after(
     struct netimer *            timer,
-    ncore_time_tick              tick,
+    ncore_time_tick             tick,
     uint16_t                    event_id)
 {
     timer->client   = nepa_get_current();
@@ -82,7 +90,7 @@ void netimer_after(
 
 void netimer_every(
     struct netimer *            timer,
-    ncore_time_tick              tick,
+    ncore_time_tick             tick,
     uint16_t                    event_id)
 {
     timer->client   = nepa_get_current();
