@@ -37,11 +37,6 @@
 #include "mm/heap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Signature for dynamic memory manager
- */
-#define HEAP_MEM_SIGNATURE              ((unsigned int)0xdeadbee1u)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Dynamic allocator memory block header structure
@@ -89,7 +84,7 @@ static void * heap_alloc_i(
     struct heap_block *         curr;
 
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == HEAP_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_HEAP);
     NREQUIRE(NAPI_RANGE,   (size != 0u) && (size < NCPU_SSIZE_MAX));
 
 
@@ -157,7 +152,7 @@ static void heap_free_i(
     struct heap_block *         tmp;
 
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == HEAP_MEM_SIGNATURE);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_HEAP);
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     curr           = (struct heap_block *)
@@ -204,15 +199,15 @@ static void heap_free_i(
 
 
 void nheap_init(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     void *                      storage,
     size_t                      size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         begin;
 
-    NREQUIRE(NAPI_POINTER, heap != NULL);
-    NREQUIRE(NAPI_OBJECT,  heap->mem_class.signature != HEAP_MEM_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, heap_obj != NULL);
+    NREQUIRE(NAPI_OBJECT,  heap_obj->mem_class.signature != NSIGNATURE_HEAP);
     NREQUIRE(NAPI_POINTER, storage != NULL);
     NREQUIRE(NAPI_RANGE,   size > sizeof(struct heap_block [2]));
     NREQUIRE(NAPI_RANGE,   size < NCPU_SSIZE_MAX);
@@ -232,26 +227,26 @@ void nheap_init(
     sentinel->phy.prev   = begin;
     sentinel->free.next  = begin;
     sentinel->free.prev  = begin;
-    heap->mem_class.base = sentinel;
-    heap->mem_class.size = (size_t)begin->phy.size;
-    heap->mem_class.free = (size_t)begin->phy.size;
-    heap->mem_class.vf_alloc = heap_alloc_i;
-    heap->mem_class.vf_free  = heap_free_i;
+    heap_obj->mem_class.base = sentinel;
+    heap_obj->mem_class.size = (size_t)begin->phy.size;
+    heap_obj->mem_class.free = (size_t)begin->phy.size;
+    heap_obj->mem_class.vf_alloc = heap_alloc_i;
+    heap_obj->mem_class.vf_free  = heap_free_i;
 
-    NOBLIGATION(heap->mem_class.signature = HEAP_MEM_SIGNATURE);
+    NOBLIGATION(heap_obj->mem_class.signature = NSIGNATURE_HEAP);
 }
 
 
 
 void nheap_term(
-    struct nheap *              heap)
+    struct nheap *              heap_obj)
 {
-    NREQUIRE(NAPI_POINTER, heap != NULL);
-    NREQUIRE(NAPI_OBJECT,  heap->mem_class.signature == HEAP_MEM_SIGNATURE);
+    NREQUIRE(NAPI_POINTER, heap_obj != NULL);
+    NREQUIRE(NAPI_OBJECT,  heap_obj->mem_class.signature == NSIGNATURE_HEAP);
 
-    heap->mem_class.base = NULL;
+    heap_obj->mem_class.base = NULL;
 
-    NOBLIGATION(heap->mem_class.signature = ~HEAP_MEM_SIGNATURE);
+    NOBLIGATION(heap_obj->mem_class.signature = ~NSIGNATURE_HEAP);
 }
 
 

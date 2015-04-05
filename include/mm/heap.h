@@ -26,8 +26,8 @@
  * @brief       Heap Memory management
  *********************************************************************//** @{ */
 
-#ifndef NEON_MEM_HEAP_H_
-#define NEON_MEM_HEAP_H_
+#ifndef NEON_MM_HEAP_H_
+#define NEON_MM_HEAP_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -121,4 +121,4 @@ void nheap_free(
 /** @endcond *//** @} *//******************************************************
  * END of heap.h
  ******************************************************************************/
-#endif /* NEON_MEM_HEAP_H_ */
+#endif /* NEON_MM_HEAP_H_ */
