@@ -204,6 +204,22 @@
 #define NAPI_CALL                           "An API method call has failed."
 #define NASSERT_FAILED                      "Assert failed"
 
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        Object debug signatures
+ * @brief       During debugging the objects will use the signatures
+ * @{ *//*--------------------------------------------------------------------*/
+
+#define NSIGNATURE_HEAP                     ((unsigned int)0xdeadbee0u)
+#define NSIGNATURE_POOL                     ((unsigned int)0xdeadbee1u)
+#define NSIGNATURE_STATIC                   ((unsigned int)0xdeadbee2u)
+#define NSIGNATURE_TIMER                    ((unsigned int)0xdeadcee0u)
+#define NSIGNATURE_THREAD                   ((unsigned int)0xdeaddee0u)
+#define NSIGNATURE_EPA                      ((unsigned int)0xdeadfeeau)
+#define NSIGNATURE_EQUEUE                   ((unsigned int)0xdeadfeebu)
+#define NSIGNATURE_ETIMER                   ((unsigned int)0xdeadfeecu)
+#define NSIGNATURE_EVENT                    ((unsigned int)0xdeadfeedu)
+#define NSIGNATURE_SM                       ((unsigned int)0xdeadfeeeu)
+
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
