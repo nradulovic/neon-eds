@@ -21,22 +21,21 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Static Memory management
- * @defgroup    mem_static Static Memory management
- * @brief       Static Memory Management
+ * @brief       Object management header
+ * @defgroup    object_obj Object management
+ * @brief       Object management
  *********************************************************************//** @{ */
 
-#ifndef NEON_MM_STATIC_H_
-#define NEON_MM_STATIC_H_
+#ifndef NEON_OBJECT_OBJ_H_
+#define NEON_OBJECT_OBJ_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stddef.h>
 
-#include "mm/mem.h"
+#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
-
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -44,67 +43,51 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Static memory object structure
- * @details     This structure holds information about static memory instance.
- * @api
- */
-struct nstatic
+struct nmem;
+struct nobj_component;
+
+struct nobj_class
 {
-    struct nmem                 mem_class;
+    size_t                      size;
+    struct nobj_component *  (* ctor)(struct nobj_component * component, struct nmem * mem, void * arg);
+    struct nobj_component *  (* dtor)(struct nobj_component * component, struct nmem * mem);
 };
 
-/**@brief       Static memory instance handle type
- * @api
- */
-typedef struct nstatic nstatic;
+struct nobj_component
+{
+    const struct nobj_class *   class;
+    struct ndlist               list;
+};
+
+struct nobj_object
+{
+    struct nobj_component       component;
+    struct nmem *               mem;
+};
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-/**@brief       Initializes static memory instance
- * @param       static_obj
- *              Pointer to static object
- * @param       storage
- *              Storage memory reserved for static memory manager.
- * @param       size
- *              Size of reserved memory expresses in bytes.
- * @details     This function shall be called before any other static memory
- *              management function.
- * @api
- */
-void nstatic_init(
-    struct nstatic *            static_obj,
-    void *                      storage,
-    size_t                      size);
+struct nobj_object * nobj_create(
+    const struct nobj_class *   obj_class,
+    struct nmem *               mem,
+    void *                      arg);
 
 
 
-/**@brief       Allocates static memory of get_size @c get_size
- * @param       static_obj
- *              Pointer to static object
- * @param       size
- *              The size of requested memory in bytes.
- * @return      Pointer to free memory of requested get_size.
- * @iclass
- */
-void * nstatic_alloc_i(
-    struct nstatic *            static_obj,
-    size_t                      size);
+void nobj_delete(struct nobj_object * object);
 
 
 
-/**@brief       Allocates static memory of get_size @c get_size
- * @param       static_obj
- *              Pointer to static object
- * @param       size
- *              The size of requested memory in bytes.
- * @return      Pointer to free memory of requested get_size.
- * @api
- */
-void * nstatic_alloc(
-    struct nstatic *            static_obj,
-    size_t                      size);
+struct nobj_component * nobj_add_component(
+    const struct nobj_class *   component_class,
+    struct nobj_object *        object,
+    void *                      arg);
+
+
+
+void nobj_remove_component(struct nobj_component * component);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
@@ -113,6 +96,6 @@ void * nstatic_alloc(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of static.h
+ * END of obj.h
  ******************************************************************************/
-#endif /* NEON_MM_STATIC_H_ */
+#endif /* NEON_OBJECT_OBJ_H_ */

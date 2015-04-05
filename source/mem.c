@@ -30,6 +30,8 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <string.h>
+
 #include "port/core.h"
 #include "mm/mem.h"
 
@@ -47,12 +49,29 @@ void * nmem_alloc(
     struct nmem *               mem,
     size_t                      size)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
     void *                      mem_storage;
 
     ncore_lock_enter(&sys_lock);
     mem_storage = nmem_alloc_i(mem, size);
     ncore_lock_exit(&sys_lock);
+
+    return (mem_storage);
+}
+
+
+
+void * nmem_zalloc(
+    struct nmem *               mem,
+    size_t                      size)
+{
+    void *                      mem_storage;
+
+    mem_storage = nmem_alloc(mem, size);
+
+    if (mem_storage) {
+        memset(mem_storage, 0, size);
+    }
 
     return (mem_storage);
 }

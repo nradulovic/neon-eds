@@ -105,6 +105,10 @@ void ncore_sat_decrement(
 
 
 
+void ncore_idle(void);
+
+
+
 /**@brief       Enter critical code section
  * @param       lock
  *              Interrupt resource lock, pointer to portable type variable which
