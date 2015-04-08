@@ -158,23 +158,28 @@ void nsched_thread_remove_i(struct nthread * thread)
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_remove(&ctx->run_queue, &thread->node);
+        ncore_os_block(thread);
     }
     ncore_sat_decrement(&thread->ref);
 }
 
 
 
-struct nthread * nsched_thread_fetch_i(void)
+struct nthread * nsched_schedule_i(void)
 {
+
     struct sched_ctx *          ctx = &g_sched_ctx;
     struct nbias_list *         new_node;
 
     if (!nprio_queue_is_empty(&ctx->run_queue)) {
+        struct nthread *        thread;
+
         new_node = nprio_queue_peek(&ctx->run_queue);
         nprio_queue_rotate(&ctx->run_queue, new_node);
         ctx->current = new_node;
+        thread       = NODE_TO_THREAD(new_node);
 
-        return (NODE_TO_THREAD(new_node));
+        return (thread);
     } else {
         ctx->current = NULL;
 

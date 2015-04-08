@@ -107,7 +107,7 @@ void nsched_thread_remove_i(
 
 
 
-struct nthread * nsched_thread_fetch_i(void);
+struct nthread * nsched_schedule_i(void);
 
 
 
