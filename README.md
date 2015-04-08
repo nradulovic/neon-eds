@@ -72,8 +72,8 @@ by `base/config.h` header file, which is in included by all Neon components.
 
 - `include` - include path. Submodules are referenced by their respective 
     subdirectories.
-- `port/_port-name_` - where the _port-name_ is the directory of the port that 
-    is used.
+- `port/_port-name_` - Neon core port. The _port-name_ is the directory of the 
+    port that is being used.
 
 ### Source files
 
@@ -88,9 +88,9 @@ by `base/config.h` header file, which is in included by all Neon components.
 - `source/smp.c` - State machine processor
 - `source/static.c` - Static memory allocator
 - `source/timer.c` - Virtual timer
-- `port/_port-name_/p_core.c` - main port source file. Ports may have additional
-    source files located in `port/_port-name_` directory which need to be 
-    compiled.
+- `port/_port-name_/p_core.c` - main Neon core port source file. Ports may have 
+    additional source files located in `port/_port-name_` directory which need 
+    to be compiled.
     
 ## Documentation
 
