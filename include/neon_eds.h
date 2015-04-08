@@ -26,8 +26,8 @@
  * @brief       Interface
  *********************************************************************//** @{ */
 
-#ifndef NEON_EVENT_DRIVEN_SYSTEM_H_
-#define NEON_EVENT_DRIVEN_SYSTEM_H_
+#ifndef NEON_NEON_EDS_H_
+#define NEON_NEON_EDS_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -63,6 +63,6 @@
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of event_driven_system.h
+ * END of neon_eds.h
  ******************************************************************************/
-#endif /* NEON_EVENT_DRIVEN_SYSTEM_H_ */
+#endif /* NEON_NEON_EDS_H_ */
