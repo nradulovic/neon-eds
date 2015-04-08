@@ -248,7 +248,7 @@ struct nevent * nevent_create(
     uint16_t                    id)
 {
     struct nevent *             event;
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
 
     ncore_lock_enter(&sys_lock);
     event = event_create_i(size);
