@@ -89,9 +89,9 @@ struct nepa;
 /**@brief       Event header structure
  * @details     This structure defines mandatory event data. Other data fields
  *              can be enabled/disabled using configuration options provided in
- *              @ref neon_app_config.h file.
+ *              @ref neon_eds_app_config.h file.
  * @note        You may use @ref CONFIG_EVENT_STRUCT_ATTRIBUTE in
- *              @ref neon_app_config.h file to configure additional compiler
+ *              @ref neon_eds_app_config.h file to configure additional compiler
  *              directives for this structure.
  * @api
  */

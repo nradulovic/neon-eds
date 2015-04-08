@@ -63,7 +63,7 @@ thread functions.
 
 ## Configuration
 
-Configuration is done in `neon_app_config.h` header file. The file is included
+Configuration is done in `neon_eds_app_config.h` header file. The file is included
 by `base/config.h` header file, which is in included by all Neon components.
 
 ## Building

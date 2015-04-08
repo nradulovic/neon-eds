@@ -36,7 +36,7 @@
 /*
  * Include the custom configuration file
  */
-#include "neon_app_config.h"
+#include "neon_eds_app_config.h"
 
 /*===============================================================  DEFINES  ==*/
 /*==============================================================  SETTINGS  ==*/
