@@ -39,6 +39,25 @@
 #include "eds_ep.h"
 
 /*===============================================================  MACRO's  ==*/
+
+/*------------------------------------------------------------------------*//**
+ * @name        Event Driven System identification
+ *//** @{ *//*----------------------------------------------------------------*/
+
+/**@brief       Version string.
+ */
+#define NEDS_VERSION                    "1.0"
+
+/**@brief       Version major number.
+ */
+#define NEDS_VERSION_MAJOR              1
+
+/**@brief       Version minor number.
+ */
+#define NEDS_VERSION_MINOR              0
+
+/** @} */
+
 /*============================================================  DATA TYPES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
