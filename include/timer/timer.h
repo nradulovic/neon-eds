@@ -40,10 +40,38 @@
 
 /*===============================================================  MACRO's  ==*/
 
-/**@brief       Convert time (given in milliseconds) into ticks
+/**@brief       Convert time (given in seconds) into core timer ticks
+ * @param       time_sec
+ *              Time in seconds
+ * @return      The number of core timer ticks.
+ * @api
  */
-#define N_TIME_TO_TICK_MS(time_ms)                                              \
-    ((time_ms) * CONFIG_CORE_TIMER_EVENT_FREQ / 1000ul)
+#define NTIMER_SEC(time_sec)                                                    \
+    ((ncore_time_tick)((uint32_t)(time_sec) *                                   \
+        (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ))
+
+/**@brief       Convert time (given in milliseconds) into core timer ticks
+ * @param       time_ms
+ *              Time in milliseconds
+ * @return      The number of core timer ticks.
+ * @note        The result is rounded upward to the next core tick boundary.
+ * @api
+ */
+#define NTIMER_MS(time_ms)                                                      \
+    ((ncore_time_tick)(((uint32_t)(time_ms) *                                   \
+        (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ + 999ul) / 1000ul))
+
+/**@brief       Convert time (given in microseconds) into core timer ticks
+ * @param       time_us
+ *              Time in microseconds
+ * @return      The number of core timer ticks.
+ * @note        The result is rounded upward to the next core tick boundary.
+ * @api
+ */
+#define NTIMER_US(time_us)                                                      \
+    ((ncore_time_tick)(((uint32_t)(time_us) *                                   \
+        (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ + 999999ul) / 1000000ul))
+
 
 #define NTIMER_ATTR_ONE_SHOT            (0x1u << 0)
 #define NTIMER_ATTR_REPEAT              (0x1u << 1)
