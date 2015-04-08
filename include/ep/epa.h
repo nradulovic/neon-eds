@@ -60,6 +60,9 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/* NOTE:
+ * Forward declarations of nmem and nevent structures
+ */
 struct nmem;
 struct nevent;
 
@@ -94,6 +97,8 @@ typedef struct nepa nepa;
  * @name        EPA General functions
  * @{ *//*--------------------------------------------------------------------*/
 
+/**@brief       Start the event processing loop
+ */
 void neds_run(void);
 
 
@@ -111,7 +116,7 @@ struct nepa * nepa_get_current(void)
 
 
 
-void * nepa_new_storage(size_t size);
+void * nepa_create_storage(size_t size);
 
 
 
@@ -120,7 +125,6 @@ void nepa_delete_storage(void * storage);
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management
  * @{ *//*--------------------------------------------------------------------*/
-
 
 
 void nepa_init(

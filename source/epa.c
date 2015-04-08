@@ -53,6 +53,7 @@ static void (* g_idle)(void) = idle_handler;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
+
 static void idle_handler(void)
 {
     ncore_idle();
@@ -60,7 +61,6 @@ static void idle_handler(void)
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
-
 
 
 void neds_set_idle(
@@ -71,7 +71,7 @@ void neds_set_idle(
 
 
 
-void * nepa_new_storage(size_t size)
+void * nepa_create_storage(size_t size)
 {
     struct nepa *               epa;
     void *                      storage;
@@ -111,16 +111,16 @@ void neds_run(void)
                                                             /* Fetch a new thread
                                                              * ready for execution.
                                                              */
-        while ((thread = nsched_thread_fetch_i())) {
+        while ((thread = nsched_schedule_i())) {
             struct nepa *           epa;
             const struct nevent *   event;
             naction                 action;
 
-            nsched_thread_remove_i(thread);
-                                                            /* Get EPA pointer */
-            epa   = NTHREAD_TO_EPA(thread);
-                                                            /* Get Event pointer */
-            event = nequeue_get(&epa->working_queue);
+            nsched_thread_remove_i(thread);                 /* Remove thread from
+                                                             * ready queue.
+                                                             */
+            epa   = NTHREAD_TO_EPA(thread);                 /* Get EPA pointer */
+            event = nequeue_get(&epa->working_queue);       /* Get Event pointer */
             ncore_lock_exit(&lock);
                                                             /* Dispatch the state
                                                              * machine
@@ -153,8 +153,7 @@ void nepa_init(
 {
     ncore_lock                  sys_lock;
 
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature != NSIGNATURE_EPA);
+    NREQUIRE(NAPI_OBJECT,  N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_POINTER, define != NULL);
 
     epa->mem = NULL;
@@ -180,8 +179,7 @@ void nepa_term(
 {
     ncore_lock                  sys_lock;
 
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
+    NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     ncore_lock_enter(&sys_lock);
 
@@ -219,6 +217,7 @@ struct nepa * nepa_create(
     struct nequeue_define       l_deffered_define;
 
     NREQUIRE(NAPI_POINTER, define != NULL);
+    NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
 
     epa = nmem_zalloc(mem, sizeof(struct nepa));
 
@@ -268,8 +267,7 @@ ERROR_ALLOC_EPA:
 void nepa_destroy(
     struct nepa *               epa)
 {
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
+    NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     nepa_term(epa);
 
@@ -286,8 +284,8 @@ nerror nepa_send_event_i(
     struct nepa *               epa,
     struct nevent *             event)
 {
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
+    NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
@@ -329,8 +327,8 @@ nerror nepa_send_event_ahead_i(
     struct nepa *               epa,
     struct nevent *             event)
 {
-    NREQUIRE(NAPI_POINTER, epa != NULL);
-    NREQUIRE(NAPI_OBJECT,  epa->signature == NSIGNATURE_EPA);
+    NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
