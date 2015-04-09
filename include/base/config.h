@@ -215,27 +215,6 @@
 #define CONFIG_SMP_HSM_PATH_DEPTH       8
 #endif
 
-/**@} *//*----------------------------------------------------------------*//**
- * @name        peripheral: Peripheral configuration
- * @{ *//*--------------------------------------------------------------------*/
-
-
-#if !defined(CONFIG_GPIO)
-# define CONFIG_GPIO                    0
-#endif
-
-#if !defined(CONFIG_UART)
-# define CONFIG_UART                    0
-#endif
-
-#if !defined(CONFIG_I2C)
-# define CONFIG_I2C                     0
-#endif
-
-#if !defined(CONFIG_SPI)
-# define CONFIG_SPI                     0
-#endif
-
 /**@} *//*--------------------------------------------------------------------*/
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
