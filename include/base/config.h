@@ -219,16 +219,23 @@
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
+/* NOTE:
+ * In case of any configuration error edit your `neon_eds_app_config.h` file.
+ */
 #if ((CONFIG_DEBUG != 1) && (CONFIG_DEBUG != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG is out of range: 0 = disabled, 1 = enabled"
+# error "NEON::eds::base: Configuration option CONFIG_DEBUG is out of range: 0 = disabled, 1 = enabled"
 #endif
 
 #if ((CONFIG_API_VALIDATION != 1) && (CONFIG_API_VALIDATION != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range: 0 = disabled, 1 = enabled"
+# error "NEON::eds::base: Configuration option CONFIG_DEBUG_API_VALIDATION is out of range: 0 = disabled, 1 = enabled"
 #endif
 
 #if ((CONFIG_ASSERT_INTERNAL != 1) && (CONFIG_ASSERT_INTERNAL != 0))
-# error "NEON::base::shared: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range: 0 = disabled, 1 = enabled"
+# error "NEON::eds::base: Configuration option CONFIG_DEBUG_INTERNAL_CHECK is out of range: 0 = disabled, 1 = enabled"
+#endif
+
+#if !defined(CONFIG_CORE_TIMER_CLOCK_FREQ)
+# error "NEON::eds::port: Configuration option CONFIG_CORE_TIMER_CLOCK_FREQ is not set!"
 #endif
 
 #if (CONFIG_DEBUG == 0) || defined(NDEBUG)
@@ -238,10 +245,6 @@
 # define CONFIG_API_VALIDATION          0
 # undef  CONFIG_ASSERT_INTERNAL
 # define CONFIG_ASSERT_INTERNAL         0
-#endif
-
-#if !defined(CONFIG_CORE_TIMER_CLOCK_FREQ)
-# error "NEON::base::port: Configuration option CONFIG_CORE_TIMER_CLOCK_FREQ is not set!"
 #endif
 
 /** @endcond *//** @} *//** @} *//*********************************************
