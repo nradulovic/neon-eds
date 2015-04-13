@@ -62,7 +62,7 @@ static void component_delete(
 static struct nobj_object * component_to_object(
     struct nobj_component *     component)
 {
-    return (CONTAINER_OF(component, struct nobj_object, component));
+    return (PORT_C_CONTAINER_OF(component, struct nobj_object, component));
 }
 
 
@@ -133,7 +133,7 @@ void nobj_delete(struct nobj_object * object)
     while (!ndlist_is_empty(&object->component.list)) {
         struct nobj_component * component;
 
-        component = CONTAINER_OF(
+        component = PORT_C_CONTAINER_OF(
             ndlist_prev(&object->component.list), struct nobj_component, list);
         nobj_remove_component(component);
     }

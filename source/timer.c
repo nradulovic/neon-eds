@@ -40,7 +40,7 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 
 #define NODE_TO_TIMER(node)                                                     \
-    CONTAINER_OF(node, struct ntimer, list)
+    PORT_C_CONTAINER_OF(node, struct ntimer, list)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/

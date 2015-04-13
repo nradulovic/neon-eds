@@ -35,44 +35,44 @@
  *              this will always only be an approximation depending on
  *              the compiler.
  */
-#define PORT_C_INLINE                       static __inline__
+#define PORT_C_INLINE                   static __inline__
 
 /**@brief       Same as @ref PORT_C_INLINE but has greater power over compiler
  */
-#define PORT_C_INLINE_ALWAYS                static __inline__ __attribute__((__always_inline__))
+#define PORT_C_INLINE_ALWAYS            static __inline__ __attribute__((__always_inline__))
 
 /**@brief       Omit function prologue/epilogue sequences
  */
-#define PORT_C_NAKED                        __attribute__((naked))
+#define PORT_C_NAKED                    __attribute__((naked))
 
-#define PORT_C_UNUSED                       __attribute__((unused))
+#define PORT_C_UNUSED                   __attribute__((unused))
 
 /**@brief       Provides function name for assert macros
  */
 #if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)) || defined(__DOXYGEN__)
-# define PORT_C_FUNC                        __func__
+# define PORT_C_FUNC                    __func__
 #elif (__GNUC__ >= 2)
-# define PORT_C_FUNC                        __FUNCTION__
+# define PORT_C_FUNC                    __FUNCTION__
 #endif
 
 /**@brief       Provides the free file's name which is being compiled
  */
-#define PORT_C_FILE                         __FILE__
+#define PORT_C_FILE                     __FILE__
 
 /**@brief       Provides the free source line
  */
-#define PORT_C_LINE                         __LINE__
+#define PORT_C_LINE                     __LINE__
 
 /**@brief       Declare a function that will never return
  */
-#define PORT_C_NORETURN                     __attribute__((noreturn))
+#define PORT_C_NORETURN                 __attribute__((noreturn))
 
-#define PORT_C_PACKED                       __attribute__((packed))
+#define PORT_C_PACKED                   __attribute__((packed))
 
 /**@brief       This attribute specifies a minimum alignment (in bytes) for
  *              variables of the specified type.
  */
-#define PORT_C_ALIGN(align)                 __attribute__((aligned (align)))
+#define PORT_C_ALIGN(align)             __attribute__((aligned (align)))
 
 /**@brief       Cast a member of a structure out to the containing structure
  * @param       ptr
@@ -82,8 +82,17 @@
  * @param       member
  *              the name of the member within the struct.
  */
-#define CONTAINER_OF(ptr, type, member)                                         \
+#define PORT_C_CONTAINER_OF(ptr, type, member)                                  \
     ((type *)((char *)(ptr) - offsetof(type, member)))
+
+/**@brief		Prevent the compiler from merging or refetching accesses.
+ * @details		The compiler is also forbidden from reordering successive
+ * 				instances of PORT_C_ACCESS_ONCE(), but only when the compiler is
+ * 				aware of some particular ordering.  One way to make the compiler
+ * 				aware of ordering is to put the two invocations of
+ * 				PORT_C_ACCESS_ONCE() in different C statements.
+ */
+#define PORT_C_ACCESS_ONCE(x) 			(*(volatile typeof(x) *)&(x))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

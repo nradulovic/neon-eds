@@ -50,12 +50,12 @@ void nequeue_init(
     struct nequeue *            queue,
     const struct nequeue_define * define)
 {
-    ncpu_reg                    size;
+    ncore_reg                   size;
 
     NREQUIRE(NAPI_POINTER, queue != NULL);
     NREQUIRE(NAPI_OBJECT,  queue->signature != NSIGNATURE_EQUEUE);
 
-    size = (ncpu_reg)(define->size / sizeof(struct nevent * [1]));
+    size = (ncore_reg)(define->size / sizeof(struct nevent * [1]));
 
 #if (CONFIG_REGISTRY == 1)
     nqueue_init(&queue->queue, define->storage, size);

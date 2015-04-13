@@ -40,6 +40,9 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/**@brief	Calculates number of bytes needed to store N elements
+ * @api
+ */
 #define NQUEUE_SIZEOF(elements)             (sizeof(void * [1]) * (elements))
 
 /*-------------------------------------------------------  C++ extern base  --*/
@@ -55,10 +58,10 @@ extern "C" {
 struct nqueue
 {
     void **                     storage;
-    ncpu_reg                    head;
-    ncpu_reg                    tail;
-    ncpu_reg                    free;
-    ncpu_reg                    size;
+    ncore_reg                   head;
+    ncore_reg                   tail;
+    ncore_reg                   free;
+    ncore_reg                   size;
 };
 
 typedef struct nqueue nqueue;
@@ -76,8 +79,8 @@ void nqueue_init(
     queue->storage = storage;
     queue->head    = 0u;
     queue->tail    = 0u;
-    queue->free    = (ncpu_reg)size;
-    queue->size    = (ncpu_reg)size;
+    queue->free    = (ncore_reg)size;
+    queue->size    = (ncore_reg)size;
 }
 
 
@@ -86,10 +89,10 @@ PORT_C_INLINE
 void nqueue_term(
     struct nqueue *             queue)
 {
-    queue->head    = 0u;
-    queue->tail    = 0u;
-    queue->free   = 0u;
-    queue->size    = 0u;
+    queue->head = 0u;
+    queue->tail = 0u;
+    queue->free = 0u;
+    queue->size = 0u;
 }
 
 
@@ -151,7 +154,7 @@ size_t nqueue_size(
 
 
 PORT_C_INLINE 
-ncpu_reg nqueue_free(
+ncore_reg nqueue_free(
     const struct nqueue *       queue)
 {
     return (queue->free);

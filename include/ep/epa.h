@@ -51,7 +51,7 @@
 /**@brief       Returns EPA address from pointer to thread
  */
 #define NTHREAD_TO_EPA(thread_ptr)                                              \
-    CONTAINER_OF(thread_ptr, struct nepa, thread)
+    PORT_C_CONTAINER_OF(thread_ptr, struct nepa, thread)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus

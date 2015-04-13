@@ -62,7 +62,7 @@ struct nequeue
 {
     struct nqueue               queue;
 #if (CONFIG_REGISTRY == 1)
-    ncpu_reg                    min;
+    ncore_reg                   min;
 #endif
 #if (CONFIG_API_VALIDATION == 1)
     unsigned int                signature;
@@ -88,7 +88,7 @@ PORT_C_INLINE
 void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
-    ncpu_reg                    empty;
+    ncore_reg                   empty;
 
     nqueue_put_fifo(&queue->queue, (void *)event);
 
@@ -110,7 +110,7 @@ void nequeue_put_lifo(
     const struct nevent *       event)
 {
 #if (CONFIG_REGISTRY == 1)
-    ncpu_reg                    empty;
+    ncore_reg                   empty;
 
     nqueue_put_lifo(&queue->queue, (void *)event);
 

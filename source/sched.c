@@ -42,7 +42,7 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 
 #define NODE_TO_THREAD(node_ptr)                                                \
-    CONTAINER_OF(node_ptr, struct nthread, node)
+    PORT_C_CONTAINER_OF(node_ptr, struct nthread, node)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
@@ -64,8 +64,7 @@ static struct sched_ctx         g_sched_ctx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 void nsched_init(void)
 {
@@ -94,7 +93,7 @@ void nsched_thread_init(
     NREQUIRE(NAPI_OBJECT,  thread->signature != NSIGNATURE_THREAD);
 
     nbias_list_init(&thread->node, define->priority);
-    thread->ref = 0;
+    ncore_ref_write(&thread->ref, 0);
 
 #if (CONFIG_REGISTRY == 1)
     memset(thread->name, 0, sizeof(thread->name));
@@ -120,8 +119,7 @@ void nsched_thread_term(struct nthread * thread)
 
     ncore_lock_enter(&sys_lock);
 
-    if (thread->ref != 0u) {
-        thread->ref =  0u;
+    if (ncore_ref_read(&thread->ref) != 0) {
         nprio_queue_remove(&ctx->run_queue, &thread->node);
     }
     nbias_list_term(&thread->node);
@@ -137,9 +135,9 @@ void nsched_thread_insert_i(struct nthread * thread)
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
-    ncore_sat_increment(&thread->ref);
+    ncore_ref_increment(&thread->ref);
 
-    if (thread->ref == 1u) {
+    if (ncore_ref_read(&thread->ref) == 1u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_insert(&ctx->run_queue, &thread->node);
@@ -154,13 +152,13 @@ void nsched_thread_remove_i(struct nthread * thread)
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
-    if (thread->ref == 1u) {
+    if (ncore_ref_read(&thread->ref) == 1u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_remove(&ctx->run_queue, &thread->node);
         ncore_os_block(thread);
     }
-    ncore_sat_decrement(&thread->ref);
+    ncore_ref_decrement(&thread->ref);
 }
 
 

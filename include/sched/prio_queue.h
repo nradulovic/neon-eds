@@ -68,9 +68,9 @@ struct nprio_queue
     struct nprio_bitmap
     {
 #if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) || defined(__DOXYGEN__)
-        ncpu_reg                     group;                                     /**<@brief Bit group indicator        */
+        ncore_reg                    group;                                     /**<@brief Bit group indicator        */
 #endif  /* (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
-        ncpu_reg                     bit[NDIVISION_ROUNDUP(
+        ncore_reg                    bit[NDIVISION_ROUNDUP(
                                          CONFIG_PRIORITY_BUCKETS,
                                          NCPU_DATA_WIDTH)];                     /**<@brief Bucket indicator           */
     }                           bitmap;                                         /**<@brief Priority bitmap            */

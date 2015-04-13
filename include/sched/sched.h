@@ -64,7 +64,7 @@ struct nthread_define
 struct nthread
 {
     struct nbias_list           node;           /**<@brief Priority queue node*/
-    ncpu_reg                    ref;            /**<@brief Reference count    */
+    struct ncore_ref            ref;            /**<@brief Reference count    */
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
     char                        name[CONFIG_REGISTRY_NAME_SIZE];
     struct ndlist               registry_node;

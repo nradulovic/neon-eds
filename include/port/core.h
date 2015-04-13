@@ -32,6 +32,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "arch/p_core.h"
 
@@ -50,8 +51,10 @@
  * @note        This macro is usually defined in port.
  */
 #ifndef NCORE_LOCK_TO_CODE
-# define NCORE_LOCK_TO_CODE(level)       (level)
+# define NCORE_LOCK_TO_CODE(level)      (level)
 #endif
+
+#define NCORE_ATOMIC_INIT(v)			{v}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -65,9 +68,14 @@ extern "C" {
 typedef uint32_t                ncore_time_tick;
 
 /**@brief       System lock type
- * @note        Structure 'nsys_lock' is defined in port sys_lock.h header.
+ * @note        Structure 'ncore_lock' is defined in port p_core.h header.
  */
 typedef struct ncore_lock       ncore_lock;
+
+/**@brief		Atomic type
+ * @note        Structure 'ncore_atomic' is defined in port p_core.h header.
+ */
+typedef struct ncore_atomic		ncore_atomic;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -87,21 +95,75 @@ void ncore_term(void);
 
 
 uint_fast8_t ncore_log2(
-    ncpu_reg                    value);
+    ncore_reg                   value);
 
 
-ncpu_reg ncore_exp2(
+ncore_reg ncore_exp2(
     uint_fast8_t                value);
 
 
 
-void ncore_sat_increment(
-    ncpu_reg *                  value);
+/**@brief       Write the value to reference integer value
+ */
+void ncore_ref_write(
+    struct ncore_ref *          ref,
+	uint32_t					value);
 
 
 
-void ncore_sat_decrement(
-    ncpu_reg *                  value);
+/**@brief       Read the value from reference integer value
+ */
+int32_t ncore_ref_read(
+	struct ncore_ref *          ref);
+
+
+
+/**@brief       Increment reference integer value
+ */
+void ncore_ref_increment(
+	struct ncore_ref *      	ref);
+
+
+
+/**@brief       Decrement reference integer value
+ */
+void ncore_ref_decrement(
+	struct ncore_ref *          ref);
+
+
+
+/**@brief		Atomically read the integer value of v
+ */
+int32_t ncore_atomic_read(struct ncore_atomic * v);
+
+
+
+/**@brief		Atomically set v equal to i
+ */
+void ncore_atomic_write(struct ncore_atomic * v, int32_t i);
+
+
+
+/**@brief		Atomically increment v by one
+ */
+void ncore_atomic_inc(struct ncore_atomic * v);
+
+
+/**@brief		Atomically decrement v by one
+ */
+void ncore_atomic_dec(struct ncore_atomic * v);
+
+
+/**@brief		Atomically increment v by one and return true if zero; false
+ * 				otherwise
+ */
+bool ncore_atomic_inc_and_test(struct ncore_atomic * v);
+
+
+/**@brief		Atomically decrement v by one and return true if zero; false
+ * 				otherwise
+ */
+bool ncore_atomic_dec_and_test(struct ncore_atomic * v);
 
 
 

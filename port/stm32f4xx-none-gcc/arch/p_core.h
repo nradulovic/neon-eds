@@ -73,11 +73,16 @@ extern "C" {
 
 /**@brief General purpose registers are 32bit wide.
  */
-typedef unsigned int ncpu_reg;
+typedef unsigned int ncore_reg;
 
 typedef unsigned int ncpu_size;
 
 typedef   signed int ncpu_ssize;
+
+struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
+{
+	uint32_t					value;
+};
 
 /**@brief       Interrupt context structure
  * @details     This type is used to declare variable type which will hold
@@ -88,15 +93,18 @@ struct ncore_lock
     unsigned int                level;
 };
 
+struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
+{
+	int32_t						value;
+};
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-/**@brief       Computes integer logarithm base 2
- */
 PORT_C_INLINE_ALWAYS
 uint_fast8_t ncore_log2(
-    ncpu_reg                    value)
+    ncore_reg                    value)
 {
     uint_fast8_t                clz;
 
@@ -111,10 +119,8 @@ uint_fast8_t ncore_log2(
 
 
 
-/**@brief       Computes integer exponent base 2
- */
 PORT_C_INLINE_ALWAYS
-ncpu_reg ncore_exp2(
+ncore_reg ncore_exp2(
     uint_fast8_t                value)
 {
     return (0x1u << value);
@@ -122,34 +128,47 @@ ncpu_reg ncore_exp2(
 
 
 
-/**@brief       Increment integer value with saturation arithmetic
- */
 PORT_C_INLINE_ALWAYS
-void ncore_sat_increment(
-    ncpu_reg *                  value)
+void ncore_ref_write(
+    struct ncore_ref *          ref,
+	uint32_t					value)
 {
-    if (*value != NCPU_REG_MAX) {
-        (*value)++;
+	ref->value = value;
+}
+
+
+
+PORT_C_INLINE_ALWAYS
+int32_t ncore_ref_read(
+	struct ncore_ref *          ref)
+{
+    return (ref->value);
+}
+
+
+
+PORT_C_INLINE_ALWAYS
+void ncore_ref_increment(
+	struct ncore_ref *      	ref)
+{
+    if (ref->value != UINT32_MAX) {
+        ref++;
     }
 }
 
 
 
-/**@brief       Decrement integer value with saturation arithmetic
- */
 PORT_C_INLINE_ALWAYS
-void ncore_sat_decrement(
-    ncpu_reg *                  value)
+void ncore_ref_decrement(
+	struct ncore_ref *          ref)
 {
-    if (*value != 0u) {
-        (*value)--;
+    if (ref->value != 0u) {
+        ref--;
     }
 }
 
 
 
-/**@brief       Lock the port core
- */
 PORT_C_INLINE
 void ncore_lock_enter(
     struct ncore_lock *          lock)
@@ -181,8 +200,6 @@ void ncore_lock_enter(
 
 
 
-/**@brief       Unlock the port core
- */
 PORT_C_INLINE
 void ncore_lock_exit(
     struct ncore_lock *          lock)

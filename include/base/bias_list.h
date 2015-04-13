@@ -41,7 +41,7 @@
 /*===============================================================  MACRO's  ==*/
 
 #define NDLIST_TO_BIAS_LIST(node)                                               \
-    CONTAINER_OF(node, struct nbias_list, list)
+    PORT_C_CONTAINER_OF(node, struct nbias_list, list)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
