@@ -31,7 +31,6 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "port/atomic.h"
 #include "port/compiler.h"
 #include "port/core.h"
 
