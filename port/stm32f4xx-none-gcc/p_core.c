@@ -112,7 +112,7 @@ PORT_C_INLINE
 void cpu_init(void)
 {
     __asm__ __volatile__(
-        "@  ncpu_init                                       \n"
+        "@  cpu_init                                        \n"
         "   clrex                                           \n");
                                               /* Clear the exclusive monitor. */
 }
@@ -124,6 +124,7 @@ void cpu_term(void)
 {
     for (;;) {
         __asm__ __volatile__(
+			"@  cpu_term                                    \n"
             "   wfe                                         \n");
     }
 }
@@ -134,7 +135,7 @@ PORT_C_INLINE
 void isr_global_enable(void)
 {
     __asm __volatile__ (
-        "@  nisr_enable                                     \n"
+        "@  isr_global_enable                               \n"
         "   cpsie   i                                       \n");
 }
 
@@ -144,7 +145,7 @@ PORT_C_INLINE
 void isr_global_disable(void)
 {
     __asm __volatile__ (
-        "@  nisr_disable                                    \n"
+        "@  isr_global_disable                              \n"
         "   cpsid   i                                       \n");
 }
 
@@ -244,8 +245,7 @@ void ncore_term(void)
 
 void ncore_idle(void)
 {
-    __asm__ __volatile__(
-        "   wfe                                         \n");
+    cpu_term();
 }
 
 
