@@ -36,6 +36,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+#include <stddef.h>
 
 #include "port/compiler.h"
 #include "base/config.h"
