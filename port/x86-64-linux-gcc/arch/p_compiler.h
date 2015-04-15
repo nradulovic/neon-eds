@@ -82,7 +82,7 @@
  * @param       member
  *              the name of the member within the struct.
  */
-#define CONTAINER_OF(ptr, type, member)                                         \
+#define PORT_C_CONTAINER_OF(ptr, type, member)                                         \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
 /*-------------------------------------------------------  C++ extern base  --*/
