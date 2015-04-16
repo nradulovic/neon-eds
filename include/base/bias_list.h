@@ -72,6 +72,15 @@ void nbias_list_init(
 
 
 PORT_C_INLINE
+void nbias_list_reinit(
+	struct nbias_list *			node)
+{
+	ndlist_init(&node->list);
+}
+
+
+
+PORT_C_INLINE
 void nbias_list_term(
     struct nbias_list *         node)
 {
