@@ -261,6 +261,7 @@ void nprio_queue_remove(
 #endif
     } else {
         nbias_list_remove(node);
+        nbias_list_reinit(node);
     }
 }
 
@@ -301,7 +302,7 @@ struct nbias_list * nprio_queue_peek(
     bucket = 0u;
 #endif
 
-    return (nbias_list_tail(queue->sentinel[bucket]));
+    return (queue->sentinel[bucket]);
 }
 
 
