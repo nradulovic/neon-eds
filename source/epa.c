@@ -153,7 +153,7 @@ void nepa_init(
 {
     ncore_lock                  sys_lock;
 
-    NREQUIRE(NAPI_OBJECT,  N_IS_EPA_OBJECT(epa));
+    NREQUIRE(NAPI_OBJECT,  !N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_POINTER, define != NULL);
 
     epa->mem = NULL;
