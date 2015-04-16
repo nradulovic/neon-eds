@@ -155,7 +155,7 @@ void ncore_ref_increment(
 	struct ncore_ref *      	ref)
 {
     if (ref->value != UINT32_MAX) {
-        ref++;
+    	ref->value++;
     }
 }
 
@@ -166,7 +166,7 @@ void ncore_ref_decrement(
 	struct ncore_ref *          ref)
 {
     if (ref->value != 0u) {
-        ref--;
+    	ref->value--;
     }
 }
 
