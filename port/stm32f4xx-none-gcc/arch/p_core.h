@@ -152,7 +152,7 @@ void ncore_ref_increment(
 	struct ncore_ref *      	ref)
 {
     if (ref->value != UINT32_MAX) {
-        ref++;
+        ref->value++;
     }
 }
 
@@ -163,12 +163,15 @@ void ncore_ref_decrement(
 	struct ncore_ref *          ref)
 {
     if (ref->value != 0u) {
-        ref--;
+        ref->value--;
     }
 }
 
 
 
+/*
+ * TODO: Write this thread safe and in assembler.
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
@@ -177,6 +180,9 @@ void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 
 
 
+/*
+ * TODO: Write this thread safe and in assembler.
+ */
 PORT_C_INLINE_ALWAYS
 int32_t ncore_atomic_read(
 	struct ncore_atomic *       ref)
@@ -186,6 +192,9 @@ int32_t ncore_atomic_read(
 
 
 
+/*
+ * TODO: Write this thread safe and in assembler.
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_inc(
 	struct ncore_atomic *      	ref)
@@ -197,6 +206,9 @@ void ncore_atomic_inc(
 
 
 
+/*
+ * TODO: Write this thread safe and in assembler.
+ */
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_dec(
 	struct ncore_atomic *        ref)
