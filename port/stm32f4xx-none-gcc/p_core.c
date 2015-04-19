@@ -120,6 +120,17 @@ void cpu_init(void)
 
 
 PORT_C_INLINE
+void cpu_sleep(void)
+{
+
+    __asm__ __volatile__(
+        "@  cpu_sleep                                       \n"
+        "   wfe                                             \n");
+}
+
+
+
+PORT_C_INLINE
 void cpu_term(void)
 {
     /*
@@ -128,9 +139,7 @@ void cpu_term(void)
      */
 #if (CONFIG_DEBUG != 1)
     for (;;) {
-        __asm__ __volatile__(
-			"@  cpu_term                                    \n"
-            "   wfe                                         \n");
+        cpu_sleep();
     }
 #endif
 }
@@ -251,7 +260,7 @@ void ncore_term(void)
 
 void ncore_idle(void)
 {
-    cpu_term();
+    cpu_sleep();
 }
 
 
