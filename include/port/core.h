@@ -113,7 +113,7 @@ void ncore_ref_write(
 
 /**@brief       Read the value from reference integer value
  */
-int32_t ncore_ref_read(
+uint32_t ncore_ref_read(
 	struct ncore_ref *          ref);
 
 

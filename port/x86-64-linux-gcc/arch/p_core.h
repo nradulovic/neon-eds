@@ -142,7 +142,7 @@ void ncore_ref_write(
 
 
 PORT_C_INLINE_ALWAYS
-int32_t ncore_ref_read(
+uint32_t ncore_ref_read(
 	struct ncore_ref *          ref)
 {
     return (ref->value);
