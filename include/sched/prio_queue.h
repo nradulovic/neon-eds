@@ -75,7 +75,7 @@ struct nprio_queue
                                          NCPU_DATA_WIDTH)];                     /**<@brief Bucket indicator           */
     }                           bitmap;                                         /**<@brief Priority bitmap            */
 #endif  /* (CONFIG_PRIORITY_BUCKETS != 1) */
-    struct nbias_list *         sentinel[CONFIG_PRIORITY_BUCKETS];
+    struct nbias_list           sentinel[CONFIG_PRIORITY_BUCKETS];
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -206,7 +206,7 @@ void nprio_queue_init(
     count = NARRAY_DIMENSION(queue->sentinel);
 
     while (count-- != 0u) {                                                     /* Initialize each list entry.        */
-        queue->sentinel[count] = NULL;
+        nbias_list_init(&queue->sentinel[count], NBIAS_LIST_MAX_PRIO);
     }
 }
 
@@ -225,18 +225,16 @@ void nprio_queue_insert(
     bucket = 0u;
 #endif
 
-    if (queue->sentinel[bucket] == NULL) {                                      /* If adding the first entry in list. */
-        queue->sentinel[bucket] = node;
 #if (CONFIG_PRIORITY_BUCKETS != 1)
+    if (nbias_list_is_empty(&queue->sentinel[bucket])) {                        /* If adding the first entry in list. */
         nbitmap_set(&queue->bitmap, bucket);                                    /* Mark the bucket list as used.      */
-#endif
-    } else {
-#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
-        nbias_list_sort_insert(queue->sentinel[bucket], node);                  /* Priority search and insertion.     */
-#else
-        nbias_list_fifo_insert(queue->sentinel[bucket], node);                  /* FIFO insertion.                    */
-#endif
     }
+#endif
+#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
+    nbias_list_sort_insert(&queue->sentinel[bucket], node);                     /* Priority search and insertion.     */
+#else
+    nbias_list_fifo_insert(&queue->sentinel[bucket], node);                     /* FIFO insertion.                    */
+#endif
 }
 
 
@@ -253,20 +251,13 @@ void nprio_queue_remove(
 #else
     bucket = 0u;
 #endif
+    nbias_list_remove(node);
 
-    if (nbias_list_is_empty(node)) {                                            /* If this was the last node in list. */
-        queue->sentinel[bucket] = NULL;
 #if (CONFIG_PRIORITY_BUCKETS != 1)
+    if (nbias_list_is_empty(&queue->sentinel[bucket])) {                        /* If this was the last node in list. */
         nbitmap_clear(&queue->bitmap, bucket);                                  /* Mark the bucket as unused.         */
-#endif
-    } else {
-
-        if (queue->sentinel[bucket] == node) {
-            queue->sentinel[bucket] = nbias_list_next(node);
-        }
-        nbias_list_remove(node);
-        nbias_list_reinit(node);
     }
+#endif
 }
 
 
@@ -284,11 +275,11 @@ void nprio_queue_rotate(
     bucket = 0u;
 #endif
 
-#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
     nbias_list_remove(node);                                                    /* Remove node from bucket.           */
-    nbias_list_sort_insert(queue->sentinel[bucket], node);                      /* Insert the thread at new position. */
+#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
+    nbias_list_sort_insert(&queue->sentinel[bucket], node);                     /* Insert the thread at new position. */
 #else
-    queue->sentinel[bucket] = nbias_list_next(queue->sentinel[bucket]);
+    nbias_list_fifo_insert(&queue->sentinel[bucket], node);                     /* Insert the thread at new position. */
 #endif
 }
 
@@ -306,7 +297,7 @@ struct nbias_list * nprio_queue_peek(
     bucket = 0u;
 #endif
 
-    return (queue->sentinel[bucket]);
+    return (nbias_list_next(&queue->sentinel[bucket]));
 }
 
 
@@ -318,11 +309,7 @@ bool nprio_queue_is_empty(
 #if (CONFIG_PRIORITY_BUCKETS != 1)
     return (nbitmap_is_empty(&queue->bitmap));
 #else
-    if (queue->sentinel[0] == NULL) {
-        return (true);
-    } else {
-        return (false);
-    }
+    return (nbias_list_is_empty(&queue->sentinel[0]));
 #endif
 }
 
