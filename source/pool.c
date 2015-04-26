@@ -36,6 +36,15 @@
 #include "mm/pool.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+/**@brief       Validate the pointer to pool memory object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_POOL_OBJECT(mem_obj)                                               \
+    (((mem_obj) != NULL) && ((mem_obj)->signature == NSIGNATURE_POOL))
+
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Pool allocator header structure
@@ -48,13 +57,13 @@ struct pool_block
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 static void * pool_alloc_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     size_t                      size);
 
 
 
 static void pool_free_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     void *                      mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
@@ -66,44 +75,42 @@ static const NCOMPONENT_DEFINE("Pool Memory Module", "Nenad Radulovic");
 
 
 static void * pool_alloc_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     size_t                      size)
 {
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_POOL);
+    struct pool_block *         block;
 
+    NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
+
+    block = NULL;
     (void)size;
 
-    if (mem_class->base != NULL) {
-        struct pool_block *     block;
-
-        block            = mem_class->base;
-        mem_class->base  = block->next;
-        mem_class->free -= mem_class->size;
-
-        return ((void *)block);
-    } else {
-        return (NULL);
+    if (mem_obj->base != NULL) {
+        block          = mem_obj->base;
+        mem_obj->base  = block->next;
+        mem_obj->free -= mem_obj->size;
     }
+
+    NENSURE("pool memory not allocated", block != NULL);
+
+    return ((void *)block);
 }
 
 
 
-
 static void pool_free_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     void *                      mem)
 {
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_POOL);
+    NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     struct pool_block *         block;
 
     block            = (struct pool_block *)mem;
-    block->next      = mem_class->base;
-    mem_class->base  = block;
-    mem_class->free += mem_class->size;
+    block->next      = mem_obj->base;
+    mem_obj->base  = block;
+    mem_obj->free += mem_obj->size;
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/

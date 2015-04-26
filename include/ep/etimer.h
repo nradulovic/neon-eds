@@ -37,6 +37,15 @@
 #include "timer/timer.h"
 
 /*===============================================================  MACRO's  ==*/
+
+/**@brief       Validate the pointer to Event Timer object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_ETIMER_OBJECT(etimer_obj)                                          \
+    (((etimer_obj) != NULL) && ((etimer_obj)->signature == NSIGNATURE_ETIMER))
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -62,6 +71,12 @@ struct netimer
 
 void netimer_init(
     struct netimer *            timer);
+
+
+
+void netimer_term(
+    struct netimer *            timer);
+
 
 
 void netimer_after(

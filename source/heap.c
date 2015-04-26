@@ -37,6 +37,15 @@
 #include "mm/heap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+/**@brief       Validate the pointer to heap memory object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_HEAP_OBJECT(mem_obj)                                               \
+    (((mem_obj) != NULL) && ((mem_obj)->signature == NSIGNATURE_HEAP))
+
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Dynamic allocator memory block header structure
@@ -59,13 +68,13 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) heap_block
 
 
 static void * heap_alloc_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     size_t                      size);
 
 
 
 static void heap_free_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     void *                      mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
@@ -77,19 +86,19 @@ static const NCOMPONENT_DEFINE("Heap Memory Management", "Nenad Radulovic");
 
 
 static void * heap_alloc_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     size_t                      size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         curr;
+    void *                      mem;
 
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_HEAP);
-    NREQUIRE(NAPI_RANGE,   (size != 0u) && (size < NCPU_SSIZE_MAX));
+    NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
+    NREQUIRE(NAPI_RANGE,  (size != 0u) && (size < NCPU_SSIZE_MAX));
 
-
+    mem      = NULL;
     size     = NALIGN_UP(size, sizeof(struct heap_phy [1]));
-    sentinel = mem_class->base;
+    sentinel = mem_obj->base;
     curr     = sentinel->free.next;
 
     while (curr != sentinel) {
@@ -99,8 +108,6 @@ static void * heap_alloc_i(
             if (curr->phy.size >
                 (ncpu_ssize)(size + sizeof(struct heap_block [1]))) {
                 struct heap_block * tmp;
-                void *              mem;
-
                                        /* Create smaller free block           */
                 mem            = (void *)(&curr->free);
                                        /* Point back to the current block     */
@@ -123,10 +130,8 @@ static void * heap_alloc_i(
                                        /* Point to the newly created block    */
                 curr->phy.prev = tmp;
 
-                return (mem);
+                break;
             } else {
-                void *               mem;
-
                                       /* Remove current block from free list  */
                                       /* and mark it block as allocated       */
                 mem                        = (void *)(&curr->free);
@@ -134,25 +139,26 @@ static void * heap_alloc_i(
                 curr->free.prev->free.next = curr->free.next;
                 curr->phy.size             = curr->phy.size * (-1);
 
-                return (mem);
+                break;
             }
         }
         curr = curr->free.next;
     }
 
-    return (NULL);
+    NENSURE("heap memory not allocated", mem != NULL);
+
+    return (mem);
 }
 
 
 static void heap_free_i(
-    struct nmem *               mem_class,
+    struct nmem *               mem_obj,
     void *                      mem)
 {
     struct heap_block *         curr;
     struct heap_block *         tmp;
 
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_HEAP);
+    NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
     NREQUIRE(NAPI_POINTER, mem != NULL);
 
     curr           = (struct heap_block *)
@@ -185,7 +191,7 @@ static void heap_free_i(
             sizeof(struct heap_phy [1]));
         tmp->phy.prev              = curr->phy.prev;
     } else {                                                                    /* Previous and next blocks are used    */
-        struct heap_block *     sentinel = mem_class->base;
+        struct heap_block *     sentinel = mem_obj->base;
 
         curr->free.next            = sentinel->free.next;
         curr->free.prev            = sentinel;
@@ -252,10 +258,10 @@ void nheap_term(
 
 
 void * nheap_alloc_i(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     size_t                      size)
 {
-    return (heap_alloc_i(&heap->mem_class, size));
+    return (heap_alloc_i(&heap_obj->mem_class, size));
 }
 
 
@@ -264,7 +270,7 @@ void * nheap_alloc(
     struct nheap *              heap,
     size_t                      size)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
     void *                      mem;
 
     ncore_lock_enter(&sys_lock);

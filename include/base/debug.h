@@ -102,26 +102,6 @@
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        Internal checking
- * @brief       These macros are enabled/disabled using the option
- *              @ref CONFIG_DEBUG_INTERNAL_CHECK.
- * @{ *//*--------------------------------------------------------------------*/
-
-/**@brief       Assert macro used for internal execution checking
- * @param       msg
- *              Message : a standard error message, see
- *              @ref Standard error messages.
- * @param       expr
- *              Expression : C expression : condition which must be 'true'.
- * @api
- */
-#if (CONFIG_DEBUG_INTERNAL == 1)
-# define NASSERT_INTERNAL(msg, expr)        NASSERT(msg, expr)
-#else
-# define NASSERT_INTERNAL(msg, expr)        (void)0
-#endif
-
-/**@} *//*----------------------------------------------------------------*//**
  * @name        API contract validation
  * @brief       These macros are enabled/disabled using the option
  *              @ref CONFIG_DEBUG_API_VALIDATION.
@@ -153,21 +133,6 @@
 #endif
 
 /**@brief       Make sure the callee has fulfilled all contract postconditions
- * @param       expr
- *              Expression : C expression : condition which must be 'true'.
- * @api
- */
-#if    (CONFIG_DEBUG == 1)
-# define NENSURE(expr)                                                          \
-    if ((expr) != NERROR_NONE) {                                                \
-        hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, #expr,      \
-            NAPI_CALL);                                                         \
-    }
-#else
-# define NENSURE(expr)                      expr
-#endif
-
-/**@brief       Make sure the caller has fulfilled all contract preconditions
  * @param       msg
  *              Message : a standard error message, see
  *              @ref Standard error messages.
@@ -175,21 +140,30 @@
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if   (CONFIG_API_VALIDATION == 1) && (CONFIG_DEBUG_API == 1)
-# define NREQUIRE_INTERNAL(msg, expr)       NASSERT(msg, expr)
+#if (CONFIG_API_VALIDATION == 1)
+# define NENSURE(msg, expr)                 NASSERT("Method call failure: " msg, expr)
 #else
-# define NREQUIRE_INTERNAL(msg, expr)       (void)0
+# define NENSURE(expr)                      (void)0
 #endif
 
-/**@brief       Make sure the callee has fulfilled all contract postconditions
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        Internal checking
+ * @brief       These macros are enabled/disabled using the option
+ *              @ref CONFIG_DEBUG_INTERNAL_CHECK.
+ * @{ *//*--------------------------------------------------------------------*/
+
+/**@brief       Assert macro used for internal execution checking
+ * @param       msg
+ *              Message : a standard error message, see
+ *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
-#if   (CONFIG_DEBUG_INTERNAL == 1) && (CONFIG_API_VALIDATION == 1)
-# define NENSURE_INTERNAL(expr)             NENSURE(expr)
+#if (CONFIG_ASSERT_INTERNAL == 1) && (CONFIG_DEBUG == 1)
+# define NASSERT_INTERNAL(msg, expr)        NASSERT(msg, expr)
 #else
-# define NENSURE_INTERNAL(expr)             expr
+# define NASSERT_INTERNAL(msg, expr)        (void)0
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -200,9 +174,8 @@
 
 #define NAPI_RANGE                          "Value is out of valid range."
 #define NAPI_OBJECT                         "Object is not valid."
-#define NAPI_POINTER                        "Pointer has null value."
+#define NAPI_POINTER                        "Passed a NULL value pointer."
 #define NAPI_USAGE                          "Object/method usage failure."
-#define NAPI_CALL                           "An API method call has failed."
 #define NASSERT_FAILED                      "Assert failed"
 
 /**@} *//*----------------------------------------------------------------*//**

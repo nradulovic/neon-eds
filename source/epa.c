@@ -39,26 +39,16 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
-
-static void idle_handler(void);
-
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 /**@brief       Provides the basic information about this module
  */
 static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
 
-static void (* g_idle)(void) = idle_handler;
+static void (* g_idle)(void) = ncore_idle;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-
-
-static void idle_handler(void)
-{
-    ncore_idle();
-}
-
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
@@ -116,15 +106,14 @@ void neds_run(void)
             const struct nevent *   event;
             naction                 action;
 
-            nsched_thread_remove_i(thread);                 /* Remove thread from
-                                                             * ready queue.
-                                                             */
+
             epa   = NTHREAD_TO_EPA(thread);                 /* Get EPA pointer */
             event = nequeue_get(&epa->working_queue);       /* Get Event pointer */
             ncore_lock_exit(&lock);
-                                                            /* Dispatch the state
-                                                             * machine
-                                                             */
+            /*
+             * NOTE: Dispatch the state machine. This is a good place to place a
+             * breakpoint when debugging state machines.
+             */
             action = nsm_dispatch(&epa->sm, event);
             ncore_lock_enter(&lock);
 
@@ -137,6 +126,8 @@ void neds_run(void)
             } else {
                 nevent_destroy_i(event);
             }
+            nsched_thread_remove_i(thread);                 /* Block the thread
+                                                             */
         }
         ncore_lock_exit(&lock);
         g_idle();
@@ -153,6 +144,7 @@ void nepa_init(
 {
     ncore_lock                  sys_lock;
 
+    NREQUIRE(NAPI_POINTER, epa != NULL);
     NREQUIRE(NAPI_OBJECT,  !N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_POINTER, define != NULL);
 
@@ -284,6 +276,8 @@ nerror nepa_send_event_i(
     struct nepa *               epa,
     struct nevent *             event)
 {
+    nerror                      error;
+
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
@@ -293,16 +287,18 @@ nerror nepa_send_event_i(
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_fifo(&epa->working_queue, event);
             nsched_thread_insert_i(&epa->thread);
-
-            return (NERROR_NONE);
+            error = NERROR_NONE;
         } else {
             nevent_destroy_i(event);
-
-            return (NERROR_NO_MEMORY);
+            error = NERROR_NO_RESOURCE;
         }
+    } else {
+        error = NERROR_NO_REFERENCE;
     }
 
-    return (NERROR_NO_REFERENCE);
+    NENSURE("event not sent", error == NERROR_NONE);
+
+    return (error);
 }
 
 
@@ -327,6 +323,8 @@ nerror nepa_send_event_ahead_i(
     struct nepa *               epa,
     struct nevent *             event)
 {
+    nerror                      error;
+
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
@@ -336,16 +334,18 @@ nerror nepa_send_event_ahead_i(
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_lifo(&epa->working_queue, event);
             nsched_thread_insert_i(&epa->thread);
-
-            return (NERROR_NONE);
+            error = NERROR_NONE;
         } else {
             nevent_destroy_i(event);
-
-            return (NERROR_NO_MEMORY);
+            error = NERROR_NO_RESOURCE;
         }
+    } else {
+        error = NERROR_NO_REFERENCE;
     }
 
-    return (NERROR_NO_REFERENCE);
+    NENSURE("event not sent", error == NERROR_NONE);
+
+    return (error);
 }
 
 
@@ -359,6 +359,41 @@ nerror nepa_send_event_ahead(
 
     ncore_lock_enter(&sys_lock);
     error = nepa_send_event_ahead_i(epa, event);
+    ncore_lock_exit(&sys_lock);
+
+    return (error);
+}
+
+
+
+nerror nepa_signal_i(
+    struct nepa *               epa,
+    uint16_t                    event_id)
+{
+    nerror                      error;
+    struct nevent *             event;
+
+    event = nevent_create_i(sizeof(struct nevent), event_id);
+
+    if (!event) {
+        return (NERROR_NO_MEMORY);
+    }
+    error = nepa_send_event_i(epa, event);
+
+    return (error);
+}
+
+
+
+nerror nepa_signal(
+    struct nepa *               epa,
+    uint16_t                    event_id)
+{
+    nerror                      error;
+    ncore_lock                  sys_lock;
+
+    ncore_lock_enter(&sys_lock);
+    error = nepa_signal_i(epa, event_id);
     ncore_lock_exit(&sys_lock);
 
     return (error);

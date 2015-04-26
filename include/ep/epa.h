@@ -174,6 +174,18 @@ nerror nepa_send_event_ahead(
     struct nepa *               epa,
     struct nevent *             event);
 
+
+
+nerror nepa_signal_i(
+    struct nepa *               epa,
+    uint16_t                    event_id);
+
+
+
+nerror nepa_signal(
+    struct nepa *               epa,
+    uint16_t                    event_id);
+
 /**@} *//*------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

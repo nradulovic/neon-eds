@@ -54,17 +54,13 @@ void etimer_handler(
     void *                      arg)
 {
     struct netimer *            timer = arg;
-    struct nevent *             event;
 
-    event = nevent_create_i(sizeof(struct nevent), timer->event_id);
-
-    if (event) {
-        nepa_send_event_i(timer->client, event);
-    }
+    nepa_signal_i(timer->client, timer->event_id);
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+
 
 void netimer_init(
     struct netimer *            timer)
@@ -73,7 +69,22 @@ void netimer_init(
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_ETIMER);
 
     ntimer_init(&timer->timer);
+
+    NOBLIGATION(timer->signature = NSIGNATURE_ETIMER);
 }
+
+
+
+void netimer_term(
+    struct netimer *            timer)
+{
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
+    ntimer_term(&timer->timer);
+
+    NOBLIGATION(timer->signature = ~NSIGNATURE_ETIMER);
+}
+
 
 
 void netimer_after(
@@ -81,6 +92,8 @@ void netimer_after(
     ncore_time_tick             tick,
     uint16_t                    event_id)
 {
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
     timer->client   = nepa_get_current();
     timer->event_id = event_id;
     ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_ONE_SHOT);
@@ -93,6 +106,8 @@ void netimer_every(
     ncore_time_tick             tick,
     uint16_t                    event_id)
 {
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
     timer->client   = nepa_get_current();
     timer->event_id = event_id;
     ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_REPEAT);
@@ -103,6 +118,8 @@ void netimer_every(
 void netimer_cancel(
     struct netimer *            timer)
 {
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
     ntimer_cancel(&timer->timer);
 }
 
@@ -111,6 +128,8 @@ void netimer_cancel(
 bool netimer_is_running_i(
     const struct netimer *      timer)
 {
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
     return (ntimer_is_running_i(&timer->timer));
 }
 
@@ -119,6 +138,8 @@ bool netimer_is_running_i(
 ncore_time_tick netimer_remaining(
     const struct netimer *      timer)
 {
+    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+
     return (ntimer_remaining(&timer->timer));
 }
 

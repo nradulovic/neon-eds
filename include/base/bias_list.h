@@ -43,6 +43,8 @@
 #define NDLIST_TO_BIAS_LIST(node)                                               \
     PORT_C_CONTAINER_OF(node, struct nbias_list, list)
 
+#define NBIAS_LIST_MAX_PRIO             255u
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {

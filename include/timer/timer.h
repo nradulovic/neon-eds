@@ -40,6 +40,14 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/**@brief       Validate the pointer to Event Processing Agent object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_TIMER_OBJECT(timer_obj)                                            \
+    (((timer_obj) != NULL) && ((timer_obj)->signature == NSIGNATURE_TIMER))
+
 /**@brief       Convert time (given in seconds) into core timer ticks
  * @param       time_sec
  *              Time in seconds
@@ -106,6 +114,11 @@ typedef struct ntimer ntimer;
 
 
 void ntimer_init(
+    struct ntimer *             timer);
+
+
+
+void ntimer_term(
     struct ntimer *             timer);
 
 

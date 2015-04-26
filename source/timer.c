@@ -102,6 +102,20 @@ void ntimer_init(
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_TIMER);
 
     ndlist_init(&timer->list);
+
+    NOBLIGATION(timer->signature = NSIGNATURE_TIMER);
+}
+
+
+
+void ntimer_term(
+    struct ntimer *             timer)
+{
+    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
+
+    ntimer_cancel(timer);
+
+    NOBLIGATION(timer->signature = ~NSIGNATURE_TIMER);
 }
 
 
@@ -109,17 +123,15 @@ void ntimer_init(
 void ntimer_cancel_i(
     struct ntimer *             timer)
 {
-    NREQUIRE(NAPI_POINTER, timer != NULL);
+    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
 
-    if (!ndlist_is_empty(&timer->list)) {
-        NREQUIRE(NAPI_OBJECT,  timer->signature == NSIGNATURE_TIMER);
+    if (ntimer_is_running_i(timer)) {
 
         if (&g_timer_sentinel != NODE_TO_TIMER(ndlist_next(&timer->list))) {
             NODE_TO_TIMER(ndlist_next(&timer->list))->rtick += timer->rtick;
         }
         remove_timer(timer);
     }
-    NOBLIGATION(timer->signature = ~NSIGNATURE_TIMER);
 }
 
 
@@ -143,10 +155,10 @@ void ntimer_start_i(
     void *                      arg,
     uint8_t                     flags)
 {
-    NREQUIRE(NAPI_POINTER, timer != NULL);
-    NREQUIRE(NAPI_USAGE,   timer->signature != NSIGNATURE_TIMER);
+    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
     NREQUIRE(NAPI_RANGE,   tick > 0);
     NREQUIRE(NAPI_POINTER, fn != NULL);
+    NREQUIRE(NAPI_USAGE, !ntimer_is_running_i(timer));
 
     timer->fn    = fn;
     timer->arg   = arg;
@@ -158,7 +170,6 @@ void ntimer_start_i(
         timer->itick = 0u;
     }
     insert_timer(timer);
-    NOBLIGATION(timer->signature = NSIGNATURE_TIMER);
 }
 
 
@@ -180,13 +191,11 @@ void ntimer_start(
 
 
 bool ntimer_is_running_i(
-    const struct ntimer *       timer) {
-
-    NREQUIRE(NAPI_POINTER, timer != NULL);
+    const struct ntimer *       timer)
+{
+    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
 
     if (!ndlist_is_empty(&timer->list)) {
-        NREQUIRE(NAPI_USAGE, timer->signature == NSIGNATURE_TIMER);
-
         return (true);
     } else {
 
@@ -201,6 +210,8 @@ ncore_time_tick ntimer_remaining(
 {
     ncore_lock                   sys_lock;
     ncore_time_tick              remaining;
+
+    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
 
     remaining = 0u;
     ncore_lock_enter(&sys_lock);
@@ -225,23 +236,21 @@ void ncore_timer_isr(void)
         struct ntimer *         current;
 
         current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
-        NREQUIRE(NAPI_USAGE, NSIGNATURE_TIMER == current->signature);
+        NASSERT_INTERNAL("corrupted timer list", current->signature == NSIGNATURE_TIMER);
         --current->rtick;
 
         while (current->rtick == 0u) {
             struct ntimer *     tmp;
 
-            NREQUIRE(NAPI_USAGE, NSIGNATURE_TIMER == current->signature);
             remove_timer(current);
-            NOBLIGATION(current->signature = ~NSIGNATURE_TIMER);
 
             if (current->itick != 0u) {
                 current->rtick = current->itick;
                 insert_timer(current);
-                NOBLIGATION(current->signature = NSIGNATURE_TIMER);
             }
             tmp     = current;
             current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
+            NASSERT_INTERNAL("corrupted timer list", current->signature == NSIGNATURE_TIMER);
             tmp->fn(tmp->arg);
         }
     }

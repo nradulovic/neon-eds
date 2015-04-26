@@ -74,7 +74,7 @@ typedef struct nheap nheap;
  * @api
  */
 void nheap_init(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     void *                      storage,
     size_t                      size);
 
@@ -86,30 +86,30 @@ void nheap_init(
  * @api
  */
 void nheap_term(
-    struct nheap *              heap);
+    struct nheap *              heap_obj);
 
 
 
 void * nheap_alloc_i(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     size_t                      size);
 
 
 
 void * nheap_alloc(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     size_t                      size);
 
 
 
 void nheap_free_i(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     void *                      mem);
 
 
 
 void nheap_free(
-    struct nheap *              heap,
+    struct nheap *              heap_obj,
     void *                      mem);
 
 /*--------------------------------------------------------  C++ extern end  --*/

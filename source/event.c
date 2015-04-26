@@ -134,9 +134,12 @@ static void event_term(
 static struct nevent * event_create_i(
     size_t                      size)
 {
+    struct nevent *             event;
     uint_fast8_t                cnt;
 
     NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
+
+    event = NULL;
 
 #if (CONFIG_EVENT_STORAGE_NPOOLS != 1)
     for (cnt = 0u; cnt < g_event_storage.pools; cnt++) {
@@ -145,19 +148,17 @@ static struct nevent * event_create_i(
         mem = g_event_storage.mem[cnt];
 
         if (nmem_get_size_i(mem) >= size) {
-            struct nevent *     event;
-
             event = nmem_alloc_i(mem, size);
 
             if (event) {
                 event->mem = mem;
             }
-            
-            return (event);
+            break;
         }
     }
+    NENSURE("event not allocated", event != NULL);
     
-    return (NULL);
+    return (event);
 #else
     struct nmem *               mem;
 
@@ -197,7 +198,7 @@ void nevent_register_mem(
     NREQUIRE(NAPI_USAGE, g_event_storage.pools < CONFIG_EVENT_STORAGE_NPOOLS);
 
     ncore_lock_enter(&sys_lock);
-    NENSURE_INTERNAL(size = nmem_get_size_i(mem));
+    size = nmem_get_size_i(mem);
 
     for (cnt = g_event_storage.pools; cnt > 0u; cnt--) {
         g_event_storage.mem[cnt] = g_event_storage.mem[cnt - 1];
@@ -229,7 +230,7 @@ void nevent_unregister_mem(
     while ((0u < cnt) && (mem != g_event_storage.mem[cnt])) {
         cnt--;
     }
-    NREQUIRE(NAPI_RANGE, mem == g_event_storage.mem[cnt]);
+    NENSURE(NAPI_RANGE, mem == g_event_storage.mem[cnt]);
 
     g_event_storage.pools--;
 
