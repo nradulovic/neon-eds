@@ -260,6 +260,10 @@ void nprio_queue_remove(
         nbitmap_clear(&queue->bitmap, bucket);                                  /* Mark the bucket as unused.         */
 #endif
     } else {
+
+        if (queue->sentinel[bucket] == node) {
+            queue->sentinel[bucket] = nbias_list_next(node);
+        }
         nbias_list_remove(node);
         nbias_list_reinit(node);
     }
