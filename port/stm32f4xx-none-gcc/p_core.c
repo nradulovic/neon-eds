@@ -122,7 +122,6 @@ void cpu_init(void)
 PORT_C_INLINE
 void cpu_sleep(void)
 {
-
     __asm__ __volatile__(
         "@  cpu_sleep                                       \n"
         "   wfe                                             \n");
@@ -133,15 +132,9 @@ void cpu_sleep(void)
 PORT_C_INLINE
 void cpu_term(void)
 {
-    /*
-     * NOTE: Turn off WaitForEvent when in debug mode. Some debuggers have 
-     * trouble working when WFE is enabled.
-     */
-#if (CONFIG_DEBUG != 1)
     for (;;) {
         cpu_sleep();
     }
-#endif
 }
 
 
@@ -260,7 +253,13 @@ void ncore_term(void)
 
 void ncore_idle(void)
 {
+    /*
+     * NOTE: Turn off WaitForEvent when in debug mode. Some debuggers have
+     * trouble working when WFE is enabled.
+     */
+#if (CONFIG_DEBUG != 1)
     cpu_sleep();
+#endif
 }
 
 
