@@ -134,15 +134,11 @@ nerror nepa_fetch_all_deferred(void)
     
     ncore_lock_enter(&lock);
 
-    while (!nequeue_is_empty(&epa->deferred_queue)) {
+    while (!error && !nequeue_is_empty(&epa->deferred_queue)) {
         struct nevent *         event;
         
         event = nequeue_get(&epa->deferred_queue);
         error = nepa_send_event_i(epa, event);
-        
-        if (error) {
-            break;
-        }
     }
     ncore_lock_exit(&lock);
     
