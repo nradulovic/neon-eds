@@ -99,6 +99,57 @@ void nepa_delete_storage(void * storage)
 }
 
 
+nerror nepa_fetch_one_deferred(void)
+{
+    struct ncore_lock           lock;
+    struct nepa *               epa;
+    nerror                      error;
+
+    epa   = nepa_get_current();
+    error = NERROR_NONE;
+    
+    ncore_lock_enter(&lock);
+
+    if (!nequeue_is_empty(&epa->deferred_queue)) {
+        struct nevent *         event;
+        
+        event = nequeue_get(&epa->deferred_queue);
+        error = nepa_send_event_i(epa, event);
+    }
+    ncore_lock_exit(&lock);
+    
+    return (error);
+}
+
+
+
+nerror nepa_fetch_all_deferred(void)
+{
+    struct ncore_lock           lock;
+    struct nepa *               epa;
+    nerror                      error;
+
+    epa   = nepa_get_current();
+    error = NERROR_NONE;
+    
+    ncore_lock_enter(&lock);
+
+    while (!nequeue_is_empty(&epa->deferred_queue)) {
+        struct nevent *         event;
+        
+        event = nequeue_get(&epa->deferred_queue);
+        error = nepa_send_event_i(epa, event);
+        
+        if (error) {
+            break;
+        }
+    }
+    ncore_lock_exit(&lock);
+    
+    return (error);
+}
+
+
 
 void neds_run(void)
 {

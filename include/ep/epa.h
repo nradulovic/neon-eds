@@ -123,9 +123,19 @@ void * nepa_create_storage(size_t size);
 void nepa_delete_storage(void * storage);
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        EPA management
+ * @name        Deferred event management
  * @{ *//*--------------------------------------------------------------------*/
 
+
+nerror nepa_fetch_one_deferred(void);
+
+
+
+nerror nepa_fetch_all_deferred(void);
+
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        EPA management
+ * @{ *//*--------------------------------------------------------------------*/
 
 void nepa_init(
     struct nepa *               epa,
