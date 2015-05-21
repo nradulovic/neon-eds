@@ -82,7 +82,7 @@ void nsched_init(void);
 
 
 
-void nmodule_sched_term(void);
+void nsched_term(void);
 
 
 
