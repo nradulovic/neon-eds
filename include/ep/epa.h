@@ -66,28 +66,49 @@ extern "C" {
 struct nmem;
 struct nevent;
 
+/**@brief       Define structure for an EPA object
+ * @details     Use this structure to define an EPA object. This structure can
+ *              reside in flash memory and once the EPA object is created this
+ *              structure is not used.
+ * @api
+ */
 struct nepa_define
 {
-    struct nsm_define           sm;
+    struct nsm_define           sm;     /**<@brief State machine define       */
     struct nequeue_define       working_queue;
+                                        /**<@brief Working event queue define */
     struct nequeue_define       deffered_queue;
+                                        /**<@brief Deffered event queue define*/
     struct nthread_define       thread;
+                                        /**<@brief Thread definition          */
 };
 
+/**@brief       Define type for EPA object
+ * @api
+ */
 typedef struct nepa_define nepa_define;
 
+/**@brief       EPA object
+ * @api
+ */
 struct nepa
 {
-    struct nmem *               mem;
-    struct nthread              thread;  /**<@brief Thread                    */
-    struct nsm                  sm;
+    struct nmem *               mem;    /**<@brief Memory instance pointer    */
+    struct nthread              thread; /**<@brief Thread                     */
+    struct nsm                  sm;     /**<@brief State machine processor    */
     struct nequeue              working_queue;
+                                        /**<@brief Working event queue        */
     struct nequeue              deferred_queue;
+                                        /**<@brief Deffered event queue       */
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     unsigned int                signature;
+                                        /**<@brief Debug signature            */
 #endif
 };
 
+/**@brief       EPA object type
+ * @api
+ */
 typedef struct nepa nepa;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -103,11 +124,24 @@ void neds_run(void);
 
 
 
+/**@brief       Set an user implementation of idle routine.
+ * @param       idle
+ *              Pointer to idle routine. If this pointer is NULL, portable idle
+ *              routine will be used instead. Usually the portable idle routine
+ *              will put the CPU in sleep state.
+ * @details     Idle routine is called when there is no available EPA for 
+ *              running. Idle routine can be used to run user loop code which 
+ *              are typically used by USB, TCP/IP frameworks.
+ * @api
+ */
 void neds_set_idle(
     void                     (* idle)(void));
 
 
 
+/**@brief       Get currently executed EPA object pointer
+ * @api
+ */
 PORT_C_INLINE
 struct nepa * nepa_get_current(void)
 {
@@ -116,16 +150,38 @@ struct nepa * nepa_get_current(void)
 
 
 
+/**@brief       Allocate memory from memory instance which was used to create
+ *              the EPA object
+ * @api
+ */
 void * nepa_create_storage(size_t size);
 
 
 
+/**@brief       Return allocated memory
+ * @api
+ */
 void nepa_delete_storage(void * storage);
+
+/**@} *//*----------------------------------------------------------------*//**
+ * @name        Deferred event management
+ * @details     When a SM returns naction_deffered() action the currently 
+ *              processed event will be deferred. This means that the event will
+ *              be transferred to deferred event queue. When the SM is ready to
+ *              process new events it can fetch one or all events from deferred
+ *              queue.
+ * @{ *//*--------------------------------------------------------------------*/
+
+
+nerror nepa_fetch_one_deferred(void);
+
+
+
+nerror nepa_fetch_all_deferred(void);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management
  * @{ *//*--------------------------------------------------------------------*/
-
 
 void nepa_init(
     struct nepa *               epa,
@@ -154,13 +210,13 @@ void nepa_destroy(
 
 nerror nepa_send_event_i(
     struct nepa *               epa,
-    struct nevent *             event);
+    const struct nevent *       event);
 
 
 
 nerror nepa_send_event(
     struct nepa *               epa,
-    struct nevent *             event);
+    const struct nevent *       event);
 
 
 
@@ -176,13 +232,13 @@ nerror nepa_send_event_ahead(
 
 
 
-nerror nepa_signal_i(
+nerror nepa_send_signal_i(
     struct nepa *               epa,
     uint16_t                    event_id);
 
 
 
-nerror nepa_signal(
+nerror nepa_send_signal(
     struct nepa *               epa,
     uint16_t                    event_id);
 

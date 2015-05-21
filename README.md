@@ -29,8 +29,7 @@ Main Neon EDS components are:
     project. The kernel does not require any custom linker scripts or start-up 
     files. Assembly code is minimally used in port system. 
 * **Preemption aware**. The system can be coupled with an existing RTOS to 
-    provide preemptive execution if it is needed. Several instances of the 
-    scheduler can be started to provide multiple levels of preemption.
+    provide preemptive execution if it is needed.
 
 
 ### Scheduler

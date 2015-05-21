@@ -55,7 +55,7 @@ void etimer_handler(
 {
     struct netimer *            timer = arg;
 
-    nepa_signal_i(timer->client, timer->event_id);
+    nepa_send_signal_i(timer->client, timer->event_id);
 }
 
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/

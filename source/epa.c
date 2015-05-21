@@ -49,14 +49,17 @@ static void (* g_idle)(void) = ncore_idle;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void neds_set_idle(
     void                     (* idle)(void))
 {
-    g_idle = idle;
+    if (idle) {
+        g_idle = idle;
+    } else {
+        g_idle = ncore_idle;
+    }
 }
 
 
@@ -86,6 +89,53 @@ void nepa_delete_storage(void * storage)
     NASSERT_INTERNAL(NAPI_OBJECT, N_IS_MEM_OBJECT(epa->mem));
 
     nmem_free(epa->mem, storage);
+}
+
+
+nerror nepa_fetch_one_deferred(void)
+{
+    struct ncore_lock           lock;
+    struct nepa *               epa;
+    nerror                      error;
+
+    epa   = nepa_get_current();
+    error = NERROR_NONE;
+    
+    ncore_lock_enter(&lock);
+
+    if (!nequeue_is_empty(&epa->deferred_queue)) {
+        const struct nevent *   event;
+        
+        event = nequeue_get(&epa->deferred_queue);
+        error = nepa_send_event_i(epa, event);
+    }
+    ncore_lock_exit(&lock);
+    
+    return (error);
+}
+
+
+
+nerror nepa_fetch_all_deferred(void)
+{
+    struct ncore_lock           lock;
+    struct nepa *               epa;
+    nerror                      error;
+
+    epa   = nepa_get_current();
+    error = NERROR_NONE;
+    
+    ncore_lock_enter(&lock);
+
+    while (!error && !nequeue_is_empty(&epa->deferred_queue)) {
+        const struct nevent *   event;
+        
+        event = nequeue_get(&epa->deferred_queue);
+        error = nepa_send_event_i(epa, event);
+    }
+    ncore_lock_exit(&lock);
+    
+    return (error);
 }
 
 
@@ -274,7 +324,7 @@ void nepa_destroy(
 
 nerror nepa_send_event_i(
     struct nepa *               epa,
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     nerror                      error;
 
@@ -305,7 +355,7 @@ nerror nepa_send_event_i(
 
 nerror nepa_send_event(
     struct nepa *               epa,
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     nerror                      error;
     ncore_lock                   sys_lock;
@@ -366,7 +416,7 @@ nerror nepa_send_event_ahead(
 
 
 
-nerror nepa_signal_i(
+nerror nepa_send_signal_i(
     struct nepa *               epa,
     uint16_t                    event_id)
 {
@@ -376,6 +426,7 @@ nerror nepa_signal_i(
     event = nevent_create_i(sizeof(struct nevent), event_id);
 
     if (!event) {
+        
         return (NERROR_NO_MEMORY);
     }
     error = nepa_send_event_i(epa, event);
@@ -385,16 +436,16 @@ nerror nepa_signal_i(
 
 
 
-nerror nepa_signal(
+nerror nepa_send_signal(
     struct nepa *               epa,
     uint16_t                    event_id)
 {
     nerror                      error;
-    ncore_lock                  sys_lock;
+    ncore_lock                  lock;
 
-    ncore_lock_enter(&sys_lock);
-    error = nepa_signal_i(epa, event_id);
-    ncore_lock_exit(&sys_lock);
+    ncore_lock_enter(&lock);
+    error = nepa_send_signal_i(epa, event_id);
+    ncore_lock_exit(&lock);
 
     return (error);
 }

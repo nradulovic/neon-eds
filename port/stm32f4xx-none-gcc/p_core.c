@@ -133,7 +133,13 @@ PORT_C_INLINE
 void cpu_term(void)
 {
     for (;;) {
+    /*
+     * NOTE: Turn off WaitForEvent when in debug mode. Some debuggers have 
+     * trouble working when WFE is enabled.
+     */
+#if !defined(NDEBUG) && (CONFIG_DEBUG == 0)
         cpu_sleep();
+#endif
     }
 }
 
@@ -253,11 +259,10 @@ void ncore_term(void)
 
 void ncore_idle(void)
 {
-    /*
-     * NOTE: Turn off WaitForEvent when in debug mode. Some debuggers have
-     * trouble working when WFE is enabled.
+    /* NOTE:
+     * When in debug mode do not use sleep instruction.
      */
-#if (CONFIG_DEBUG != 1)
+#if !defined(NDEBUG) && (CONFIG_DEBUG == 0)
     cpu_sleep();
 #endif
 }
