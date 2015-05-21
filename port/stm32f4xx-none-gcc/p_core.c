@@ -260,7 +260,12 @@ void ncore_term(void)
 
 void ncore_idle(void)
 {
+    /* NOTE:
+     * When in debug mode do not use sleep instruction.
+     */
+#if !defined(NDEBUG) && (CONFIG_DEBUG == 0)
     cpu_sleep();
+#endif
 }
 
 
