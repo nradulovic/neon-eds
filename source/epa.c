@@ -413,7 +413,33 @@ nerror nepa_send_signal_i(
     nerror                      error;
     struct nevent *             event;
 
-    event = nevent_create_i(
+    event = nevent_create_i(sizeof(struct nevent), event_id);
+
+    if (!event) {
+        
+        return (NERROR_NO_MEMORY);
+    }
+    error = nepa_send_event_i(epa, event);
+
+    return (error);
+}
+
+
+
+nerror nepa_send_signal(
+    struct nepa *               epa,
+    uint16_t                    event_id)
+{
+    nerror                      error;
+    ncore_lock                  lock;
+
+    ncore_lock_enter(&lock);
+    error = nepa_send_signal_i(epa, event_id);
+    ncore_lock_exit(&lock);
+
+    return (error);
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of epa.c
