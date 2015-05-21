@@ -39,34 +39,27 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
-
-static void idle_handler(void);
-
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 /**@brief       Provides the basic information about this module
  */
 static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
 
-static void (* g_idle)(void) = idle_handler;
+static void (* g_idle)(void) = ncore_idle;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-
-
-static void idle_handler(void)
-{
-    ncore_idle();
-}
-
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void neds_set_idle(
     void                     (* idle)(void))
 {
-    g_idle = idle;
+    if (idle) {
+        g_idle = idle;
+    } else {
+        g_idle = ncore_idle;
+    }
 }
 
 
