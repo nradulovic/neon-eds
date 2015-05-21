@@ -40,7 +40,7 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-void etimer_handler(
+static void etimer_handler(
     void *                      arg);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
@@ -50,7 +50,7 @@ static const NCOMPONENT_DEFINE("Event Timer", "Nenad Radulovic");
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-void etimer_handler(
+static void etimer_handler(
     void *                      arg)
 {
     struct netimer *            timer = arg;
