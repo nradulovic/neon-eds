@@ -322,7 +322,7 @@ void nepa_destroy(
 
 nerror nepa_send_event_i(
     struct nepa *               epa,
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
@@ -349,7 +349,7 @@ nerror nepa_send_event_i(
 
 nerror nepa_send_event(
     struct nepa *               epa,
-    struct nevent *             event)
+    const struct nevent *       event)
 {
     nerror                      error;
     ncore_lock                   sys_lock;

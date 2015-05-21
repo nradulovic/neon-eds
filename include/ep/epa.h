@@ -210,13 +210,13 @@ void nepa_destroy(
 
 nerror nepa_send_event_i(
     struct nepa *               epa,
-    struct nevent *             event);
+    const struct nevent *       event);
 
 
 
 nerror nepa_send_event(
     struct nepa *               epa,
-    struct nevent *             event);
+    const struct nevent *       event);
 
 
 
