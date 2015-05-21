@@ -31,12 +31,38 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "eds_port.h"
-#include "eds_base.h"
-#include "eds_timer.h"
-#include "eds_mm.h"
-#include "eds_sched.h"
-#include "eds_ep.h"
+/* EDS Port */
+#include "port/compiler.h"
+#include "port/core.h"
+
+/* EDS Base */
+#include "base/bias_list.h"
+#include "base/bitop.h"
+#include "base/component.h"
+#include "base/config.h"
+#include "base/debug.h"
+#include "base/error.h"
+#include "base/list.h"
+#include "base/queue.h"
+
+/* EDS Timer */
+#include "timer/timer.h"
+
+/* EDS Memory Management */
+#include "mm/heap.h"
+#include "mm/mem.h"
+#include "mm/pool.h"
+#include "mm/static.h"
+
+/* EDS Scheduler */
+#include "sched/sched.h"
+
+/* EDS Event Procesing */
+#include "ep/epa.h"
+#include "ep/equeue.h"
+#include "ep/etimer.h"
+#include "ep/event.h"
+#include "ep/smp.h"
 
 /*===============================================================  MACRO's  ==*/
 
