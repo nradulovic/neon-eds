@@ -133,15 +133,15 @@ void cpu_sleep(void)
 PORT_C_INLINE
 void cpu_term(void)
 {
+    for (;;) {
     /*
      * NOTE: Turn off WaitForEvent when in debug mode. Some debuggers have 
      * trouble working when WFE is enabled.
      */
-#if (CONFIG_DEBUG != 1)
-    for (;;) {
+#if !defined(NDEBUG) && (CONFIG_DEBUG == 0)
         cpu_sleep();
-    }
 #endif
+    }
 }
 
 
