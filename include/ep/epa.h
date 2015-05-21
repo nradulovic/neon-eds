@@ -102,7 +102,7 @@ struct nepa
                                         /**<@brief Deffered event queue       */
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     unsigned int                signature;
-                                        /**<@bruef Debug signature            */
+                                        /**<@brief Debug signature            */
 #endif
 };
 
