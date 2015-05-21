@@ -404,6 +404,16 @@ nerror nepa_send_event_ahead(
     return (error);
 }
 
+
+
+nerror nepa_send_signal_i(
+    struct nepa *               epa,
+    uint16_t                    event_id)
+{
+    nerror                      error;
+    struct nevent *             event;
+
+    event = nevent_create_i(
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
  * END of epa.c
