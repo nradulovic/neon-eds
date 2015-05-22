@@ -22,9 +22,11 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Event Processing Agent header
- * @defgroup    ep_epa Event Processing Agent
- * @brief       Event Processing Agent
+ * @addtogroup  ep_intf
  *********************************************************************//** @{ */
+/**@defgroup    ep_epa Event Processing Agent
+ * @brief       Event Processing Agent
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_EP_EPA_H_
 #define NEON_EP_EPA_H_
@@ -126,12 +128,12 @@ void neds_run(void);
 
 /**@brief       Set an user implementation of idle routine.
  * @param       idle
- *              Pointer to idle routine. If this pointer is NULL, portable idle
- *              routine will be used instead. Usually the portable idle routine
- *              will put the CPU in sleep state.
+ *              Pointer to idle routine. If this pointer is NULL the portable
+ *              idle routine will be used instead. Usually the portable idle
+ *              routine will put the CPU in sleep state.
  * @details     Idle routine is called when there is no available EPA for 
- *              running. Idle routine can be used to run user loop code which 
- *              are typically used by USB, TCP/IP frameworks.
+ *              execution. Idle routine can be used to run user loop code which
+ *              is typically used by USB, TCP/IP frameworks.
  * @api
  */
 void neds_set_idle(
@@ -248,7 +250,7 @@ nerror nepa_send_signal(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of epa.h
  ******************************************************************************/
 #endif /* NEON_EP_EPA_H_ */

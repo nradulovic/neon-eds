@@ -22,9 +22,11 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Generic queue header
- * @defgroup    generic_queue Generic queue
- * @brief       Generic queue
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
+/**@defgroup    base_queue Generic Queue
+ * @brief       Generic Queue
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_QUEUE_H_
 #define NEON_BASE_QUEUE_H_
@@ -201,7 +203,7 @@ bool nqueue_is_empty(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of queue.h
  ******************************************************************************/
 #endif /* NEON_BASE_QUEUE_H_ */

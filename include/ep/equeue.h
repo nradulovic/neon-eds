@@ -21,10 +21,12 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Event queue
- * @defgroup    event_queue Event queue
- * @brief       Event queue
+ * @brief       Event queue header
+ * @addtogroup  ep_intf
  *********************************************************************//** @{ */
+/**@defgroup    ep_event_queue Event queue
+ * @brief       Event queue
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_EP_EQUEUE_H_
 #define NEON_EP_EQUEUE_H_
@@ -50,14 +52,23 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+/*
+ * Forward declaration of Event structure
+ */
 struct nevent;
 
+/**@brief       Define structure for Event Queue Object
+ * @api
+ */
 struct nequeue_define
 {
-    struct nevent **            storage;
-    size_t                      size;
+    struct nevent **            storage;/**<@brief Allocated memory storage   */
+    size_t                      size;   /**<@brief Size of queue in bytes     */
 };
 
+/**@brief       Event Queue Object
+ * @api
+ */
 struct nequeue
 {
     struct nqueue               queue;
@@ -152,6 +163,7 @@ bool nequeue_is_empty(
 }
 
 
+
 PORT_C_INLINE
 void * nequeue_storage(
     const struct nequeue *      queue)
@@ -165,7 +177,7 @@ void * nequeue_storage(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of equeue.h
  ******************************************************************************/
 #endif /* NEON_EP_EQUEUE_H_ */

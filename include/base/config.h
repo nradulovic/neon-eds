@@ -21,11 +21,11 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Components configuration header
- * @addtogroup  shared Shared
+ * @brief       Configuration header
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    shared_cfg Components configuration header
- * @brief       Components configuration header
+/**@defgroup    base_configuration Configuration
+ * @brief       Configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_CONFIG_H_
@@ -127,7 +127,7 @@
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        eds: Kernel configuration
+ * @name        eds::sched Scheduler configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Scheduler priority levels
@@ -158,7 +158,7 @@
 
 
 /**@} *//*----------------------------------------------------------------*//**
- * @name        eds: Event object configuration
+ * @name        eds::ep Event Processing configuration
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Attributes of event header structure
@@ -202,10 +202,6 @@
 #if !defined(CONFIG_EVENT_STORAGE_NPOOLS)
 # define CONFIG_EVENT_STORAGE_NPOOLS    2
 #endif
-
-/**@} *//*----------------------------------------------------------------*//**
- * @name        eds: state machine processor
- * @{ *//*--------------------------------------------------------------------*/
 
 #if !defined(CONFIG_SMP_HSM)
 # define CONFIG_SMP_HSM                 1

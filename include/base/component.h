@@ -22,10 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Software component information header
- * @defgroup    common_component Component
- * @brief       Software component information
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    common_component_intf Interface
+/**@defgroup    base_component Software component information
  * @brief       Software component information
  * @{ *//*--------------------------------------------------------------------*/
 

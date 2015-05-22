@@ -22,9 +22,11 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Linked lists header
- * @defgroup    linked_list Linked lists
- * @brief       Linked lists
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
+/**@defgroup    base_list Linked list
+ * @brief       Linked list
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_LIST_H_
 #define NEON_BASE_LIST_H_
@@ -148,7 +150,7 @@ struct ndlist * ndlist_prev(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of list.h
  ******************************************************************************/
 #endif /* NEON_BASE_LIST_H_ */

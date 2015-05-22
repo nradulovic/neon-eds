@@ -21,10 +21,28 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Common Neon include header
+ * @brief       Main Neon include header
  * @defgroup    intf Neon Interface
  * @brief       Interface
  *********************************************************************//** @{ */
+/**@defgroup    port_intf Port
+ * @brief       Port layer
+ */
+/**@defgroup    base_intf Base
+ * @brief       Base
+ */
+/**@defgroup    timer_intf Timer
+ * @brief       Timer
+ */
+/**@defgroup    mm_intf Memory Management
+ * @brief       Memory Management
+ */
+/**@defgroup    sched_intf Cooperative scheduler
+ * @brief       Cooperative scheduler
+ */
+/**@defgroup    ep_intf Event Processing
+ * @brief       Event Processing
+ */
 
 #ifndef NEON_NEON_EDS_H_
 #define NEON_NEON_EDS_H_

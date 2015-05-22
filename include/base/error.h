@@ -22,10 +22,9 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Error enumeration header
- * @defgroup    common_error Error
- * @brief       Error enumeration
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    common_error_intf Interface
+/**@defgroup    base_error Error enumeration
  * @brief       Error enumeration
  * @{ *//*--------------------------------------------------------------------*/
 

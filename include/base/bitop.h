@@ -22,9 +22,11 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Common bit/logic operations
- * @defgroup    bitop_intf Common bit/logic operations
- * @brief       Common bit/logic operations
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
+/**@defgroup    base_bitop Common bit/logic operations
+ * @brief       Common bit/logic operations
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_BITOP_H_
 #define NEON_BASE_BITOP_H_
@@ -180,7 +182,7 @@ bool bitop_is_power_of2(unsigned int value)
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of bitop.h
  ******************************************************************************/
 #endif /* NEON_BASE_BITOP_H_ */

@@ -21,13 +21,11 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Debug module header
- * @defgroup    common_debug Debug
- * @brief       Basic debugging support
+ * @brief       Debugging support header
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    common_debug_intf Interface
- * @brief       Basic debugging support
- * @details     For more details see @ref errors_intro.
+/**@defgroup    base_debug Debugging support
+ * @brief       Debugging support
  * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_DEBUG_H_

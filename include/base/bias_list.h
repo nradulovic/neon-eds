@@ -22,9 +22,11 @@
  * @file
  * @author      Nenad Radulovic
  * @brief       Bias linked lists header
- * @defgroup    bias_linked_list Bias linked lists
- * @brief       Bias linked lists
+ * @addtogroup  base_intf
  *********************************************************************//** @{ */
+/**@defgroup    base_bias_list Bias linked lists
+ * @brief       Bias linked lists
+ * @{ *//*--------------------------------------------------------------------*/
 
 #ifndef NEON_BASE_BIAS_LIST_H_
 #define NEON_BASE_BIAS_LIST_H_
@@ -194,7 +196,7 @@ void nbias_list_set_bias(
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
-/** @endcond *//** @} *//******************************************************
+/** @endcond *//** @} *//** @} *//*********************************************
  * END of bias_list.h
  ******************************************************************************/
 #endif /* NEON_BASE_BIAS_LIST_H_ */
