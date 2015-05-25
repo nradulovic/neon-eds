@@ -182,8 +182,7 @@ static void event_destroy_i(
     nmem_free_i(event->mem, event);
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 

@@ -91,8 +91,7 @@ static void remove_timer(
     ndlist_init(&timer->list);
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void ntimer_init(

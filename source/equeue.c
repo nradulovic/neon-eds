@@ -43,8 +43,7 @@ static const NCOMPONENT_DEFINE("Event Queue", "Nenad Radulovic");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 void nequeue_init(
     struct nequeue *            queue,

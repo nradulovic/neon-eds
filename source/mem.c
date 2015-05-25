@@ -41,8 +41,7 @@
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void * nmem_alloc(
@@ -82,7 +81,7 @@ void nmem_free(
     struct nmem *               mem,
     void *                      mem_storage)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
 
     ncore_lock_enter(&sys_lock);
     nmem_free_i(mem, mem_storage);

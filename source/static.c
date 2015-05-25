@@ -87,8 +87,7 @@ static void static_free_i(
     NASSERT_ALWAYS("illegal static memory call");
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void nstatic_init(
@@ -112,9 +111,7 @@ void nstatic_init(
 
 
 
-void * nstatic_alloc_i(
-    struct nstatic *            static_obj,
-    size_t                      size)
+void * nstatic_alloc_i(struct nstatic * static_obj, size_t size)
 {
     return (static_alloc_i(&static_obj->mem_class, size));
 }

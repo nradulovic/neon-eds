@@ -354,8 +354,7 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
     return (ret);
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)

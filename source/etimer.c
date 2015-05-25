@@ -58,8 +58,7 @@ static void etimer_handler(
     nepa_send_signal_i(timer->client, timer->event_id);
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void netimer_init(

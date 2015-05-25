@@ -113,8 +113,7 @@ static void pool_free_i(
     mem_obj->free += mem_obj->size;
 }
 
-/*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
-/*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void npool_init(
@@ -198,5 +197,5 @@ void npool_free(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of pool_mem.c
+ * END of pool.c
  ******************************************************************************/

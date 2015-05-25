@@ -163,15 +163,17 @@ static void heap_free_i(
 
     curr           = (struct heap_block *)
         ((uint8_t *)mem - offsetof(struct heap_block, free));
-    curr->phy.size = (ncpu_ssize)curr->phy.size * (-1);                         /* Mark block as free                   */
+    curr->phy.size = (ncpu_ssize)curr->phy.size * (-1); /* Mark block as free */
     tmp            = (struct heap_block *)
         ((uint8_t *)curr + curr->phy.size + sizeof(struct heap_phy [1]));
 
-    if ((curr->phy.prev->phy.size > 0) && (tmp->phy.size < 0)) {                /* Previous block is free               */
+                                                    /* Previous block is free */
+    if ((curr->phy.prev->phy.size > 0) && (tmp->phy.size < 0)) {                
         curr->phy.prev->phy.size  += curr->phy.size;
         curr->phy.prev->phy.size  += (ncpu_ssize)sizeof(struct heap_phy [1]);
         tmp->phy.prev              = curr->phy.prev;
-    } else if ((curr->phy.prev->phy.size < 0) && (tmp->phy.size > 0)) {         /* Next block is free                   */
+                                                        /* Next block is free */
+    } else if ((curr->phy.prev->phy.size < 0) && (tmp->phy.size > 0)) {         
         curr->free.next            = tmp->free.next;
         curr->free.prev            = tmp->free.prev;
         curr->free.prev->free.next = curr;
@@ -181,7 +183,8 @@ static void heap_free_i(
         tmp                        = (struct heap_block *)
             ((uint8_t *)curr + curr->phy.size + sizeof(struct heap_phy [1]));
         tmp->phy.prev              = curr;
-    } else if ((curr->phy.prev->phy.size > 0) && (tmp->phy.size > 0)) {         /* Previous and next blocks are free    */
+                                         /* Previous and next blocks are free */
+    } else if ((curr->phy.prev->phy.size > 0) && (tmp->phy.size > 0)) {         
         tmp->free.prev->free.next  = tmp->free.next;
         tmp->free.next->free.prev  = tmp->free.prev;
         curr->phy.prev->phy.size  += curr->phy.size + tmp->phy.size;
@@ -190,7 +193,8 @@ static void heap_free_i(
             ((uint8_t *)curr->phy.prev + curr->phy.prev->phy.size +
             sizeof(struct heap_phy [1]));
         tmp->phy.prev              = curr->phy.prev;
-    } else {                                                                    /* Previous and next blocks are used    */
+                                      /* Previous and next blocks are used    */
+    } else {                                                                    
         struct heap_block *     sentinel = mem_obj->base;
 
         curr->free.next            = sentinel->free.next;

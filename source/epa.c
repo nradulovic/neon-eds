@@ -52,8 +52,7 @@ static void (* g_idle)(void) = ncore_idle;
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void neds_set_idle(
-    void                     (* idle)(void))
+void neds_set_idle(void (* idle)(void))
 {
     if (idle) {
         g_idle = idle;
@@ -148,17 +147,15 @@ void neds_run(void)
     ncore_lock_enter(&lock);
 
     for (;;) {
-                                                            /* Fetch a new thread
-                                                             * ready for execution.
-                                                             */
+                                   /* Fetch a new thread ready for execution. */
         while ((thread = nsched_schedule_i())) {
             struct nepa *           epa;
             const struct nevent *   event;
             naction                 action;
 
 
-            epa   = NTHREAD_TO_EPA(thread);                 /* Get EPA pointer */
-            event = nequeue_get(&epa->working_queue);       /* Get Event pointer */
+            epa   = NTHREAD_TO_EPA(thread);                /* Get EPA pointer */
+            event = nequeue_get(&epa->working_queue);    /* Get Event pointer */
             ncore_lock_exit(&lock);
             /*
              * NOTE: Dispatch the state machine. This is a good place to place a
@@ -169,15 +166,12 @@ void neds_run(void)
 
             if ((action == NACTION_DEFERRED) &&
                 !nequeue_is_full(&epa->deferred_queue)) {
-                                                            /* Put the event back
-                                                             * in deferred queue
-                                                             */
+                                      /* Put the event back in deferred queue */
                 nequeue_put_fifo(&epa->deferred_queue, event);
             } else {
                 nevent_destroy_i(event);
             }
-            nsched_thread_remove_i(thread);                 /* Block the thread
-                                                             */
+            nsched_thread_remove_i(thread);               /* Block the thread */
         }
         ncore_lock_exit(&lock);
         g_idle();
@@ -188,9 +182,7 @@ void neds_run(void)
 
 
 
-void nepa_init(
-    struct nepa *               epa,
-    const struct nepa_define *  define)
+void nepa_init(struct nepa * epa, const struct nepa_define * define)
 {
     ncore_lock                  sys_lock;
 
@@ -216,8 +208,7 @@ void nepa_init(
 
 
 
-void nepa_term(
-    struct nepa *               epa)
+void nepa_term(struct nepa * epa)
 {
     ncore_lock                  sys_lock;
 
@@ -249,9 +240,7 @@ void nepa_term(
 
 
 
-struct nepa * nepa_create(
-    const struct nepa_define *  define,
-    struct nmem *               mem)
+struct nepa * nepa_create(const struct nepa_define * define, struct nmem * mem)
 {
     struct nepa *               epa;
     struct nepa_define          l_define;
@@ -268,8 +257,7 @@ struct nepa * nepa_create(
     }
     l_working_define.storage = NULL;
     l_working_define.size    = define->working_queue.size;
-                                                            /* Check if size != 0 in order to avoid
-                                                             * calling malloc() with 0 bytes */
+        /* Check if size != 0 in order to avoid calling malloc() with 0 bytes */
     if (l_working_define.size) {
         l_working_define.storage = nmem_alloc(mem, l_working_define.size);
 
@@ -306,8 +294,7 @@ ERROR_ALLOC_EPA:
 
 
 
-void nepa_destroy(
-    struct nepa *               epa)
+void nepa_destroy(struct nepa * epa)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
@@ -322,9 +309,7 @@ void nepa_destroy(
 
 
 
-nerror nepa_send_event_i(
-    struct nepa *               epa,
-    const struct nevent *       event)
+nerror nepa_send_event_i(struct nepa * epa, const struct nevent * event)
 {
     nerror                      error;
 
@@ -353,9 +338,7 @@ nerror nepa_send_event_i(
 
 
 
-nerror nepa_send_event(
-    struct nepa *               epa,
-    const struct nevent *       event)
+nerror nepa_send_event(struct nepa * epa, const struct nevent * event)
 {
     nerror                      error;
     ncore_lock                   sys_lock;
@@ -369,9 +352,7 @@ nerror nepa_send_event(
 
 
 
-nerror nepa_send_event_ahead_i(
-    struct nepa *               epa,
-    struct nevent *             event)
+nerror nepa_send_event_ahead_i(struct nepa * epa, struct nevent * event)
 {
     nerror                      error;
 
@@ -400,9 +381,7 @@ nerror nepa_send_event_ahead_i(
 
 
 
-nerror nepa_send_event_ahead(
-    struct nepa *               epa,
-    struct nevent *             event)
+nerror nepa_send_event_ahead(struct nepa * epa, struct nevent * event)
 {
     nerror                      error;
     ncore_lock                  sys_lock;
@@ -416,9 +395,7 @@ nerror nepa_send_event_ahead(
 
 
 
-nerror nepa_send_signal_i(
-    struct nepa *               epa,
-    uint16_t                    event_id)
+nerror nepa_send_signal_i(struct nepa * epa, uint16_t event_id)
 {
     nerror                      error;
     struct nevent *             event;
@@ -436,9 +413,7 @@ nerror nepa_send_signal_i(
 
 
 
-nerror nepa_send_signal(
-    struct nepa *               epa,
-    uint16_t                    event_id)
+nerror nepa_send_signal(struct nepa * epa, uint16_t event_id)
 {
     nerror                      error;
     ncore_lock                  lock;
