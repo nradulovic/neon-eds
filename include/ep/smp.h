@@ -58,6 +58,9 @@
 #define naction_deferred()                                                      \
     (NACTION_DEFERRED)
 
+#define NSM_DEF_INIT(wspace, init_state, type)                                  \
+    {wspace, init_state, type}
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {

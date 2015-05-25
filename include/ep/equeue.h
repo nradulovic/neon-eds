@@ -43,7 +43,11 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NEQUEUE_SIZEOF(elements)            (sizeof(struct nevent * [elements]))
+#define NEQUEUE_SIZEOF(elements)                                                \
+    (sizeof(struct nevent * [elements]))
+
+#define NEQUEUE_DEF_INIT(storage, size)                                         \
+    {storage, size}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

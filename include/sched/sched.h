@@ -48,6 +48,8 @@
  */
 #define NTHREAD_PRIORITY_MIN            (0u)
 
+#define NTHREAD_DEF_INIT(name, priority) {name, priority}
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
