@@ -199,7 +199,7 @@ PORT_C_INLINE_ALWAYS
 void ncore_atomic_inc(
 	struct ncore_atomic *      	ref)
 {
-    if (ref->value != UINT32_MAX) {
+    if (ref->value != INT32_MAX) {
     	ref->value++;
     }
 }

@@ -111,10 +111,10 @@ static void timer_term(void);
 PORT_C_INLINE
 void cpu_init(void)
 {
+                                              /* Clear the exclusive monitor. */
     __asm__ __volatile__(
         "@  cpu_init                                        \n"
         "   clrex                                           \n");
-                                              /* Clear the exclusive monitor. */
 }
 
 
@@ -167,8 +167,6 @@ void isr_global_disable(void)
 
 static void lock_init(void)
 {
-    unsigned int                reg;
-
     isr_global_disable();
     NVIC_SetPriorityGrouping(NCORE_LOCK_LEVEL_BITS - 1);
     isr_global_enable();
@@ -186,32 +184,32 @@ static void lock_term(void)
 static void timer_init(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SysTick->CTRL  = 0;
-    SysTick->LOAD  = CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ - 1;
-    SysTick->VAL   = 0;
-    SCB->ICSR     |= SCB_ICSR_PENDSTCLR_Msk;                /* Clear pending ISR bit */
+    SysTick->CTRL = 0;
+    SysTick->LOAD =
+        CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ - 1;
+    SysTick->VAL  = 0;
+    SCB->ICSR    |= SCB_ICSR_PENDSTCLR_Msk;         /* Clear pending ISR bit */
     NVIC_SetPriority(SysTick_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
 #else
     volatile unsigned int       dummy;
 
-    TIMER_RST  |=  TIMER_RST_BIT;                           /* Reset and enable timer clock */
+    TIMER_RST  |=  TIMER_RST_BIT;             /* Reset and enable timer clock */
     TIMER_RST  &= ~TIMER_RST_BIT;
-    TIMER_CLK  |=  TIMER_CLK_BIT;                           /* Enable clock */
-    dummy       =  TIMER_CLK;                               /* Dummy read to generate a small delay */
+    TIMER_CLK  |=  TIMER_CLK_BIT;                             /* Enable clock */
+    dummy       =  TIMER_CLK;         /* Dummy read to generate a small delay */
     (void)dummy;
-                                                            /* Setup timer at clock frequency 10kHz*/
+                                       /* Setup timer at clock frequency 10kHz*/
     TIMER->CR1  = 1;
     TIMER->ARR  = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ);
     TIMER->PSC  = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 10000u;
     TIMER->EGR  = TIM_EGR_UG;
-                                                            /* Setup interrupt */
+                                                           /* Setup interrupt */
     NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
     NVIC_ClearPendingIRQ(TIMER_IRQN);
     NVIC_EnableIRQ(TIMER_IRQN);
-                                                            /* Turn of timer */
-    TIMER->CR1  = 0;
-                                                            /* Disable timer clock */
-    TIMER_CLK  &= ~TIMER_CLK_BIT;
+
+    TIMER->CR1  = 0;                                         /* Turn of timer */
+    TIMER_CLK  &= ~TIMER_CLK_BIT;                      /* Disable timer clock */
 #endif
 }
 
@@ -224,14 +222,11 @@ static void timer_term(void)
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
     SysTick->CTRL = 0;
 #else
-                                                            /* Disable interrupt */
-    NVIC_DisableIRQ(TIMER_IRQN);
-                                                            /* Turn off timer */
-    TIMER->CR1  &= ~TIM_CR1_CEN;
-                                                            /* Disable timer interrupt */
-    TIMER->DIER &= ~TIM_DIER_UIE;
-                                                            /* Disable timer clock */
-    TIMER_CLK   &= ~TIMER_CLK_BIT;
+
+    NVIC_DisableIRQ(TIMER_IRQN);                         /* Disable interrupt */
+    TIMER->CR1  &= ~TIM_CR1_CEN;                            /* Turn off timer */
+    TIMER->DIER &= ~TIM_DIER_UIE;                  /* Disable timer interrupt */
+    TIMER_CLK   &= ~TIMER_CLK_BIT;                     /* Disable timer clock */
 #endif
 }
 
@@ -269,42 +264,34 @@ void ncore_idle(void)
 
 
 
-/**@brief       Enable the system timer
- */
 void ncore_timer_enable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-                                                            /* Enable interrupt and Timer */
+                                                /* Enable interrupt and Timer */
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
                     SysTick_CTRL_ENABLE_Msk;
 #else
     volatile unsigned int 		dummy;
-    														/* Enable timer clock */
+    											    	/* Enable timer clock */
     TIMER_CLK   |= TIMER_CLK_BIT;
 	dummy        = TIMER_CLK;
 	(void)dummy;
-    														/* Enable timer interrupt */
-    TIMER->DIER |= TIM_DIER_UIE;
-															/* Turn on timer */
-    TIMER->CR1  |= TIM_CR1_CEN;
+
+    TIMER->DIER |= TIM_DIER_UIE;                    /* Enable timer interrupt */
+    TIMER->CR1  |= TIM_CR1_CEN;                              /* Turn on timer */
 #endif
 }
 
 
 
-/**@brief       Disable the system timer
- */
 void ncore_timer_disable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
     SysTick->CTRL = 0;
 #else
-    														/* Turn off timer */
-    TIMER->CR1  &= ~TIM_CR1_CEN;
-															/* Disable timer interrupt */
-    TIMER->DIER &= ~TIM_DIER_UIE;
-    														/* Disable timer clock */
-    TIMER_CLK   &= ~TIMER_CLK_BIT;
+    TIMER->CR1  &= ~TIM_CR1_CEN;                            /* Turn off timer */
+    TIMER->DIER &= ~TIM_DIER_UIE;                  /* Disable timer interrupt */
+    TIMER_CLK   &= ~TIMER_CLK_BIT;                     /* Disable timer clock */
 #endif
 }
 
