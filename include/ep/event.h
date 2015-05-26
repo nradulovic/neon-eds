@@ -126,6 +126,7 @@ typedef struct nevent nevent;
  * @name        Event storage
  * @{ *//*--------------------------------------------------------------------*/
 
+
 /**@brief       Register a memory object to be used for event storage
  * @param       mem
  *              Memory object
@@ -135,6 +136,8 @@ typedef struct nevent nevent;
  */
 void nevent_register_mem(
     struct nmem *               mem);
+
+
 
 /**@brief       Unregister a memory object
  * @param       mem
@@ -147,6 +150,7 @@ void nevent_unregister_mem(
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
  * @{ *//*--------------------------------------------------------------------*/
+
 
 /**@brief       Create an event
  * @param       size
@@ -161,6 +165,8 @@ struct nevent * nevent_create(
     size_t                      size,
     uint16_t                    id);
 
+
+
 /**@brief       Create an event
  * @param       size
  *              The size of event in bytes
@@ -174,6 +180,15 @@ struct nevent * nevent_create_i(
     size_t                      size,
     uint16_t                    id);
 
+
+
+struct nevent * nevent_create_from_i(
+    struct nmem *               mem,
+    size_t                      size,
+    uint16_t                    id);
+
+
+
 /**@brief       Destroy an event
  * @param       event
  *              Pointer to the event.
@@ -183,6 +198,8 @@ struct nevent * nevent_create_i(
  */
 void nevent_destroy(
     const struct nevent *       event);
+
+
 
 /**@brief       Destroy an event
  * @param       event
@@ -201,6 +218,7 @@ void nevent_destroy_i(
  *              the destroy the event after it has been used.
  * @{ *//*--------------------------------------------------------------------*/
 
+
 /**@brief       Lock the event from recycling process
  * @param       event
  *              Pointer to the event.
@@ -208,6 +226,8 @@ void nevent_destroy_i(
  */
 void nevent_lock(
     const struct nevent *       event);
+
+
 
 /**@brief       Release the event lock and possibly recycle the event
  * @param       event
@@ -221,6 +241,7 @@ void nevent_unlock(
  * @name        Event reference management
  * @{ *//*--------------------------------------------------------------------*/
 
+
 /**@brief       Increments the event reference counter
  * @param       event
  *              Pointer to event
@@ -233,6 +254,8 @@ void nevent_ref_up(
         ((struct nevent *)event)->ref++;
     }
 }
+
+
 
 /**@brief       Decrements the event reference counter
  * @param       event
