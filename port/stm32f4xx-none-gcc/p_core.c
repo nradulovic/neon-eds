@@ -188,35 +188,32 @@ static void timer_init(void)
     SysTick->LOAD =
         CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ - 1;
     SysTick->VAL  = 0;
-    SCB->ICSR    |= SCB_ICSR_PENDSTCLR_Msk;         /* Clear pending ISR bit */
+    SCB->ICSR    |= SCB_ICSR_PENDSTCLR_Msk;          /* Clear pending ISR bit */
     NVIC_SetPriority(SysTick_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
 #else
     volatile unsigned int       dummy;
 
-    TIMER_RST  |=  TIMER_RST_BIT;             /* Reset and enable timer clock */
-    TIMER_RST  &= ~TIMER_RST_BIT;
-    TIMER_CLK  |=  TIMER_CLK_BIT;                             /* Enable clock */
-    dummy       =  TIMER_CLK;         /* Dummy read to generate a small delay */
+    TIMER_RST |=  TIMER_RST_BIT;              /* Reset and enable timer clock */
+    TIMER_RST &= ~TIMER_RST_BIT;
+    TIMER_CLK |=  TIMER_CLK_BIT;                              /* Enable clock */
+    dummy      =  TIMER_CLK;          /* Dummy read to generate a small delay */
     (void)dummy;
                                        /* Setup timer at clock frequency 10kHz*/
-    TIMER->CR1  = 1;
-    TIMER->ARR  = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ);
-    TIMER->PSC  = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 10000u;
-    TIMER->EGR  = TIM_EGR_UG;
+    TIMER->CR1 = 0;                                         /* Turn off timer */
+    TIMER->ARR = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ);
+    TIMER->PSC = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 5000u;
+    TIMER->EGR = TIM_EGR_UG;
                                                            /* Setup interrupt */
     NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
     NVIC_ClearPendingIRQ(TIMER_IRQN);
     NVIC_EnableIRQ(TIMER_IRQN);
 
-    TIMER->CR1  = 0;                                         /* Turn of timer */
     TIMER_CLK  &= ~TIMER_CLK_BIT;                      /* Disable timer clock */
 #endif
 }
 
 
 
-/**@brief       Stop and terminate the system timer
- */
 static void timer_term(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
@@ -274,7 +271,7 @@ void ncore_timer_enable(void)
     volatile unsigned int 		dummy;
     											    	/* Enable timer clock */
     TIMER_CLK   |= TIMER_CLK_BIT;
-	dummy        = TIMER_CLK;
+	dummy        = TIMER_CLK;         /* Dummy read to generate a small delay */
 	(void)dummy;
 
     TIMER->DIER |= TIM_DIER_UIE;                    /* Enable timer interrupt */
