@@ -211,6 +211,12 @@ void nevent_destroy(
 void nevent_destroy_i(
     const struct nevent *       event);
 
+
+
+struct nevent * nevent_delegate(
+    const struct nevent *       event,
+    uint16_t                    id);
+
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reservation
  * @brief       Event reservation provides methods to freeze events after their

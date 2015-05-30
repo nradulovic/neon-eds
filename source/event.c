@@ -31,6 +31,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stddef.h>
+#include <string.h>
 
 #include "port/core.h"
 #include "base/component.h"
@@ -75,7 +76,7 @@ static void event_term(
 
 
 
-static struct nmem * find_memory(
+static struct nmem * find_memory_i(
     size_t                      size);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
@@ -128,7 +129,7 @@ static void event_term(struct nevent * event)
 
 
 
-static struct nmem * find_memory(size_t size)
+static struct nmem * find_memory_i(size_t size)
 {
 #if (CONFIG_EVENT_STORAGE_NPOOLS != 1)
     struct nmem *               mem;
@@ -224,7 +225,7 @@ struct nevent * nevent_create(
     ncore_lock                  sys_lock;
 
     ncore_lock_enter(&sys_lock);
-    mem   = find_memory(size);
+    mem   = find_memory_i(size);
     event = nmem_alloc_i(mem, size);
     ncore_lock_exit(&sys_lock);
 
@@ -244,7 +245,7 @@ struct nevent * nevent_create_i(
     struct nmem *               mem;
     struct nevent *             event;
 
-    mem   = find_memory(size);
+    mem   = find_memory_i(size);
     event = nmem_alloc_i(mem, size);
     
     if (event) {
@@ -288,12 +289,36 @@ void nevent_destroy_i(
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
-    nevent_ref_down(event);
-
     if (nevent_ref(event) == 0u) {
         event_term((struct nevent *)event);
         nmem_free_i(event->mem, (void *)event);
     }
+}
+
+
+
+struct nevent * nevent_delegate(const struct nevent * event, uint16_t id)
+{
+    ncore_lock                  lock;
+    struct nmem *               mem;
+    struct nevent *             ret;
+
+    ncore_lock_enter(&lock);
+
+    if (event->mem) {
+        mem = event->mem;
+    } else {
+        mem = find_memory_i(event->size);
+    }
+    ret = nmem_alloc_i(mem, event->size);
+    ncore_lock_exit(&lock);
+
+    if (ret) {
+        memcpy(ret, event, event->size);
+        ret->id = id;
+    }
+
+    return (ret);
 }
 
 
