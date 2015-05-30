@@ -169,6 +169,7 @@ void neds_run(void)
                                       /* Put the event back in deferred queue */
                 nequeue_put_fifo(&epa->deferred_queue, event);
             } else {
+                nevent_ref_down(event);
                 nevent_destroy_i(event);
             }
             nsched_thread_remove_i(thread);               /* Block the thread */
