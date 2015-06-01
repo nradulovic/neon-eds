@@ -45,7 +45,7 @@ static void etimer_handler(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Event Timer", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Event Timer");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/

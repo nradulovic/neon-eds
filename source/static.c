@@ -52,7 +52,7 @@ static void static_free_i(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Static Memory Management", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Static Memory Management");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/

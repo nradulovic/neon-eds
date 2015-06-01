@@ -81,7 +81,7 @@ static struct nmem * find_memory_i(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Event management", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Event management");
 
 static struct event_storage     g_event_storage;
 
@@ -158,9 +158,7 @@ static struct nmem * find_memory_i(size_t size)
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-
-void nevent_register_mem(
-    struct nmem *               mem)
+void nevent_register_mem(struct nmem * mem)
 {
     ncore_lock                  sys_lock;
     uint_fast8_t                cnt;
@@ -187,8 +185,7 @@ void nevent_register_mem(
 
 
 
-void nevent_unregister_mem(
-    struct nmem *               mem)
+void nevent_unregister_mem(struct nmem * mem)
 {
     ncore_lock                  sys_lock;
     uint_fast8_t                cnt;
@@ -216,9 +213,7 @@ void nevent_unregister_mem(
 
 
 
-struct nevent * nevent_create(
-    size_t                      size,
-    uint16_t                    id)
+struct nevent * nevent_create(size_t size, uint16_t id)
 {
     struct nmem *               mem;
     struct nevent *             event;
@@ -238,9 +233,7 @@ struct nevent * nevent_create(
 
 
 
-struct nevent * nevent_create_i(
-    size_t                      size,
-    uint16_t                    id)
+struct nevent * nevent_create_i(size_t size, uint16_t id)
 {
     struct nmem *               mem;
     struct nevent *             event;
@@ -251,6 +244,8 @@ struct nevent * nevent_create_i(
     if (event) {
         event_init(event, id, mem, size);
     }
+
+    NENSURE("event not created", event != NULL);
 
     return (event);
 }
@@ -272,8 +267,7 @@ struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, uint16_t id
 
 
 
-void nevent_destroy(
-    const struct nevent *       event)
+void nevent_destroy(const struct nevent * event)
 {
     ncore_lock                  sys_lock;
 
@@ -284,8 +278,7 @@ void nevent_destroy(
 
 
 
-void nevent_destroy_i(
-    const struct nevent *       event)
+void nevent_destroy_i(const struct nevent * event)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
@@ -297,7 +290,7 @@ void nevent_destroy_i(
 
 
 
-struct nevent * nevent_delegate(const struct nevent * event, uint16_t id)
+struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
 {
     ncore_lock                  lock;
     struct nmem *               mem;
@@ -323,8 +316,7 @@ struct nevent * nevent_delegate(const struct nevent * event, uint16_t id)
 
 
 
-void nevent_lock(
-    const struct nevent *       event)
+void nevent_lock(const struct nevent * event)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 
@@ -335,8 +327,7 @@ void nevent_lock(
 
 
 
-void nevent_unlock(
-    const struct nevent *       event)
+void nevent_unlock(const struct nevent * event)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
 

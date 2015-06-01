@@ -43,7 +43,7 @@
 
 /**@brief       Provides the basic information about this module
  */
-static const NCOMPONENT_DEFINE("Event Processing Agent", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Event Processing Agent");
 
 static void (* g_idle)(void) = ncore_idle;
 
@@ -157,10 +157,10 @@ void neds_run(void)
             epa   = NTHREAD_TO_EPA(thread);                /* Get EPA pointer */
             event = nequeue_get(&epa->working_queue);    /* Get Event pointer */
             ncore_lock_exit(&lock);
-            /*
-             * NOTE: Dispatch the state machine. This is a good place to place a
-             * breakpoint when debugging state machines.
-             */
+            /* ************************************************************** *
+             * NOTE: Dispatch the state machine. This is a good place to      *
+             * place a breakpoint when debugging state machines.              *
+             * ************************************************************** */
             action = nsm_dispatch(&epa->sm, event);
             ncore_lock_enter(&lock);
 
@@ -289,6 +289,7 @@ ERROR_ALLOC_DEFFERED_FIFO_BUFF:
 ERROR_ALLOC_WORKING_FIFO_BUFF:
     nmem_free(mem, epa);
 ERROR_ALLOC_EPA:
+    NENSURE("Event Processing Agent not created", epa != NULL);
 
     return (NULL);
 }

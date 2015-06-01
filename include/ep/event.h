@@ -150,7 +150,7 @@ void nevent_unregister_mem(
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
  * @{ *//*--------------------------------------------------------------------*/
-
+#define NEVENT_CREATE(type, id)         (type *)nevent_create(sizeof(type), (id))
 
 /**@brief       Create an event
  * @param       size
@@ -173,7 +173,7 @@ struct nevent * nevent_create(
  * @param       id
  *              Event identification
  * @return      Pointer to new event
- *              - @ref NULL - No available memory storage
+ * @retval      - NULL - No available memory storage
  * @iclass
  */
 struct nevent * nevent_create_i(
@@ -182,6 +182,17 @@ struct nevent * nevent_create_i(
 
 
 
+/**@brief       Create an event from specified memory instance
+ * @param       mem
+ *              Pointer to memory instance
+ * @param       size
+ *              Size of event in bytes
+ * @param       id
+ *              Event id.
+ * @return      Pointer to new event
+ * @retval      - NULL - No available memory storage
+ * @iclass
+ */
 struct nevent * nevent_create_from_i(
     struct nmem *               mem,
     size_t                      size,
@@ -213,7 +224,7 @@ void nevent_destroy_i(
 
 
 
-struct nevent * nevent_delegate(
+struct nevent * nevent_forward(
     const struct nevent *       event,
     uint16_t                    id);
 

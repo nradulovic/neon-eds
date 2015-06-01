@@ -46,7 +46,7 @@
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Virtual timer", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Virtual timer");
 
 static struct ntimer g_timer_sentinel =
 {

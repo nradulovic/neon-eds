@@ -68,7 +68,7 @@ static void pool_free_i(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Pool Memory Module", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Pool Memory Module");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/

@@ -58,7 +58,7 @@ struct sched_ctx
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Scheduler", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Scheduler");
 
 static struct sched_ctx         g_sched_ctx;
 

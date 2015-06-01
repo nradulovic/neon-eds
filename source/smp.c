@@ -80,7 +80,7 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("State Machine Processor", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("State Machine Processor");
 
 /*
  * NOTE: We don't use indexed initialisation here, so it must be ensured that

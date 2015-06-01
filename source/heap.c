@@ -79,7 +79,7 @@ static void heap_free_i(
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
-static const NCOMPONENT_DEFINE("Heap Memory Management", "Nenad Radulovic");
+static const NCOMPONENT_DEFINE("Heap Memory Management");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/

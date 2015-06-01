@@ -43,11 +43,10 @@
  *              Module author : string
  * @api
  */
-#define NCOMPONENT_DEFINE(description, author)                                  \
+#define NCOMPONENT_DEFINE(description)                                          \
     struct PORT_C_UNUSED ncomponent_info g_component_info =                     \
     {                                                                           \
         description,                                                            \
-        author,                                                                 \
         PORT_C_FILE                                                             \
     }
 
@@ -64,7 +63,6 @@ extern "C" {
 struct ncomponent_info
 {
     const char * const desc;            /**<@brief Component description      */
-    const char * const auth;            /**<@brief Component author           */
     const char * const file;            /**<@brief Component source file      */
 };
 
