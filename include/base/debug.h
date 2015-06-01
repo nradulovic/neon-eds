@@ -94,7 +94,7 @@
  */
 #if (CONFIG_DEBUG == 1)
 # define NASSERT_ALWAYS(text)                                                   \
-    hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, text, NULL);
+    hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, text, NULL)
 #else
 # define NASSERT_ALWAYS(text)               (void)0
 #endif
