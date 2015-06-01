@@ -80,7 +80,7 @@ typedef struct ncore_atomic		ncore_atomic;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-/**@brief       Initialise the CPU
+/**@brief       Initialize the CPU
  * @details     This function is port specific. It may setup default execution
  *              model for a given CPU, set the performance to default etc.
  *
