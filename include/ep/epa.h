@@ -79,7 +79,7 @@ struct nepa_define
     struct nsm_define           sm;     /**<@brief State machine define       */
     struct nequeue_define       working_queue;
                                         /**<@brief Working event queue define */
-    struct nequeue_define       deffered_queue;
+    struct nequeue_define       deferred_queue;
                                         /**<@brief Deffered event queue define*/
     struct nthread_define       thread;
                                         /**<@brief Thread definition          */

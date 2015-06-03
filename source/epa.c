@@ -195,8 +195,8 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
     nequeue_init(&epa->working_queue, &define->working_queue);
     nequeue_put_fifo(&epa->working_queue, nsm_event(NSM_INIT));
 
-    if (define->deffered_queue.size) {
-        nequeue_init(&epa->deferred_queue, &define->deffered_queue);
+    if (define->deferred_queue.size) {
+        nequeue_init(&epa->deferred_queue, &define->deferred_queue);
     }
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
@@ -267,7 +267,7 @@ struct nepa * nepa_create(const struct nepa_define * define, struct nmem * mem)
         }
     }
     l_deffered_define.storage = NULL;
-    l_deffered_define.size    = define->deffered_queue.size;
+    l_deffered_define.size    = define->deferred_queue.size;
 
     if (l_deffered_define.size) {
         l_deffered_define.storage = nmem_alloc(mem, l_deffered_define.size);
@@ -279,7 +279,7 @@ struct nepa * nepa_create(const struct nepa_define * define, struct nmem * mem)
     l_define.sm             = define->sm;
     l_define.thread         = define->thread;
     l_define.working_queue  = l_working_define;
-    l_define.deffered_queue = l_deffered_define;
+    l_define.deferred_queue = l_deffered_define;
     nepa_init(epa, &l_define);
     epa->mem = mem;
 
