@@ -175,33 +175,52 @@ void nepa_delete_storage(void * storage);
  * @{ *//*--------------------------------------------------------------------*/
 
 
+/**@brief       Fetch one deferred event and put it into working queue
+ * @api
+ */
 nerror nepa_fetch_one_deferred(void);
 
 
 
+/**@brief       Fetch all deferred events and put them into working queue
+ * @api
+ */
 nerror nepa_fetch_all_deferred(void);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management
  * @{ *//*--------------------------------------------------------------------*/
 
+
+/**@brief       Initialize EPA
+ * @api
+ */
 void nepa_init(
     struct nepa *               epa,
     const struct nepa_define *  define);
 
 
 
+/**@brief       Terminate EPA
+ * @api
+ */
 void nepa_term(
     struct nepa *               epa);
 
 
 
+/**@brief       Create and initialize EPA
+ * @api
+ */
 struct nepa * nepa_create(
     const struct nepa_define *  define_epa,
     struct nmem *               mem);
 
 
 
+/**@brief       Terminate and destroy EPA
+ * @api
+ */
 void nepa_destroy(
     struct nepa *               epa);
 
