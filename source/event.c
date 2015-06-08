@@ -296,6 +296,8 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
     struct nmem *               mem;
     struct nevent *             ret;
 
+    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+
     ncore_lock_enter(&lock);
 
     if (event->mem) {
@@ -310,6 +312,8 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
         memcpy(ret, event, event->size);
         ret->id = id;
     }
+
+    NENSURE("event not forwarded", ret != NULL);
 
     return (ret);
 }
