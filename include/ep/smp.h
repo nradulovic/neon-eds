@@ -84,12 +84,6 @@
  */
 #define naction_ignored()               (NACTION_IGNORED)
 
-/**@brief       State machine action, given event will be deffered.
- * @return      Actions enumerator @ref NACTION_DEFERRED.
- * @api
- */
-#define naction_deferred()              (NACTION_DEFERRED)
-
 /**@brief       State machine define structure initializator
  * @details     This is a convinience macro for filling up the @ref nsm_define
  *              structure.
@@ -142,7 +136,6 @@ enum naction
     NACTION_TRANSIT_TO  = 1u,           /**<@brief Transit to a state         */
     NACTION_HANDLED     = 2u,           /**<@brief Event is handled           */
     NACTION_IGNORED     = 3u,           /**<@brief Event is ignored           */
-    NACTION_DEFERRED    = 4u            /**<@brief Defer this event           */
 };
 
 /**@brief       State machine action type
@@ -162,7 +155,6 @@ typedef enum naction naction;
  *                  new state
  *              - @ref NACTION_HANDLED - given event was handled
  *              - @ref NACTION_IGNORED - given event was ignored
- *              - @ref NACTION_DEFERRED - given event must be deffered
  * @note        Do not use return enumerator directly but use the appropriate
  *              naction_*() function.
  * @api
@@ -175,7 +167,7 @@ typedef naction (nstate) (struct nsm *, const struct nevent *);
 struct nsm
 {
                                         /**<@brief State machine dispatcher   */
-    naction                  (* vf_dispatch)(struct nsm *, const struct nevent *);
+    void                     (* vf_dispatch)(struct nsm *, const struct nevent *);
     nstate *                    state;  /**<@brief Current state              */
     void *                      wspace; /**<@brief Workspace                  */
 #if (CONFIG_API_VALIDATION == 1)
@@ -221,11 +213,11 @@ void nsm_term(
 
 
 PORT_C_INLINE
-naction nsm_dispatch(
+void nsm_dispatch(
     struct nsm *                sm,
     const struct nevent *       event)
 {
-    return (sm->vf_dispatch(sm, event));
+    sm->vf_dispatch(sm, event);
 }
 
 

@@ -91,7 +91,27 @@ void nepa_delete_storage(void * storage)
 }
 
 
-nerror nepa_fetch_one_deferred(void)
+
+nerror nepa_defer_event(struct nequeue * queue, const struct nevent * event)
+{
+    struct ncore_lock           lock;
+    nerror                      error;
+
+    error = NERROR_NO_RESOURCE;
+
+    ncore_lock_enter(&lock);
+    if (!nequeue_is_full(queue)) {
+        nequeue_put_fifo(queue, event);
+        error = NERROR_NONE;
+    }
+    ncore_lock_exit(&lock);
+
+    return (error);
+}
+
+
+
+nerror nepa_defer_fetch_one(struct nequeue * queue)
 {
     struct ncore_lock           lock;
     struct nepa *               epa;
@@ -102,10 +122,10 @@ nerror nepa_fetch_one_deferred(void)
     
     ncore_lock_enter(&lock);
 
-    if (!nequeue_is_empty(&epa->deferred_queue)) {
+    if (!nequeue_is_empty(queue)) {
         const struct nevent *   event;
         
-        event = nequeue_get(&epa->deferred_queue);
+        event = nequeue_get(queue);
         error = nepa_send_event_i(epa, event);
     }
     ncore_lock_exit(&lock);
@@ -115,7 +135,7 @@ nerror nepa_fetch_one_deferred(void)
 
 
 
-nerror nepa_fetch_all_deferred(void)
+nerror nepa_defer_fetch_all(struct nequeue * queue)
 {
     struct ncore_lock           lock;
     struct nepa *               epa;
@@ -126,10 +146,10 @@ nerror nepa_fetch_all_deferred(void)
     
     ncore_lock_enter(&lock);
 
-    while (!error && !nequeue_is_empty(&epa->deferred_queue)) {
+    while (!error && !nequeue_is_empty(queue)) {
         const struct nevent *   event;
         
-        event = nequeue_get(&epa->deferred_queue);
+        event = nequeue_get(queue);
         error = nepa_send_event_i(epa, event);
     }
     ncore_lock_exit(&lock);
@@ -151,8 +171,6 @@ void neds_run(void)
         while ((thread = nsched_schedule_i())) {
             struct nepa *           epa;
             const struct nevent *   event;
-            naction                 action;
-
 
             epa   = NTHREAD_TO_EPA(thread);                /* Get EPA pointer */
             event = nequeue_get(&epa->working_queue);    /* Get Event pointer */
@@ -161,17 +179,10 @@ void neds_run(void)
              * NOTE: Dispatch the state machine. This is a good place to      *
              * place a breakpoint when debugging state machines.              *
              * ************************************************************** */
-            action = nsm_dispatch(&epa->sm, event);
+            nsm_dispatch(&epa->sm, event);
             ncore_lock_enter(&lock);
-
-            if ((action == NACTION_DEFERRED) &&
-                !nequeue_is_full(&epa->deferred_queue)) {
-                                      /* Put the event back in deferred queue */
-                nequeue_put_fifo(&epa->deferred_queue, event);
-            } else {
-                nevent_ref_down(event);
-                nevent_destroy_i(event);
-            }
+            nevent_ref_down(event);
+            nevent_destroy_i(event);
             nsched_thread_remove_i(thread);               /* Block the thread */
         }
         ncore_lock_exit(&lock);
@@ -194,10 +205,6 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
     epa->mem = NULL;
     nequeue_init(&epa->working_queue, &define->working_queue);
     nequeue_put_fifo(&epa->working_queue, nsm_event(NSM_INIT));
-
-    if (define->deferred_queue.size) {
-        nequeue_init(&epa->deferred_queue, &define->deferred_queue);
-    }
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
     ncore_lock_enter(&sys_lock);
@@ -223,16 +230,8 @@ void nepa_term(struct nepa * epa)
         event = nequeue_get(&epa->working_queue);
         nevent_destroy_i(event);
     }
-
-    while (!nequeue_is_empty(&epa->deferred_queue)) {
-        const struct nevent *   event;
-
-        event = nequeue_get(&epa->deferred_queue);
-        nevent_destroy_i(event);
-    }
     nsched_thread_term(&epa->thread);
     nsm_term(&epa->sm);
-    nequeue_term(&epa->deferred_queue);
     nequeue_term(&epa->working_queue);
     ncore_lock_exit(&sys_lock);
 
@@ -246,7 +245,6 @@ struct nepa * nepa_create(const struct nepa_define * define, struct nmem * mem)
     struct nepa *               epa;
     struct nepa_define          l_define;
     struct nequeue_define       l_working_define;
-    struct nequeue_define       l_deffered_define;
 
     NREQUIRE(NAPI_POINTER, define != NULL);
     NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
@@ -266,26 +264,13 @@ struct nepa * nepa_create(const struct nepa_define * define, struct nmem * mem)
             goto ERROR_ALLOC_WORKING_FIFO_BUFF;
         }
     }
-    l_deffered_define.storage = NULL;
-    l_deffered_define.size    = define->deferred_queue.size;
-
-    if (l_deffered_define.size) {
-        l_deffered_define.storage = nmem_alloc(mem, l_deffered_define.size);
-
-        if (!l_deffered_define.storage) {
-            goto ERROR_ALLOC_DEFFERED_FIFO_BUFF;
-        }
-    }
     l_define.sm             = define->sm;
     l_define.thread         = define->thread;
     l_define.working_queue  = l_working_define;
-    l_define.deferred_queue = l_deffered_define;
     nepa_init(epa, &l_define);
     epa->mem = mem;
 
     return (epa);
-ERROR_ALLOC_DEFFERED_FIFO_BUFF:
-    nmem_free(mem, l_working_define.storage);
 ERROR_ALLOC_WORKING_FIFO_BUFF:
     nmem_free(mem, epa);
 ERROR_ALLOC_EPA:
@@ -301,10 +286,6 @@ void nepa_destroy(struct nepa * epa)
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     nepa_term(epa);
-
-    if (nequeue_storage(&epa->deferred_queue)) {
-        nmem_free(epa->mem, nequeue_storage(&epa->deferred_queue));
-    }
     nmem_free(epa->mem, nequeue_storage(&epa->working_queue));
     nmem_free(epa->mem, epa);
 }
@@ -326,6 +307,7 @@ nerror nepa_send_event_i(struct nepa * epa, const struct nevent * event)
             nsched_thread_insert_i(&epa->thread);
             error = NERROR_NONE;
         } else {
+            nevent_ref_down(event);
             nevent_destroy_i(event);
             error = NERROR_NO_RESOURCE;
         }
