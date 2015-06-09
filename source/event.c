@@ -95,7 +95,6 @@ static void event_init(
     struct nmem *               mem,
     size_t                      size)
 {
-    NREQUIRE(NAPI_OBJECT, event->signature != NSIGNATURE_EVENT);
     /* NOTE:
      * Size parameter is already checked by event_create_i()
      */
@@ -294,6 +293,7 @@ void nevent_destroy_i(const struct nevent * event)
 
 struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
 {
+#if (CONFIG_EVENT_SIZE == 1)
     ncore_lock                  lock;
     struct nmem *               mem;
     struct nevent *             ret;
@@ -318,6 +318,15 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
     NENSURE("event not forwarded", ret != NULL);
 
     return (ret);
+#else
+    struct nevent *             ret;
+
+    ret = NULL;
+
+    NENSURE("event forward depends on event size configuration", ret != NULL);
+
+    return (ret);
+#endif
 }
 
 
