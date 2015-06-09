@@ -79,8 +79,6 @@ struct nepa_define
     struct nsm_define           sm;     /**<@brief State machine define       */
     struct nequeue_define       working_queue;
                                         /**<@brief Working event queue define */
-    struct nequeue_define       deferred_queue;
-                                        /**<@brief Deffered event queue define*/
     struct nthread_define       thread;
                                         /**<@brief Thread definition          */
 };
@@ -100,8 +98,6 @@ struct nepa
     struct nsm                  sm;     /**<@brief State machine processor    */
     struct nequeue              working_queue;
                                         /**<@brief Working event queue        */
-    struct nequeue              deferred_queue;
-                                        /**<@brief Deffered event queue       */
 #if (CONFIG_API_VALIDATION) || defined(__DOXYGEN__)
     unsigned int                signature;
                                         /**<@brief Debug signature            */
@@ -174,18 +170,23 @@ void nepa_delete_storage(void * storage);
  *              queue.
  * @{ *//*--------------------------------------------------------------------*/
 
+#define nepa_defer_init(queue, storage)     nequeue_init((queue), (storage))
+
+nerror nepa_defer_event(struct nequeue * queue, const struct nevent * event);
 
 /**@brief       Fetch one deferred event and put it into working queue
  * @api
  */
-nerror nepa_fetch_one_deferred(void);
+nerror nepa_defer_fetch_one(
+    struct nequeue *            queue);
 
 
 
 /**@brief       Fetch all deferred events and put them into working queue
  * @api
  */
-nerror nepa_fetch_all_deferred(void);
+nerror nepa_defer_fetch_all(
+    struct nequeue *            queue);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        EPA management

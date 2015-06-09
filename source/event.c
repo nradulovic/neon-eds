@@ -256,6 +256,8 @@ struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, uint16_t id
 {
     struct nevent *             event;
 
+    NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
+
     event = nmem_alloc_i(mem, size);
 
     if (event) {

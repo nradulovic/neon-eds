@@ -291,7 +291,7 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 
 
 
-static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
+static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
@@ -317,13 +317,11 @@ static naction hsm_dispatch(struct nsm * sm, const struct nevent * event)
         exit.index = 1u;
     }
     sm->state = current_state;
-
-    return (ret);
 }
 
 
 
-static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
+static void fsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
@@ -350,8 +348,6 @@ static naction fsm_dispatch(struct nsm * sm, const struct nevent * event)
     }
     NREQUIRE(NAPI_USAGE, ret != NACTION_SUPER);
     sm->state = current_state;
-
-    return (ret);
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
