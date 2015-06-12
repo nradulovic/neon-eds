@@ -68,6 +68,7 @@ void netimer_init(
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_ETIMER);
 
     ntimer_init(&timer->timer);
+    timer->client = nepa_get_current();
 
     NOBLIGATION(timer->signature = NSIGNATURE_ETIMER);
 }
@@ -91,11 +92,20 @@ void netimer_after(
     ncore_time_tick             tick,
     uint16_t                    event_id)
 {
+    ncore_lock                  lock;
+
     NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
 
-    timer->client   = nepa_get_current();
+    ncore_lock_enter(&lock);
+    ntimer_cancel_i(&timer->timer);
     timer->event_id = event_id;
-    ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_ONE_SHOT);
+    ntimer_start_i(
+            &timer->timer,
+            tick,
+            etimer_handler,
+            timer,
+            NTIMER_ATTR_ONE_SHOT);
+    ncore_lock_exit(&lock);
 }
 
 
@@ -105,11 +115,20 @@ void netimer_every(
     ncore_time_tick             tick,
     uint16_t                    event_id)
 {
+    ncore_lock                  lock;
+
     NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
 
-    timer->client   = nepa_get_current();
+    ncore_lock_enter(&lock);
+    ntimer_cancel_i(&timer->timer);
     timer->event_id = event_id;
-    ntimer_start(&timer->timer, tick, etimer_handler, timer, NTIMER_ATTR_REPEAT);
+    ntimer_start_i(
+            &timer->timer,
+            tick,
+            etimer_handler,
+            timer,
+            NTIMER_ATTR_REPEAT);
+    ncore_lock_exit(&lock);
 }
 
 
