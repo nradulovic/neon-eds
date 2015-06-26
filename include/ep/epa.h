@@ -170,7 +170,7 @@ void nepa_delete_storage(void * storage);
  *              queue.
  * @{ *//*--------------------------------------------------------------------*/
 
-#define nepa_defer_init(queue, storage)     nequeue_init((queue), (storage))
+#define nepa_defer_init(queue, define)     nequeue_init((queue), (define))
 
 nerror nepa_defer_event(struct nequeue * queue, const struct nevent * event);
 
