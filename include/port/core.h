@@ -54,6 +54,13 @@
 # define NCORE_LOCK_TO_CODE(level)      (level)
 #endif
 
+/**@brief       Convert port code to generic 0-255 level
+ * @note        This macro is usually defined in port.
+ */
+#ifndef NCORE_CODE_TO_LOCK
+# define NCORE_CODE_TO_LOCK(code)       (code)
+#endif
+ 
 #define NCORE_ATOMIC_INIT(v)			{v}
 
 /*-------------------------------------------------------  C++ extern base  --*/

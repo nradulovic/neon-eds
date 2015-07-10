@@ -57,9 +57,14 @@
 
 /**@brief       Convert Neon priority level to port code
  */
-#define NCORE_LOCK_TO_CODE(level)                                               \
-    ((255 - (level)) >> NCORE_LOCK_LEVEL_BITS)
+#define NCORE_LOCK_TO_CODE(lock)                                                \
+    ((255 - (lock)) >> NCORE_LOCK_LEVEL_BITS)
 
+/**@brief       Convert port code to Neon priority level
+ */
+#define NCORE_CODE_TO_LOCK(code)                                                \
+    (255 - ((code) << NCORE_LOCK_LEVEL_BITS))
+ 
 #define ncore_os_ready(thread)              (void)thread
 
 #define ncore_os_block(thread)              (void)thread
