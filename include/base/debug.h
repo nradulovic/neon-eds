@@ -184,6 +184,7 @@
 #define NSIGNATURE_HEAP                     ((unsigned int)0xdeadbee0u)
 #define NSIGNATURE_POOL                     ((unsigned int)0xdeadbee1u)
 #define NSIGNATURE_STATIC                   ((unsigned int)0xdeadbee2u)
+#define NSIGNATURE_STDHEAP                  ((unsigned int)0xdeadbee3u)
 #define NSIGNATURE_TIMER                    ((unsigned int)0xdeadcee0u)
 #define NSIGNATURE_THREAD                   ((unsigned int)0xdeaddee0u)
 #define NSIGNATURE_EPA                      ((unsigned int)0xdeadfeeau)
