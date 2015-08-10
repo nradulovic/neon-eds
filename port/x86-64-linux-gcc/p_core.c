@@ -185,12 +185,17 @@ void ncore_init(void)
     timer_init();
 }
 
+#include <errno.h>
 
 
 void ncore_term(void)
 {
+    fflush(stdout);
+    while (pthread_mutex_trylock(&g_idle_lock) == EBUSY) {
+        pthread_mutex_unlock(&g_idle_lock);
+    }
+    pthread_mutex_unlock(&g_idle_lock);
     pthread_mutex_destroy(&g_idle_lock);
-
     timer_term();
     lock_term();
 }

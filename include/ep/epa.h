@@ -122,6 +122,8 @@ void neds_run(void);
 
 
 
+void neds_term(void);
+
 /**@brief       Set an user implementation of idle routine.
  * @param       idle
  *              Pointer to idle routine. If this pointer is NULL the portable
