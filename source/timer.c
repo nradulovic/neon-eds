@@ -154,11 +154,12 @@ void ntimer_start_i(
     void *                      arg,
     uint8_t                     flags)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
+    NREQUIRE(NAPI_OBJECT,  N_IS_TIMER_OBJECT(timer));
     NREQUIRE(NAPI_RANGE,   tick > 0);
     NREQUIRE(NAPI_POINTER, fn != NULL);
-    NREQUIRE(NAPI_USAGE, !ntimer_is_running_i(timer));
+    NREQUIRE(NAPI_USAGE,   !ntimer_is_running_i(timer));
 
+    tick++;
     timer->fn    = fn;
     timer->arg   = arg;
     timer->rtick = tick;
