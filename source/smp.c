@@ -310,7 +310,10 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 static void hsm_dispatch_init(struct nsm * sm, const struct nevent * event)
 {
     sm->vf_dispatch = hsm_dispatch;
+    sm->vf_dispatch(sm, event);
+#if 0
     sm->vf_dispatch(sm, nsm_event(NSM_INIT));
+#endif
 }
 
 
@@ -348,7 +351,10 @@ static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
 static void fsm_dispatch_init(struct nsm * sm, const struct nevent * event)
 {
     sm->vf_dispatch = fsm_dispatch;
+    sm->vf_dispatch(sm, event);
+#if 0
     sm->vf_dispatch(sm, nsm_event(NSM_INIT));
+#endif
 }
 
 
