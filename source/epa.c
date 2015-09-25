@@ -214,7 +214,6 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
 
     epa->mem = NULL;
     nequeue_init(&epa->working_queue, &define->working_queue);
-    nequeue_put_fifo(&epa->working_queue, nsm_event(NSM_INIT));
     nsm_init(&epa->sm, &define->sm);
     nsched_thread_init(&epa->thread, &define->thread);
     ncore_lock_enter(&sys_lock);
