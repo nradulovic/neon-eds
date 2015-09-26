@@ -49,7 +49,7 @@
 
 #define NCPU_SIZE_MAX                       UINT64_MAX
 
-#define NCPU_SSIZE_MAX                      INT64_MAX
+#define NCPU_SSIZE_MAX                      INT32_MAX
 
 /**@brief       Specify the number of bits used in ISR priority mask (NOT USED).
  * @note        Since the Linux port is not using interrupts then define this
