@@ -71,6 +71,7 @@
 #include "mm/mem.h"
 #include "mm/pool.h"
 #include "mm/static.h"
+#include "mm/stdheap.h"
 
 /* EDS Scheduler */
 #include "sched/sched.h"
