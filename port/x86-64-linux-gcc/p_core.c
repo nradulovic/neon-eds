@@ -26,6 +26,10 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#if __STDC_VERSION__ >= 199901L
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
