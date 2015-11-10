@@ -135,7 +135,7 @@ enum naction
     NACTION_SUPER       = 0u,           /**<@brief Returns super state        */
     NACTION_TRANSIT_TO  = 1u,           /**<@brief Transit to a state         */
     NACTION_HANDLED     = 2u,           /**<@brief Event is handled           */
-    NACTION_IGNORED     = 3u,           /**<@brief Event is ignored           */
+    NACTION_IGNORED     = 3u            /**<@brief Event is ignored           */
 };
 
 /**@brief       State machine action type

@@ -78,6 +78,22 @@ static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry);
 
 static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit);
 
+
+
+static void hsm_dispatch_init(struct nsm * sm, const struct nevent * event);
+
+
+
+static void hsm_dispatch(struct nsm * sm, const struct nevent * event);
+
+
+
+static void fsm_dispatch_init(struct nsm * sm, const struct nevent * event);
+
+
+
+static void fsm_dispatch(struct nsm * sm, const struct nevent * event);
+
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 static const NCOMPONENT_DEFINE("State Machine Processor");
@@ -291,6 +307,17 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 
 
 
+static void hsm_dispatch_init(struct nsm * sm, const struct nevent * event)
+{
+    sm->vf_dispatch = hsm_dispatch;
+    sm->vf_dispatch(sm, event);
+#if 0
+    sm->vf_dispatch(sm, nsm_event(NSM_INIT));
+#endif
+}
+
+
+
 static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
@@ -317,6 +344,17 @@ static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
         exit.index = 1u;
     }
     sm->state = current_state;
+}
+
+
+
+static void fsm_dispatch_init(struct nsm * sm, const struct nevent * event)
+{
+    sm->vf_dispatch = fsm_dispatch;
+    sm->vf_dispatch(sm, event);
+#if 0
+    sm->vf_dispatch(sm, nsm_event(NSM_INIT));
+#endif
 }
 
 
@@ -366,9 +404,9 @@ void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
     sm->wspace = sm_define->wspace;
 
     if (sm_define->type == NSM_TYPE_HSM) {
-        sm->vf_dispatch = &hsm_dispatch;
+        sm->vf_dispatch = &hsm_dispatch_init;
     } else {
-        sm->vf_dispatch = &fsm_dispatch;
+        sm->vf_dispatch = &fsm_dispatch_init;
     }
     NOBLIGATION(sm->signature = NSIGNATURE_SM);
 }

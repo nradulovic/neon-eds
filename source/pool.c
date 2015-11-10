@@ -102,10 +102,10 @@ static void pool_free_i(
     struct nmem *               mem_obj,
     void *                      mem)
 {
+    struct pool_block *         block;
+
     NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
     NREQUIRE(NAPI_POINTER, mem != NULL);
-
-    struct pool_block *         block;
 
     block            = (struct pool_block *)mem;
     block->next      = mem_obj->base;

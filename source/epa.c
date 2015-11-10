@@ -104,6 +104,7 @@ nerror nepa_defer_event(struct nequeue * queue, const struct nevent * event)
     ncore_lock_enter(&lock);
     if (!nequeue_is_full(queue)) {
         nequeue_put_fifo(queue, event);
+        nevent_ref_up(event);
         error = NERROR_NONE;
     }
     ncore_lock_exit(&lock);
