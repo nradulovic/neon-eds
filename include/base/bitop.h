@@ -157,6 +157,10 @@
          ((x) <  64u ? 5u :                                                     \
           ((x) < 128u ? 6u : 7u)))))))
 
+#define n_msb_32(x)                     n_xb4(x)
+
+#define n_lsb_32(x)                     n_xb1(x)
+
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -166,14 +170,55 @@ extern "C" {
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
+
 PORT_C_INLINE
-bool bitop_is_power_of2(unsigned int value)
+bool n_is_power_of2(unsigned int value)
 {
     if ((value != 0u) && ((value & (value - 1)) == 0u)) {
         return (true);
     } else {
         return (false);
     }
+}
+
+
+
+PORT_C_INLINE
+uint8_t n_xb4(uint64_t value)
+{
+    return ((value >> 24) & 0xffu);
+}
+
+
+
+PORT_C_INLINE
+uint8_t n_xb3(uint64_t value)
+{
+    return ((value >> 16) & 0xffu);
+}
+
+
+
+PORT_C_INLINE
+uint8_t n_xb2(uint64_t value)
+{
+    return ((value >> 8) & 0xffu);
+}
+
+
+
+PORT_C_INLINE
+uint8_t n_xb1(uint64_t value)
+{
+    return (value & 0xffu);
+}
+
+
+
+PORT_C_INLINE
+uint32_t n_float_to_u32(float val)
+{
+    return (*(uint32_t *)&val);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
