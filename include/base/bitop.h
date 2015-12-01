@@ -218,7 +218,15 @@ uint8_t n_xb1(uint64_t value)
 PORT_C_INLINE
 uint32_t n_float_to_u32(float val)
 {
-    return (*(uint32_t *)&val);
+    union float_u32
+    {
+        float                   f;
+        uint32_t                i;
+    }                           data;
+
+    data.f = val;
+
+    return (data.i);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
