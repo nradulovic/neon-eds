@@ -34,6 +34,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "port/compiler.h"
 
