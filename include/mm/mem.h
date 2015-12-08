@@ -46,7 +46,8 @@
 #define N_IS_MEM_OBJECT(mem_obj)                                                \
     (((mem_obj) != NULL) && (((mem_obj)->signature == NSIGNATURE_STATIC) ||     \
                          ((mem_obj)->signature == NSIGNATURE_HEAP) ||           \
-                         ((mem_obj)->signature == NSIGNATURE_POOL)))
+                         ((mem_obj)->signature == NSIGNATURE_POOL) ||           \
+                         ((mem_obj)->signature == NSIGNATURE_STDHEAP)))
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
