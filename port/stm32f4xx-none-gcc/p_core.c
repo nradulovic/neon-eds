@@ -199,13 +199,10 @@ static void timer_init(void)
     dummy      =  TIMER_CLK;          /* Dummy read to generate a small delay */
     (void)dummy;
 
-    /* TODO:
-     * Check this initialization. I can't get it right.
-     */
                                        /* Setup timer at clock frequency 10kHz*/
     TIMER->CR1 = 0;                                         /* Turn off timer */
     TIMER->ARR = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ) - 1u;
-    TIMER->PSC = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 5000u -1u;
+    TIMER->PSC = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 5000u;
     TIMER->EGR = TIM_EGR_UG;
                                                            /* Setup interrupt */
     NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
