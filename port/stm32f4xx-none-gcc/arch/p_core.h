@@ -69,6 +69,10 @@
 
 #define ncore_os_block(thread)              (void)thread
 
+#define ncore_os_should_exit()
+
+#define ncore_os_exit()
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {

@@ -63,6 +63,13 @@
  */
 #define NCORE_LOCK_TO_CODE(level)           0u
 
+#define ncore_os_should_exit()				g_should_exit
+
+#define ncore_os_exit()															\
+	do {																		\
+		g_should_exit = true;													\
+	} while (0u)
+
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -99,6 +106,7 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 
 extern pthread_mutex_t          g_idle_lock;
 extern pthread_mutex_t          g_global_lock;
+extern bool						g_should_exit;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 

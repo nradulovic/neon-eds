@@ -47,8 +47,6 @@ static const NCOMPONENT_DEFINE("Event Processing Agent");
 
 static void (* g_idle)(void) = ncore_idle;
 
-static volatile bool            g_should_exit = false;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -169,7 +167,7 @@ void neds_run(void)
 
     ncore_lock_enter(&lock);
 
-    for (;!g_should_exit;) {
+    for (;ncore_os_should_exit();) {
                                    /* Fetch a new thread ready for execution. */
         while ((thread = nsched_schedule_i())) {
             struct nepa *           epa;
@@ -199,7 +197,7 @@ void neds_run(void)
 
 void neds_term(void)
 {
-    g_should_exit = true;
+	ncore_os_exit();
     ncore_term();
 }
 
