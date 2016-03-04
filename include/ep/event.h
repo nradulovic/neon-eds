@@ -294,12 +294,26 @@ void nevent_ref_down(
  *              non-zero value in order to prevent event deletion.
  * @note        If a reserved dynamic event is given the the returned value will
  *              be a non-zero value in order to prevent event deletion.
+ * @api
  */
 PORT_C_INLINE
 uint_fast16_t nevent_ref(
     const struct nevent *       event)
 {
     return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
+}
+
+
+
+/**@brief       Cast event pointer to void pointer
+ * @details     This is only a convenience function which will shorted the user
+ *              code a bit.
+ * @api
+ */
+PORT_C_INLINE
+const void * nevent_data(const struct nevent * event)
+{
+	return ((const void *)event);
 }
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
