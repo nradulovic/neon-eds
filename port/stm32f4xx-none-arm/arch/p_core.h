@@ -111,24 +111,16 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 uint_fast8_t ncore_log2(
     ncore_reg                    value)
 {
-    uint_fast8_t                clz;
-
-    __asm__ __volatile__ (
-        "@  ncore_log2                                      \n"
-        "   clz    %0, %1                                   \n"
-        : "=r"(clz)
-        : "r"(value));
-
-    return (31u - clz);
+    return (31u - __clz(value));
 }
 
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 ncore_reg ncore_exp2(
     uint_fast8_t                value)
 {
@@ -137,7 +129,7 @@ ncore_reg ncore_exp2(
 
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_ref_write(
     struct ncore_ref *          ref,
 	uint32_t					value)
@@ -147,7 +139,7 @@ void ncore_ref_write(
 
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 uint32_t ncore_ref_read(
 	struct ncore_ref *          ref)
 {
@@ -156,7 +148,7 @@ uint32_t ncore_ref_read(
 
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_ref_increment(
 	struct ncore_ref *      	ref)
 {
@@ -167,7 +159,7 @@ void ncore_ref_increment(
 
 
 
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_ref_decrement(
 	struct ncore_ref *          ref)
 {
@@ -181,7 +173,7 @@ void ncore_ref_decrement(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
 	v->value = i;
@@ -192,7 +184,7 @@ void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 int32_t ncore_atomic_read(
 	struct ncore_atomic *       ref)
 {
@@ -204,7 +196,7 @@ int32_t ncore_atomic_read(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_atomic_inc(
 	struct ncore_atomic *      	ref)
 {
@@ -218,7 +210,7 @@ void ncore_atomic_inc(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
+PORT_C_INLINE
 void ncore_atomic_dec(
 	struct ncore_atomic *        ref)
 {
@@ -235,26 +227,17 @@ void ncore_lock_enter(
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
+    register uint32_t           reg_basepri __asm("basepri");
 
     new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
 
-    __asm __volatile__ (
-        "@  ncore_lock_enter                                \n"
-        "   mrs     %0, basepri                             \n"
-        "   msr     basepri, %1                             \n"
-        : "=&r"(lock->level)
-        : "r"(new_mask));
+    lock->level = reg_basepri;
+    reg_basepri = new_mask;
 #else
-    unsigned int                new_mask;
+    register uint32_t           reg_primask __asm("primask");
 
-    new_mask = 1;
-
-    __asm __volatile__ (
-        "@  ncore_lock_enter                                \n"
-        "   mrs     %0, primask                             \n"
-        "   msr    primask, %1                              \n"
-        : "=&r"(lock->level)
-        : "r"(new_mask));
+    lock->level = reg_primask;
+    reg_primask = 1;
 #endif
 }
 
@@ -265,17 +248,13 @@ void ncore_lock_exit(
     struct ncore_lock *          lock)
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
-    __asm __volatile__ (
-        "@  ncore_lock_exit                                 \n"
-        "   msr    basepri, %0                              \n"
-        :
-        : "r"(lock->level));
+    register uint32_t           reg_basepri __asm("basepri");
+    
+    reg_basepri = lock->level;
 #else
-    __asm __volatile__ (
-        "@  ncore_lock_exit                                 \n"
-        "   msr    primask, %0                              \n"
-        :
-        : "r"(lock->level));
+    register uint32_t           reg_primask __asm("primask");
+    
+    reg_primask = lock->level;
 #endif
 }
 
