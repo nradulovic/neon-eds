@@ -104,63 +104,10 @@ static const NCOMPONENT_DEFINE("State Machine Processor");
  */
 static const struct nevent g_smp_events[4] =
 {
-    {
-        NSM_SUPER,
-        0,
-        0,
-        NULL,
-#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
-        NULL,
-#endif
-#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
-        sizeof(struct nevent),
-#endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NSIGNATURE_EVENT
-#endif
-    }, {
-        NSM_ENTRY,
-        0,
-        0,
-        NULL,
-#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
-        NULL,
-#endif
-#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
-        sizeof(struct nevent),
-#endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NSIGNATURE_EVENT
-#endif
-    }, {
-        NSM_EXIT,
-        0,
-        0,
-        NULL,
-#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
-        NULL,
-#endif
-#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
-        sizeof(struct nevent),
-#endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NSIGNATURE_EVENT
-#endif
-    }, {
-        NSM_INIT,
-        0,
-        0,
-        NULL,
-#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
-        NULL,
-#endif
-#if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
-        sizeof(struct nevent),
-#endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-        NSIGNATURE_EVENT
-#endif
-    }
+	NEVENT_INITIALIZER(NSM_SUPER, NULL, sizeof(struct nevent)),
+	NEVENT_INITIALIZER(NSM_ENTRY, NULL, sizeof(struct nevent)),
+	NEVENT_INITIALIZER(NSM_EXIT,  NULL, sizeof(struct nevent)),
+	NEVENT_INITIALIZER(NSM_INIT,  NULL, sizeof(struct nevent))
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
