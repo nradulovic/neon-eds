@@ -76,6 +76,49 @@
 #define N_IS_EVENT_OBJECT(event)                                                \
     (((event) != NULL) && (event->signature == NSIGNATURE_EVENT))
 
+
+/**@brief       Create initialization macro for event producer
+ * @notapi
+ */
+#if (CONFIG_EVENT_PRODUCER == 1)
+#define N_EVENT_PRODUCER_INIT(prod)  (prod),
+#else
+#define N_EVENT_PRODUCER_INIT(prod)
+#endif
+
+/**@brief       Create initialization macro for event size
+ * @notapi
+ */
+#if (CONFIG_EVENT_SIZE == 1)
+#define N_EVENT_SIZE_INIT(size)		(size),
+#else
+#define N_EVENT_SIZE_INIT(size)
+#endif
+
+/**@brief       Create initialization macro for event signature
+ * @notapi
+ */
+#if (CONFIG_API_VALIDATION == 1)
+#define N_EVENT_SIGNATURE			NSIGNATURE_EVENT,
+#else
+#define N_EVENT_SIGNATURE
+#endif
+
+/**@brief       Initialization macro for an event
+ * @api
+ */
+#define NEVENT_INITIALIZER(event_id, producer, size) 							\
+	{																			\
+		(event_id), 															\
+		0, 																		\
+		0, 																		\
+		NULL, 																	\
+		N_EVENT_PRODUCER_INIT(producer)											\
+		N_EVENT_SIZE_INIT(size) 												\
+		N_EVENT_SIGNATURE														\
+	}
+
+
 /*------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
