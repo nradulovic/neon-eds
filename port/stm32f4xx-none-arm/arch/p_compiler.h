@@ -30,6 +30,8 @@
 /*=========================================================  INCLUDE FILES  ==*/
 /*===============================================================  MACRO's  ==*/
 
+#define PORT_C_ARMCC
+
 /**@brief       Try to force a function always to be inlined.
  *              Since there is no default language construct to ensure this,
  *              this will always only be an approximation depending on
