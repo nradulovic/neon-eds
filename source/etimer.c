@@ -55,7 +55,7 @@ static void etimer_handler(
 {
     struct netimer *            timer = arg;
 
-    nepa_send_signal_i(timer->client, timer->event_id);
+    nepa_send_event_i(timer->client, &timer->event);
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -68,6 +68,7 @@ void netimer_init(
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_ETIMER);
 
     ntimer_init(&timer->timer);
+    timer->event  = g_default_event;
     timer->client = nepa_get_current();
 
     NOBLIGATION(timer->signature = NSIGNATURE_ETIMER);
@@ -98,7 +99,7 @@ void netimer_after(
 
     ncore_lock_enter(&lock);
     ntimer_cancel_i(&timer->timer);
-    timer->event_id = event_id;
+    timer->event.id = event_id;
     ntimer_start_i(
             &timer->timer,
             tick,
@@ -121,7 +122,7 @@ void netimer_every(
 
     ncore_lock_enter(&lock);
     ntimer_cancel_i(&timer->timer);
-    timer->event_id = event_id;
+    timer->event.id = event_id;
     ntimer_start_i(
             &timer->timer,
             tick,
