@@ -163,6 +163,9 @@ struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
 typedef struct nevent nevent;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+extern const struct nevent 		g_default_event;
+
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 /*------------------------------------------------------------------------*//**

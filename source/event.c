@@ -86,6 +86,9 @@ static const NCOMPONENT_DEFINE("Event management");
 static struct event_storage     g_event_storage;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+const struct nevent 			g_default_event = NEVENT_INITIALIZER(UINT_FAST16_MAX, NULL, sizeof(struct nevent));
+
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
