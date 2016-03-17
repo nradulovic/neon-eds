@@ -183,7 +183,7 @@
  *              velicini)
  */
 #if !defined(CONFIG_EVENT_SIZE)
-# define CONFIG_EVENT_SIZE              1
+# define CONFIG_EVENT_SIZE              0
 #endif
 
 /**
