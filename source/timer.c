@@ -88,7 +88,7 @@ static void remove_timer(
     struct ntimer *         timer)
 {
     ndlist_remove(&timer->list);
-    ndlist_init(&timer->list);
+    NOBLIGATION(ndlist_init(&timer->list));
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -100,7 +100,7 @@ void ntimer_init(
     NREQUIRE(NAPI_POINTER, timer != NULL);
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_TIMER);
 
-    ndlist_init(&timer->list);
+    NOBLIGATION(ndlist_init(&timer->list));
 
     NOBLIGATION(timer->signature = NSIGNATURE_TIMER);
 }
@@ -110,10 +110,9 @@ void ntimer_init(
 void ntimer_term(
     struct ntimer *             timer)
 {
+	(void)timer;
+
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
-
-    ntimer_cancel(timer);
-
     NOBLIGATION(timer->signature = ~NSIGNATURE_TIMER);
 }
 

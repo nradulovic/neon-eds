@@ -113,13 +113,21 @@ typedef struct ntimer ntimer;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
+#if (CONFIG_API_VALIDATION == 1)
 void ntimer_init(
     struct ntimer *             timer);
+#else
+#define ntimer_init(timer)				(void)timer
+#endif
 
 
 
+#if (CONFIG_API_VALIDATION == 1)
 void ntimer_term(
     struct ntimer *             timer);
+#else
+#define ntimer_term(timer)				(void)timer
+#endif
 
 
 
