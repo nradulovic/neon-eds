@@ -236,7 +236,7 @@ void ncore_lock_enter(
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
 
-    new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
+    new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL) << NCORE_LOCK_LEVEL_BITS;
 
     __asm __volatile__ (
         "@  ncore_lock_enter                                \n"
