@@ -26,43 +26,28 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include <sys/attribs.h>
+
 #include "port/core.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 
-/*--  Timer Control / Status Register Definitions  ---------------------------*/
-#if (CONFIG_CORE_TIMER_SOURCE == 2)
-#define TIMER                           TIM2
-#define TIMER_RST                       RCC->APB1RSTR
-#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM2RST
-#define TIMER_CLK                       RCC->APB1ENR
-#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM2EN
-#define TIMER_IRQN                      TIM2_IRQn
-#define TIMER_HANDLER                   TIM2_IRQHandler
-#elif (CONFIG_CORE_TIMER_SOURCE == 3)
-#define TIMER                           TIM3
-#define TIMER_RST                       RCC->APB1RSTR
-#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM3RST
-#define TIMER_CLK                       RCC->APB1ENR
-#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM3EN
-#define TIMER_IRQN                      TIM3_IRQn
-#define TIMER_HANDLER                   TIM3_IRQHandler
-#elif (CONFIG_CORE_TIMER_SOURCE == 4)
-#define TIMER                           TIM4
-#define TIMER_RST                       RCC->APB1RSTR
-#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM4RST
-#define TIMER_CLK                       RCC->APB1ENR
-#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM4EN
-#define TIMER_IRQN                      TIM4_IRQn
-#define TIMER_HANDLER                   TIM4_IRQHandler
-#elif (CONFIG_CORE_TIMER_SOURCE == 5)
-#define TIMER                           TIM5
-#define TIMER_RST                       RCC->APB1RSTR
-#define TIMER_RST_BIT                   RCC_APB1RSTR_TIM5RST
-#define TIMER_CLK                       RCC->APB1ENR
-#define TIMER_CLK_BIT                   RCC_APB1ENR_TIM5EN
-#define TIMER_IRQN                      TIM5_IRQn
-#define TIMER_HANDLER                   TIM5_IRQHandler
+#if (CONFIG_CORE_LOCK_MAX_LEVEL < 32)
+#define CORE_TIMER_IPL                  IPL0SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 64)
+#define CORE_TIMER_IPL                  IPL1SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 96)
+#define CORE_TIMER_IPL                  IPL2SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 128)
+#define CORE_TIMER_IPL                  IPL3SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 160)
+#define CORE_TIMER_IPL                  IPL4SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 192)
+#define CORE_TIMER_IPL                  IPL5SOFT
+#elif (CONFIG_CORE_LOCK_MAX_LEVEL < 224)
+#define CORE_TIMER_IPL                  IPL6SOFT
+#else
+#define CORE_TIMER_IPL                  IPL7SOFT
 #endif
 
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -129,14 +114,15 @@ void cpu_term(void)
 
 static void lock_init(void)
 {
-    ncpu_reg                    cause;
-    ncpu_reg                    status;
+    ncore_reg                   cause;
+    ncore_reg                   status;
 
     __asm __volatile__(
         "   di                                          \n"
         :
         : "memory"
         :);  
+    
     /* Use vectored interrupt table */
     cause   = _CP0_GET_CAUSE();
     cause  |= _CP0_CAUSE_IV_MASK;
@@ -145,7 +131,8 @@ static void lock_init(void)
     status &= ~_CP0_STATUS_BEV_MASK;
     _CP0_SET_STATUS(status);
     INTCONSET = _INTCON_MVEC_MASK;
-        __asm __volatile__(
+    
+    __asm __volatile__(
         "   ei                                          \n"
         :
         : "memory"
@@ -168,32 +155,19 @@ static void lock_term(void)
 static void timer_init(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SysTick->CTRL = 0;
-    SysTick->LOAD =
-        CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ - 1;
-    SysTick->VAL  = 0;
-    SCB->ICSR    |= SCB_ICSR_PENDSTCLR_Msk;          /* Clear pending ISR bit */
-    NVIC_SetPriority(SysTick_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
-#else
-    volatile unsigned int       dummy;
+    ncore_reg                   cause;
 
-    TIMER_RST |=  TIMER_RST_BIT;              /* Reset and enable timer clock */
-    TIMER_RST &= ~TIMER_RST_BIT;
-    TIMER_CLK |=  TIMER_CLK_BIT;                              /* Enable clock */
-    dummy      =  TIMER_CLK;          /* Dummy read to generate a small delay */
-    (void)dummy;
+    /* Disable timer */
+    cause  = _CP0_GET_CAUSE();
+    cause |= _CP0_CAUSE_DC_MASK;
+    _CP0_SET_CAUSE(cause);
+    
+    /* Disable ISR */
+    IEC0CLR = _IEC0_CTIE_MASK;
 
-                                       /* Setup timer at clock frequency 10kHz*/
-    TIMER->CR1 = 0;                                         /* Turn off timer */
-    TIMER->ARR = 10000u / (CONFIG_CORE_TIMER_EVENT_FREQ) - 1u;
-    TIMER->PSC = (CONFIG_CORE_TIMER_CLOCK_FREQ) / 5000u;
-    TIMER->EGR = TIM_EGR_UG;
-                                                           /* Setup interrupt */
-    NVIC_SetPriority(TIMER_IRQN, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
-    NVIC_ClearPendingIRQ(TIMER_IRQN);
-    NVIC_EnableIRQ(TIMER_IRQN);
-
-    TIMER_CLK  &= ~TIMER_CLK_BIT;                      /* Disable timer clock */
+    /* Set ISR priority */
+    IPC0CLR = 0x7u << IPC0_CTIP_SHIFT;
+    IPC0SET = (NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL) << IPC0_CTIP_SHIFT) & IPC0_MASK;
 #endif
 }
 
@@ -202,13 +176,15 @@ static void timer_init(void)
 static void timer_term(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SysTick->CTRL = 0;
-#else
-
-    NVIC_DisableIRQ(TIMER_IRQN);                         /* Disable interrupt */
-    TIMER->CR1  &= ~TIM_CR1_CEN;                            /* Turn off timer */
-    TIMER->DIER &= ~TIM_DIER_UIE;                  /* Disable timer interrupt */
-    TIMER_CLK   &= ~TIMER_CLK_BIT;                     /* Disable timer clock */
+    ncore_reg                   cause;
+    
+    /* Disable ISR */
+    IEC0CLR = _IEC0_CTIE_MASK;
+    
+    /* Disable timer */
+    cause  = _CP0_GET_CAUSE();
+    cause |= _CP0_CAUSE_DC_MASK;
+    _CP0_SET_CAUSE(cause);
 #endif
 }
 
@@ -249,18 +225,18 @@ void ncore_idle(void)
 void ncore_timer_enable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-                                                /* Enable interrupt and Timer */
-    SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
-                    SysTick_CTRL_ENABLE_Msk;
-#else
-    volatile unsigned int 		dummy;
-    											    	/* Enable timer clock */
-    TIMER_CLK   |= TIMER_CLK_BIT;
-	dummy        = TIMER_CLK;         /* Dummy read to generate a small delay */
-	(void)dummy;
-
-    TIMER->DIER |= TIM_DIER_UIE;                    /* Enable timer interrupt */
-    TIMER->CR1  |= TIM_CR1_CEN;                              /* Turn on timer */
+    ncore_reg                   cause;
+    
+    /* Set and enable timer */
+    cause  = _CP0_GET_CAUSE();
+    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+    _CP0_SET_COUNT(0u);
+    _CP0_SET_COMPARE((CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ));
+    _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
+    
+    /* Enable ISR */
+    IFS0CLR = _IFS0_CTIF_MASK;
+    IEC0SET = _IEC0_CTIE_MASK;
 #endif
 }
 
@@ -269,55 +245,47 @@ void ncore_timer_enable(void)
 void ncore_timer_disable(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-    SysTick->CTRL = 0;
-#else
-    TIMER->CR1  &= ~TIM_CR1_CEN;                            /* Turn off timer */
-    TIMER->DIER &= ~TIM_DIER_UIE;                  /* Disable timer interrupt */
-    TIMER_CLK   &= ~TIMER_CLK_BIT;                     /* Disable timer clock */
+    ncore_reg                   cause;
+    
+    /* Disable ISR */
+    IEC0CLR = _IEC0_CTIE_MASK;
+    
+    /* Disable timer */
+    cause  = _CP0_GET_CAUSE();
+    cause |= _CP0_CAUSE_DC_MASK;
+    _CP0_SET_CAUSE(cause);
 #endif
 }
 
 
 
+
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
-/* NOTE 1:
- * This is the STM32F4xx SysTick ISR
- * The ISR is used only when the SysTick timer is configured as core timer.
- *
- * NOTE 2:
- * When the STM32F4xx HAL is enabled it will use the SysTick Handler by default.
- * The HAL_Init() will setup the SysTick ISR at highest priority. Since Neon
- * must use the interrupt with lower priority (as defined by macro
- * CONFIG_CORE_LOCK_MAX_LEVEL) then another timer must be selected as core timer.
- */
-void SysTick_Handler(void);
-
-void SysTick_Handler(void)
+void __ISR(_CORE_TIMER_VECTOR, CORE_TIMER_IPL) core_timer_handler(void)
 {
-	ncore_timer_isr();
-}
-#else
-/* NOTE:
- * This is the STM32F4xx timer ISR
- * The ISR is changed by macro TIMER_HANDLER depending on the configured timer.
- */
-void TIMER_HANDLER(void);
+    ncore_reg                   compare;
+    ncore_reg                   cause;
 
-void TIMER_HANDLER(void)
-{
-    if (TIMER->SR &   TIM_SR_UIF) {
-        TIMER->SR &= ~TIM_SR_UIF;
-        ncore_timer_isr();
-    }
+    /* Disable timer */
+    cause  = _CP0_GET_CAUSE();
+    _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
+    
+    /* Reload value */
+    compare = _CP0_GET_COMPARE();
+    _CP0_SET_COUNT(0u);
+    _CP0_SET_COMPARE(compare);
+   
+    /* Enable timer */
+    _CP0_SET_CAUSE(cause);
+    
+    ncore_timer_isr();
 }
 #endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
-#if ((CONFIG_CORE_TIMER_SOURCE != 0) && (CONFIG_CORE_TIMER_SOURCE != 2) && \
-	 (CONFIG_CORE_TIMER_SOURCE != 3) && (CONFIG_CORE_TIMER_SOURCE != 4) && \
-	 (CONFIG_CORE_TIMER_SOURCE != 5))
-# error "NEON::base::port::stm32f4xx-none-gcc: The selected timer in CONFIG_CORE_TIMER_SOURCE is not supported!"
+#if ((CONFIG_CORE_TIMER_SOURCE != 0))
+# error "NEON::base::port::pic32-none-xc: The selected timer in CONFIG_CORE_TIMER_SOURCE is not supported!"
 #endif
 
 /** @endcond *//** @} *//******************************************************
