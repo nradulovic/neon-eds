@@ -54,49 +54,94 @@
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE
+static
+void cpu_sleep(void);
+
+
+
+static 
+void __attribute__ ((nomips16)) isr_disable(void);
+
+
+static 
+void __attribute__ ((nomips16)) isr_enable(void);
+
+
+
+static
 void cpu_init(void);
 
 
 
-static void lock_init(void);
+static
+void cpu_term(void);
 
 
 
-static void lock_term(void);
+static 
+void lock_init(void);
 
 
 
-static void timer_init(void);
+static 
+void lock_term(void);
 
 
 
-static void timer_term(void);
+static 
+void timer_init(void);
+
+
+
+static 
+void timer_term(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-PORT_C_INLINE
-void cpu_init(void)
-{
-
-}
-
-
-
-PORT_C_INLINE
+static
 void cpu_sleep(void)
 {
     __asm__ __volatile__(
-        "@  cpu_sleep                                       \n"
-        "   wfe                                             \n");
+        "   wait                                        \n");
+}
+
+
+static 
+void __attribute__ ((nomips16)) isr_disable(void)
+{
+    __asm__ __volatile__(
+        "   di                                          \n"
+        :
+        :
+        : "memory");  
 }
 
 
 
-PORT_C_INLINE
+static 
+void __attribute__ ((nomips16)) isr_enable(void)
+{
+    __asm__ __volatile__(
+        "   ei                                          \n"
+        :
+        :
+        : "memory");  
+}
+
+
+
+static
+void cpu_init(void)
+{
+    
+}
+
+
+
+static
 void cpu_term(void)
 {
     for (;;) {
@@ -112,16 +157,13 @@ void cpu_term(void)
 
 
 
-static void lock_init(void)
+static 
+void lock_init(void)
 {
     ncore_reg                   cause;
     ncore_reg                   status;
 
-    __asm __volatile__(
-        "   di                                          \n"
-        :
-        : "memory"
-        :);  
+    isr_disable(); 
     
     /* Use vectored interrupt table */
     cause   = _CP0_GET_CAUSE();
@@ -132,27 +174,21 @@ static void lock_init(void)
     _CP0_SET_STATUS(status);
     INTCONSET = _INTCON_MVEC_MASK;
     
-    __asm __volatile__(
-        "   ei                                          \n"
-        :
-        : "memory"
-        :); 
+    isr_enable();
 }
 
 
 
-static void lock_term(void)
+static 
+void lock_term(void)
 {
-    __asm __volatile__(
-        "   di                                          \n"
-        :
-        : "memory"
-        :); 
+    isr_disable(); 
 }
 
 
 
-static void timer_init(void)
+static 
+void timer_init(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
     ncore_reg                   cause;
@@ -173,7 +209,8 @@ static void timer_init(void)
 
 
 
-static void timer_term(void)
+static 
+void timer_term(void)
 {
 #if (CONFIG_CORE_TIMER_SOURCE == 0)
     ncore_reg                   cause;
@@ -231,7 +268,7 @@ void ncore_timer_enable(void)
     cause  = _CP0_GET_CAUSE();
     _CP0_SET_CAUSE(cause | _CP0_CAUSE_DC_MASK);
     _CP0_SET_COUNT(0u);
-    _CP0_SET_COMPARE((CONFIG_SYSTIMER_CLOCK_FREQ / CONFIG_SYSTIMER_EVENT_FREQ));
+    _CP0_SET_COMPARE((CONFIG_CORE_TIMER_CLOCK_FREQ / CONFIG_CORE_TIMER_EVENT_FREQ));
     _CP0_SET_CAUSE(cause & ~_CP0_CAUSE_DC_MASK);
     
     /* Enable ISR */
@@ -256,7 +293,6 @@ void ncore_timer_disable(void)
     _CP0_SET_CAUSE(cause);
 #endif
 }
-
 
 
 

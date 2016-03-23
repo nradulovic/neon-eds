@@ -242,11 +242,11 @@ void ncore_lock_enter(
     ipl_status |= new_mask;
     _CP0_SET_STATUS(ipl_status);
 #else
-	__asm __volatile__(
+	__asm__ __volatile__(
 		"   di      %0                                  \n"
 		: "=r"(lock->level)
-        : "memory"
-        :);
+        : 
+        : "memory");
 #endif
 }
 
@@ -271,11 +271,11 @@ void ncore_lock_exit(
     unsigned int                isr_status;
     
     if (lock->level) {
-        __asm __volatile__(
+        __asm__ __volatile__(
             "   ei                                      \n"
             :
-            : "memory"
-            :);        
+            : 
+            : "memory");        
     }
 #endif
 }
