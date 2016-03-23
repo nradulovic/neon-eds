@@ -53,6 +53,7 @@ struct sched_ctx
 {
     struct nbias_list *         current;    /**<@brief The current thread     */
     struct nprio_queue          run_queue;  /**<@brief Run queue of threads   */
+    bool                        is_initialized;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -66,32 +67,22 @@ static struct sched_ctx         g_sched_ctx;
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
-void nsched_init(void)
-{
-    struct sched_ctx *          ctx = &g_sched_ctx;
-
-    ctx->current = NULL;
-    nprio_queue_init(&ctx->run_queue);     /* Initialize run_queue structure. */
-}
-
-
-
-void nsched_term(void)
-{
-    struct sched_ctx *          ctx = &g_sched_ctx;
-
-    ctx->current = NULL;
-}
-
-
 
 void nsched_thread_init(
     struct nthread *            thread,
     const struct nthread_define * define)
 {
+    struct sched_ctx *          ctx = &g_sched_ctx;
+    
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature != NSIGNATURE_THREAD);
 
+    /* Prepare run_queue for usage */
+    if (ctx->is_initialized != true) {
+        ctx->is_initialized  = true;
+        ctx->current         = NULL;
+        nprio_queue_init(&ctx->run_queue);     /* Initialize run_queue structure. */
+    }
     nbias_list_init(&thread->node, define->priority);
     ncore_ref_write(&thread->ref, 0);
 

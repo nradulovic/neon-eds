@@ -48,7 +48,16 @@
  */
 #define NTHREAD_PRIORITY_MIN            (0u)
 
-#define NTHREAD_DEF_INIT(name, priority) {name, priority}
+/**@brief       Define thread properties
+ * @api
+ */
+#define NTHREAD_DEF_INIT(name, priority)                                        \
+    {name, priority}
+
+/**@brief       Compatibility macro - this function was removed from Neon
+ * @api
+ */
+#define nsched_init()                   (void)0
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -78,14 +87,6 @@ struct nthread
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-
-void nsched_init(void);
-
-
-
-void nsched_term(void);
-
 
 
 void nsched_thread_init(
