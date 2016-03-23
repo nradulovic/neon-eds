@@ -324,6 +324,8 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
 #else
     struct nevent *             ret;
 
+    (void)event;
+    (void)id;
     ret = NULL;
 
     NENSURE("event forward depends on event size configuration", ret != NULL);
