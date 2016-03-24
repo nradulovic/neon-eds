@@ -94,6 +94,7 @@ static void remove_timer(
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
+#if (CONFIG_API_VALIDATION == 1)
 void ntimer_init(
     struct ntimer *             timer)
 {
@@ -104,9 +105,11 @@ void ntimer_init(
 
     NOBLIGATION(timer->signature = NSIGNATURE_TIMER);
 }
+#endif
 
 
 
+#if (CONFIG_API_VALIDATION == 1)
 void ntimer_term(
     struct ntimer *             timer)
 {
@@ -115,6 +118,7 @@ void ntimer_term(
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
     NOBLIGATION(timer->signature = ~NSIGNATURE_TIMER);
 }
+#endif
 
 
 
