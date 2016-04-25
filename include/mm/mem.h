@@ -210,6 +210,26 @@ size_t nmem_get_size_i(
     return (mem_obj->size);
 }
 
+
+
+PORT_C_INLINE
+void nmem_set_generic_heap(struct nmem * mem_obj)
+{
+	extern struct nmem *		g_generic_heap_;
+
+	g_generic_heap_ = mem_obj;
+}
+
+
+
+PORT_C_INLINE
+struct nmem * nmem_get_generic_heap(void)
+{
+	extern struct nmem *		g_generic_heap_;
+
+	return (g_generic_heap_);
+}
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
