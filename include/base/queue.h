@@ -146,6 +146,24 @@ void * nqueue_get(
 
 
 
+PORT_C_INLINE
+void * nqueue_head(
+    const struct nqueue *       queue)
+{
+    return (queue->storage[queue->head]);
+}
+
+
+
+PORT_C_INLINE
+void * nqueue_tail(
+    const struct nqueue *       queue)
+{
+    return (queue->storage[queue->tail]);
+}
+
+
+
 PORT_C_INLINE 
 size_t nqueue_size(
     const struct nqueue *       queue)
