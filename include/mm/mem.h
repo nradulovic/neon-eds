@@ -49,6 +49,8 @@
                          ((mem_obj)->signature == NSIGNATURE_POOL) ||           \
                          ((mem_obj)->signature == NSIGNATURE_STDHEAP)))
 
+#define NMEM_GENERIC_HEAP				nmem_get_generic_heap()
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
