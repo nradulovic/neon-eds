@@ -279,6 +279,24 @@ void ncore_lock_exit(
 #endif
 }
 
+
+
+void ncore_deferred_init(void);
+
+
+
+PORT_C_INLINE
+void ncore_deferred_do(void)
+{
+	/* Trigger PendSV
+	 */
+	*((uint32_t volatile *)0xE000ED04) = 0x10000000;
+}
+
+
+
+extern void ncore_deferred_work(void);
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
