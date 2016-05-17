@@ -127,6 +127,7 @@ nerror nepa_defer_fetch_one(struct nequeue * queue)
         const struct nevent *   event;
         
         event = nequeue_get(queue);
+        nevent_ref_down(event);
         error = nepa_send_event_i(epa, event);
     }
     ncore_lock_exit(&lock);
@@ -151,6 +152,7 @@ nerror nepa_defer_fetch_all(struct nequeue * queue)
         const struct nevent *   event;
         
         event = nequeue_get(queue);
+        nevent_ref_down(event);
         error = nepa_send_event_i(epa, event);
     }
     ncore_lock_exit(&lock);
