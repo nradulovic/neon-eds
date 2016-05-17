@@ -51,7 +51,7 @@
  */
 struct pool_block
 {
-    struct pool_block *         next;           /**<@brief Next free block    */
+	struct pool_block *			next;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -82,11 +82,10 @@ static void * pool_alloc_i(
 
     NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
 
-    block = NULL;
+    block = mem_obj->base;
     (void)size;
 
-    if (mem_obj->base != NULL) {
-        block          = mem_obj->base;
+    if (block != NULL) {
         mem_obj->base  = block->next;
         mem_obj->free -= mem_obj->size;
     }
