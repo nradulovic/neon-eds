@@ -54,9 +54,9 @@ struct nsched_deferred
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-void sched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg);
+void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg);
 
-void sched_deferred_do(struct nsched_deferred * deferred);
+void nsched_deferred_do(struct nsched_deferred * deferred);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

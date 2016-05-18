@@ -56,7 +56,7 @@ struct sched_deferred_sentinel 	g_ctx;
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void sched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg)
+void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg)
 {
 	static bool 				is_initialized;
 
@@ -75,7 +75,7 @@ void sched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *),
 
 
 
-void sched_deferred_do(struct nsched_deferred * deferred)
+void nsched_deferred_do(struct nsched_deferred * deferred)
 {
 	g_ctx.head = deferred;
 
