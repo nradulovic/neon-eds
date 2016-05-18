@@ -233,13 +233,6 @@ void nepa_term(struct nepa * epa)
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     ncore_lock_enter(&sys_lock);
-
-    while (!nequeue_is_empty(&epa->working_queue)) {
-        const struct nevent *   event;
-
-        event = nequeue_get(&epa->working_queue);
-        nevent_destroy_i(event);
-    }
     nsched_thread_term(&epa->thread);
     nsm_term(&epa->sm);
     nequeue_term(&epa->working_queue);

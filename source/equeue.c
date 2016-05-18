@@ -33,6 +33,7 @@
 #include "base/debug.h"
 #include "base/component.h"
 #include "ep/equeue.h"
+#include "ep/event.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -56,11 +57,9 @@ void nequeue_init(
 
     size = define->size / sizeof(struct nevent * [1]);
 
+    nqueue_init(&queue->queue, define->storage, size);
 #if (CONFIG_REGISTRY == 1)
-    nqueue_init(&queue->queue, define->storage, size);
     queue->min = size;
-#else
-    nqueue_init(&queue->queue, define->storage, size);
 #endif
     NOBLIGATION(queue->signature = NSIGNATURE_EQUEUE);
 }
@@ -73,11 +72,16 @@ void nequeue_term(
     NREQUIRE(NAPI_POINTER, queue != NULL);
     NREQUIRE(NAPI_OBJECT,  queue->signature == NSIGNATURE_EQUEUE);
 
+    while (!nequeue_is_empty(queue)) {
+    	const struct nevent *	event;
+
+    	event = nequeue_get(queue);
+    	nevent_ref_down(event);
+    	nevent_destroy(event);
+    }
+    nqueue_term(&queue->queue);
 #if (CONFIG_REGISTRY == 1)
-    nqueue_term(&queue->queue);
     queue->min = 0;
-#else
-    nqueue_term(&queue->queue);
 #endif
     NOBLIGATION(queue->signature = ~NSIGNATURE_EQUEUE);
 }
