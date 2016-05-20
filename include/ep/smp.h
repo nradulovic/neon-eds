@@ -49,29 +49,6 @@
  */
 #define nsm_set_wspace(sm, wspace_ptr)  (sm)->wspace = (wspace_ptr)
 
-/**@brief       State machine action, state is returning its super state
- * @param       sm
- *              Pointer to the state machine
- * @param       state_ptr
- *              State function pointer to super state
- * @return      Actions enumerator @ref NACTION_SUPER.
- * @api
- */
-#define naction_super(sm, state_ptr)                                            \
-    ((sm)->state = (state_ptr), NACTION_SUPER)
-
-/**@brief       State machine action, state machine wants to transit to new
- *              state
- * @param       sm
- *              Pointer to the state machine
- * @param       state_ptr
- *              State function pointer to new state
- * @return      Actions enumerator @ref NACTION_TRANSIT_TO.
- * @api
- */
-#define naction_transit_to(sm, state_ptr)                                       \
-    ((sm)->state = (state_ptr), NACTION_TRANSIT_TO)
-
 /**@brief       State machine action, given event was handled.
  * @return      Actions enumerator @ref NACTION_HANDLED.
  * @api
@@ -230,6 +207,43 @@ naction ntop_state(
 
 const struct nevent * nsm_event(
     enum nsm_event              event_id);
+
+
+
+/**@brief       State machine action, state is returning its super state
+ * @param       sm
+ *              Pointer to the state machine
+ * @param       state_ptr
+ *              State function pointer to super state
+ * @return      Actions enumerator @ref NACTION_SUPER.
+ * @api
+ */
+PORT_C_INLINE
+naction naction_super(struct nsm * sm, nstate * state)
+{
+	sm->state = state;
+
+	return (NACTION_SUPER);
+}
+
+
+
+/**@brief       State machine action, state machine wants to transit to new
+ *              state
+ * @param       sm
+ *              Pointer to the state machine
+ * @param       state_ptr
+ *              State function pointer to new state
+ * @return      Actions enumerator @ref NACTION_TRANSIT_TO.
+ * @api
+ */
+PORT_C_INLINE
+naction  naction_transit_to(struct nsm * sm, nstate * state)
+{
+	sm->state = state;
+
+	return (NACTION_TRANSIT_TO);
+}
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
