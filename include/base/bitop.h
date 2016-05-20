@@ -185,7 +185,7 @@ bool n_is_power_of2(unsigned int value)
 
 
 PORT_C_INLINE
-uint8_t n_xb4(uint64_t value)
+uint8_t n_xb4(uint32_t value)
 {
     return ((value >> 24) & 0xffu);
 }
@@ -193,7 +193,7 @@ uint8_t n_xb4(uint64_t value)
 
 
 PORT_C_INLINE
-uint8_t n_xb3(uint64_t value)
+uint8_t n_xb3(uint32_t value)
 {
     return ((value >> 16) & 0xffu);
 }
@@ -201,7 +201,7 @@ uint8_t n_xb3(uint64_t value)
 
 
 PORT_C_INLINE
-uint8_t n_xb2(uint64_t value)
+uint8_t n_xb2(uint32_t value)
 {
     return ((value >> 8) & 0xffu);
 }
@@ -209,7 +209,7 @@ uint8_t n_xb2(uint64_t value)
 
 
 PORT_C_INLINE
-uint8_t n_xb1(uint64_t value)
+uint8_t n_xb1(uint32_t value)
 {
     return (value & 0xffu);
 }
