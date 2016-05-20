@@ -169,7 +169,7 @@ void neds_run(void)
 
     ncore_lock_enter(&lock);
 
-    for (;ncore_os_should_exit();) {
+    for (;!ncore_os_should_exit();) {
                                    /* Fetch a new thread ready for execution. */
         while ((thread = nsched_schedule_i())) {
             struct nepa *           epa;
