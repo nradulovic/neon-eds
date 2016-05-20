@@ -201,14 +201,15 @@ static void hsm_build_path(
         exit->buff[exit->index] = current_state;
         entry->index = 0u;
 
-        while (entry->buff[entry->index] != &ntop_state) {
+        do {
+        	entry->index++;
 
             if (exit->buff[exit->index] == entry->buff[entry->index]) {
 
                 return;
             }
-            entry->index++;
-        }
+
+        } while (entry->buff[entry->index] != &ntop_state);
     }
 }
 
