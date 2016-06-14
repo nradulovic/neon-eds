@@ -6,4 +6,10 @@ Release/
 
 *~
 .*~
-/arm
+**.o
+**.a
+**.in
+**.dirstamp
+**/.deps/
+**/Makefile
+**/Makefile.in
