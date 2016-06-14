@@ -32,9 +32,6 @@
 #define NEON_BASE_ERROR_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
-
-#include "port/compiler.h"
-
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Error table
