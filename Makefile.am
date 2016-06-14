@@ -16,5 +16,6 @@ libeds_a_SOURCES = \
 	source/static.c \
 	source/stdheap.c \
 	source/timer.c \
+	source/deferred.c \
 	port/x86-64-linux-gcc/p_core.c
 
