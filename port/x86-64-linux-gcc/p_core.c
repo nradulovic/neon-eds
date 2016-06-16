@@ -247,6 +247,18 @@ void ncore_timer_disable(void)
     }
 }
 
+
+
+void ncore_deferred_init(void)
+{
+}
+
+
+
+void ncore_deferred_do(void)
+{
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
 /** @endcond *//** @} *//******************************************************
