@@ -1,9 +1,11 @@
 AUTOMAKE_OPTIONS = foreign
+ACLOCAL_AMFLAGS = -I m4
 
 AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/port/x86-64-linux-gcc
 
-noinst_LIBRARIES = libeds.a
-libeds_a_SOURCES = \
+
+noinst_LTLIBRARIES = libneoneds.la
+libneoneds_la_SOURCES = \
 	source/epa.c \
 	source/equeue.c \
 	source/etimer.c \

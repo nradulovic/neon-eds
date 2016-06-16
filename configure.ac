@@ -3,13 +3,16 @@
 
 AC_PREREQ([2.69])
 AC_INIT([Event Driven System], [2.0], [nenad.b.radulovic@gmail.com])
-AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([include/neon_eds.h])
 AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_AUX_DIR([.])
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE([subdir-objects])
+LT_INIT
 
 # Checks for programs.
 AC_PROG_CC
-AC_PROG_RANLIB
+AC_PROG_LIBTOOL
 
 # Checks for libraries.
 
