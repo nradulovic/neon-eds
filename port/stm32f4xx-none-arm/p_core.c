@@ -320,6 +320,23 @@ void TIMER_HANDLER(void)
 }
 #endif
 
+void ncore_deferred_init(void)
+{
+	SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
+
+	NVIC_SetPriority(PendSV_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
+	NVIC_ClearPendingIRQ(PendSV_IRQn);
+	NVIC_EnableIRQ(PendSV_IRQn);
+}
+
+
+void PendSV_Handler(void)
+{
+	SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
+
+	ncore_deferred_work();
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
 #if ((CONFIG_CORE_TIMER_SOURCE != 0) && (CONFIG_CORE_TIMER_SOURCE != 2) && \
