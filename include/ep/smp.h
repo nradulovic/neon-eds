@@ -88,6 +88,7 @@ enum nsm_event
     NSM_ENTRY           = 1u,           /**<@brief Process state entry        */
     NSM_EXIT            = 2u,           /**<@brief Process state exit         */
     NSM_INIT            = 3u,           /**<@brief Process state init         */
+    NSM_NULL            = 14u,			/**<@brief NULL event 				  */
     NEVENT_USER_ID      = 15u
 };
 
