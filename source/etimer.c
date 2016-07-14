@@ -139,6 +139,7 @@ void netimer_cancel(
 {
     NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
 
+    timer->event.id = NSM_NULL;
     ntimer_cancel(&timer->timer);
 }
 
