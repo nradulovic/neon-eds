@@ -379,6 +379,8 @@ naction ntop_state(struct nsm * sm, const struct nevent * event)
     (void)sm;
     (void)event;
 
+    NASSERT("Unhandled event in state machine", event->id < NEVENT_USER_ID);
+
     return (NACTION_IGNORED);
 }
 
