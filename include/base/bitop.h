@@ -187,7 +187,7 @@ bool n_is_power_of2(unsigned int value)
 PORT_C_INLINE
 uint8_t n_xb4(uint32_t value)
 {
-    return ((value >> 24) & 0xffu);
+    return ((uint8_t)((value >> 24) & 0xffu));
 }
 
 
