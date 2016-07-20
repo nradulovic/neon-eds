@@ -139,6 +139,9 @@ void netimer_cancel(
 {
     NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
 
+    /* Make this event NULL event. This is used to NULLify event even if it was
+     * delivered to EPA.
+     */
     timer->event.id = NSM_NULL;
     ntimer_cancel(&timer->timer);
 }
