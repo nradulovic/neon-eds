@@ -298,6 +298,61 @@ void ncore_deferred_do(void)
 
 extern void ncore_deferred_work(void);
 
+
+
+PORT_C_INLINE
+uint8_t ncore_exu4(uint32_t data)
+{
+	uint32_t		retval;
+
+	__asm__ __volatile__(
+		"@ ncore_ex_byte4									\n"
+		"    ubfx	%0, %1, #24, #8							\n"
+		: "=r"(retval)
+		: "r"(data));
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu3(uint32_t data)
+{
+	uint32_t		retval;
+
+	__asm__ __volatile__(
+		"@ ncore_ex_byte3									\n"
+		"    ubfx	%0, %1, #16, #8							\n"
+		: "=r"(retval)
+		: "r"(data));
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu2(uint32_t data)
+{
+	uint32_t		retval;
+
+	__asm__ __volatile__(
+		"@ ncore_ex_byte3									\n"
+		"    ubfx	%0, %1, #8, #8							\n"
+		: "=r"(retval)
+		: "r"(data));
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu1(uint32_t data)
+{
+	return ((uint8_t)data);
+}
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

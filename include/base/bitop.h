@@ -184,50 +184,26 @@ bool n_is_power_of2(unsigned int value)
 
 
 
-PORT_C_INLINE
-uint8_t n_xb4(uint32_t value)
-{
-    return ((uint8_t)((value >> 24) & 0xffu));
-}
+#define n_xb4(value)  					ncore_exu4(value)
 
 
 
-PORT_C_INLINE
-uint8_t n_xb3(uint32_t value)
-{
-    return ((value >> 16) & 0xffu);
-}
+#define n_xb3(value) 					ncore_exu3(value)
 
 
 
-PORT_C_INLINE
-uint8_t n_xb2(uint32_t value)
-{
-    return ((value >> 8) & 0xffu);
-}
+#define n_xb2(value)					ncore_exu2(value)
 
 
 
-PORT_C_INLINE
-uint8_t n_xb1(uint32_t value)
-{
-    return (value & 0xffu);
-}
+#define n_xb1(value)					((uint8_t)value)
 
 
 
 PORT_C_INLINE
 uint32_t n_float_to_u32(float val)
 {
-    union float_u32
-    {
-        float                   f;
-        uint32_t                i;
-    }                           data;
-
-    data.f = val;
-
-    return (data.i);
+    return (*(uint32_t *)&val);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
