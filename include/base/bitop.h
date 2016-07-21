@@ -197,7 +197,7 @@ bool n_is_power_of2(unsigned int value)
 
 
 
-#define n_xb1(value)					((uint8_t)value)
+#define n_xb1(value)					((uint8_t)(value))
 
 /**@brief		Sign extend signed 24 bit integer to signed 32 bits integer
  * @param 		val - signed 24 bit integer
