@@ -103,6 +103,10 @@ static void timer_init(void);
 
 static void timer_term(void);
 
+
+
+extern void PendSV_Handler(void);
+
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
@@ -337,6 +341,7 @@ void ncore_deferred_init(void)
 	NVIC_ClearPendingIRQ(PendSV_IRQn);
 	NVIC_EnableIRQ(PendSV_IRQn);
 }
+
 
 
 void PendSV_Handler(void)
