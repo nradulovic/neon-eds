@@ -112,9 +112,8 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE_ALWAYS
-uint_fast8_t ncore_log2(
-    ncore_reg                    value)
+PORT_C_INLINE_ALWAYS uint_fast8_t
+ncore_log2(ncore_reg value)
 {
     uint_fast8_t                clz;
 
@@ -129,18 +128,16 @@ uint_fast8_t ncore_log2(
 
 
 
-PORT_C_INLINE_ALWAYS
-ncore_reg ncore_exp2(
-    uint_fast8_t                value)
+PORT_C_INLINE_ALWAYS ncore_reg
+ncore_exp2(uint_fast8_t value)
 {
     return (0x1u << value);
 }
 
 
 
-PORT_C_INLINE_ALWAYS
-void ncore_ref_write(
-    struct ncore_ref *          ref,
+PORT_C_INLINE_ALWAYS void
+ncore_ref_write(struct ncore_ref * ref,
 	uint32_t					value)
 {
 	ref->value = value;
@@ -148,18 +145,16 @@ void ncore_ref_write(
 
 
 
-PORT_C_INLINE_ALWAYS
-uint32_t ncore_ref_read(
-	struct ncore_ref *          ref)
+PORT_C_INLINE_ALWAYS uint32_t
+ncore_ref_read(struct ncore_ref * ref)
 {
     return (ref->value);
 }
 
 
 
-PORT_C_INLINE_ALWAYS
-void ncore_ref_increment(
-	struct ncore_ref *      	ref)
+PORT_C_INLINE_ALWAYS void
+ncore_ref_increment(struct ncore_ref * ref)
 {
     if (ref->value != UINT32_MAX) {
         ref->value++;
@@ -168,9 +163,8 @@ void ncore_ref_increment(
 
 
 
-PORT_C_INLINE_ALWAYS
-void ncore_ref_decrement(
-	struct ncore_ref *          ref)
+PORT_C_INLINE_ALWAYS void
+ncore_ref_decrement(struct ncore_ref * ref)
 {
     if (ref->value != 0u) {
         ref->value--;
@@ -182,8 +176,8 @@ void ncore_ref_decrement(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
-void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
+PORT_C_INLINE_ALWAYS void
+ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
 	v->value = i;
 }
@@ -193,9 +187,8 @@ void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
-int32_t ncore_atomic_read(
-	struct ncore_atomic *       ref)
+PORT_C_INLINE_ALWAYS int32_t
+ncore_atomic_read(struct ncore_atomic * ref)
 {
     return (ref->value);
 }
@@ -205,9 +198,8 @@ int32_t ncore_atomic_read(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
-void ncore_atomic_inc(
-	struct ncore_atomic *      	ref)
+PORT_C_INLINE_ALWAYS void
+ncore_atomic_inc(struct ncore_atomic * ref)
 {
     if (ref->value != INT32_MAX) {
     	ref->value++;
@@ -219,9 +211,8 @@ void ncore_atomic_inc(
 /*
  * TODO: Write this thread safe and in assembler.
  */
-PORT_C_INLINE_ALWAYS
-void ncore_atomic_dec(
-	struct ncore_atomic *        ref)
+PORT_C_INLINE_ALWAYS void
+ncore_atomic_dec(struct ncore_atomic * ref)
 {
     if (ref->value != 0u) {
     	ref->value--;
@@ -230,9 +221,8 @@ void ncore_atomic_dec(
 
 
 
-PORT_C_INLINE
-void ncore_lock_enter(
-    struct ncore_lock *          lock)
+PORT_C_INLINE void
+ncore_lock_enter(struct ncore_lock * lock)
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
@@ -261,9 +251,8 @@ void ncore_lock_enter(
 
 
 
-PORT_C_INLINE
-void ncore_lock_exit(
-    struct ncore_lock *          lock)
+PORT_C_INLINE void
+ncore_lock_exit(struct ncore_lock * lock)
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     __asm __volatile__ (
@@ -286,8 +275,8 @@ void ncore_deferred_init(void);
 
 
 
-PORT_C_INLINE
-void ncore_deferred_do(void)
+PORT_C_INLINE void
+ncore_deferred_do(void)
 {
 	/* Trigger PendSV
 	 */
@@ -300,13 +289,13 @@ extern void ncore_deferred_work(void);
 
 
 
-PORT_C_INLINE
-uint8_t ncore_exu4(uint32_t data)
+PORT_C_INLINE uint8_t
+ncore_exu4(uint32_t data)
 {
 	uint32_t		retval;
 
-	__asm__ __volatile__(
-		"@ ncore_ex_byte4									\n"
+	__asm __volatile__(
+		"@ ncore_exu4										\n"
 		"    ubfx	%0, %1, #24, #8							\n"
 		: "=r"(retval)
 		: "r"(data));
@@ -316,13 +305,13 @@ uint8_t ncore_exu4(uint32_t data)
 
 
 
-PORT_C_INLINE
-uint8_t ncore_exu3(uint32_t data)
+PORT_C_INLINE uint8_t
+ncore_exu3(uint32_t data)
 {
 	uint32_t		retval;
 
-	__asm__ __volatile__(
-		"@ ncore_ex_byte3									\n"
+	__asm __volatile__(
+		"@ ncore_exu3										\n"
 		"    ubfx	%0, %1, #16, #8							\n"
 		: "=r"(retval)
 		: "r"(data));
@@ -332,13 +321,13 @@ uint8_t ncore_exu3(uint32_t data)
 
 
 
-PORT_C_INLINE
-uint8_t ncore_exu2(uint32_t data)
+PORT_C_INLINE uint8_t
+ncore_exu2(uint32_t data)
 {
-	uint32_t		retval;
+	uint32_t					retval;
 
-	__asm__ __volatile__(
-		"@ ncore_ex_byte3									\n"
+	__asm __volatile__(
+		"@ ncore_exu2										\n"
 		"    ubfx	%0, %1, #8, #8							\n"
 		: "=r"(retval)
 		: "r"(data));
@@ -348,11 +337,28 @@ uint8_t ncore_exu2(uint32_t data)
 
 
 
-PORT_C_INLINE
-uint8_t ncore_exu1(uint32_t data)
+PORT_C_INLINE uint8_t
+ncore_exu1(uint32_t data)
 {
 	return ((uint8_t)data);
 }
+
+
+
+PORT_C_INLINE int32_t
+ncore_ext_i24(int32_t data)
+{
+	int32_t						retval;
+
+	__asm __volatile__(
+		"@ ncore_ext_i24									\n"
+		" 	sbfx 	%0, %1, #0, #24							\n"
+		: "=r"(retval)
+		: "r"(data));
+
+	return (retval);
+}
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }

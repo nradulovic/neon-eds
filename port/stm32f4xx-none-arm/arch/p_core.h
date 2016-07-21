@@ -274,6 +274,74 @@ void ncore_deferred_do(void)
 
 extern void ncore_deferred_work(void);
 
+
+
+PORT_C_INLINE
+uint8_t ncore_exu4(uint32_t data)
+{
+	uint32_t		retval;
+
+	__asm
+	{
+		UBFX	retval, data, 24, 8
+	}
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu3(uint32_t data)
+{
+	uint32_t		retval;
+
+	__asm
+	{
+		UBFX	retval, data, 16, 8
+	}
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu2(uint32_t data)
+{
+	uint32_t					retval;
+
+	__asm
+	{
+		UBFX	retval, data, 8, 8
+	}
+
+	return ((uint8_t)retval);
+}
+
+
+
+PORT_C_INLINE
+uint8_t ncore_exu1(uint32_t data)
+{
+	return ((uint8_t)data);
+}
+
+
+
+PORT_C_INLINE int32_t
+ncore_ext_i24(int32_t data)
+{
+	int32_t						retval;
+
+	__asm
+	{
+		SBFX  	retval, data, 0, 24
+	}
+
+	return (retval);
+}
+
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
 }
