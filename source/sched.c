@@ -65,6 +65,13 @@ static struct sched_ctx         g_sched_ctx;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
+
+static void
+local_dispatcher(struct nthread * thread)
+{
+	(void)thread;
+}
+
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
@@ -85,6 +92,7 @@ void nsched_thread_init(
     }
     nbias_list_init(&thread->node, define->priority);
     ncore_ref_write(&thread->ref, 0);
+    thread->dispatch_i = local_dispatcher;
 
 #if (CONFIG_REGISTRY == 1)
     memset(thread->name, 0, sizeof(thread->name));
@@ -174,6 +182,23 @@ struct nthread * nsched_schedule_i(void)
 
         return (NULL);
     }
+}
+
+
+
+void nsched_run(void)
+{
+    struct ncore_lock           lock;
+    struct nthread *            thread;
+
+    ncore_lock_enter(&lock);
+
+    for (;!ncore_os_should_exit();) {
+                                   /* Fetch a new thread ready for execution. */
+        thread = nsched_schedule_i();
+        thread->dispatch_i(thread);
+    }
+    ncore_lock_exit(&lock);
 }
 
 

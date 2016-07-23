@@ -76,6 +76,7 @@ struct nthread
 {
     struct nbias_list           node;           /**<@brief Priority queue node*/
     struct ncore_ref            ref;            /**<@brief Reference count    */
+    void 					 (* dispatch_i)(struct nthread * thread);
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
     char                        name[CONFIG_REGISTRY_NAME_SIZE];
     struct ndlist               registry_node;
@@ -115,6 +116,10 @@ struct nthread * nsched_schedule_i(void);
 
 
 struct nthread * nsched_get_current(void);
+
+
+
+void nsched_run(void);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

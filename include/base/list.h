@@ -59,12 +59,13 @@ struct ndlist
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE
-void ndlist_init(
-    struct ndlist *             node)
+PORT_C_INLINE struct ndlist *
+ndlist_init(struct ndlist * node)
 {
     node->next = node;
     node->prev = node;
+
+    return (node);
 }
 
 
