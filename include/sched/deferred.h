@@ -46,7 +46,7 @@ extern "C" {
 
 struct nsched_deferred
 {
-	struct nsched_deferred *	next;
+	struct ndlist 				list;
 	void 					 (* fn)(void * arg);
 	void *						arg;
 };

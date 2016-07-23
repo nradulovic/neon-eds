@@ -38,21 +38,36 @@
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
 
-struct sched_deferred_sentinel
+struct sched_deferred_ctx
 {
-	struct nsched_deferred *	head;
+	struct ndlist				a;
+	struct ndlist				b;
+	struct ndlist * 			pending;
+	struct ndlist *				working;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
+
+static struct nsched_deferred *
+ndlist_to_deferred(struct ndlist * list);
+
 /*=======================================================  LOCAL VARIABLES  ==*/
 
 static const NCOMPONENT_DEFINE("Deferred work");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-struct sched_deferred_sentinel 	g_ctx;
+struct sched_deferred_ctx 	g_ctx;
 
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
+
+
+static struct nsched_deferred *
+ndlist_to_deferred(struct ndlist * list)
+{
+	return (PORT_C_CONTAINER_OF(list, struct nsched_deferred, list));
+}
+
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
@@ -67,18 +82,19 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 		is_initialized = true;
 
 		ncore_deferred_init();
+		g_ctx.pending = ndlist_init(&g_ctx.a);
+		g_ctx.working = ndlist_init(&g_ctx.b);
 	}
 	deferred->fn = fn;
 	deferred->arg = arg;
-	deferred->next = NULL;
+	ndlist_init(&deferred->list);
 }
 
 
 
 void nsched_deferred_do(struct nsched_deferred * deferred)
 {
-	g_ctx.head = deferred;
-
+	ndlist_add_after(g_ctx.pending, &deferred->list);
 	ncore_deferred_do();
 }
 
@@ -86,14 +102,19 @@ void nsched_deferred_do(struct nsched_deferred * deferred)
 
 void ncore_deferred_work(void)
 {
-	struct nsched_deferred *	deferred;
+	struct ndlist *			current;
 
-	deferred = g_ctx.head;
+	current 	  = g_ctx.pending;
+	g_ctx.pending = g_ctx.working;
+	g_ctx.working = current;
+	current 	  = ndlist_next(current);
 
-	if (deferred) {
+	while (current != g_ctx.working) {
+		struct nsched_deferred * deferred;
+
+		deferred = ndlist_to_deferred(current);
 		deferred->fn(deferred->arg);
 	}
-	g_ctx.head = NULL;
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
