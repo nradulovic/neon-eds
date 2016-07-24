@@ -67,15 +67,36 @@ static struct sched_ctx         g_sched_ctx;
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 static void
-local_dispatcher(struct nthread * thread)
+local_dispatcher(struct nthread * thread, ncore_lock * lock)
 {
 	(void)thread;
+    (void)lock;
 }
+
+
+
+static struct nthread * 
+nsched_schedule_i(void) 
+{
+    struct sched_ctx *          ctx = &g_sched_ctx;
+    struct nbias_list *         new_node;
+    struct nthread *            thread;
+
+    new_node = nprio_queue_peek(&ctx->run_queue);
+    nprio_queue_rotate(&ctx->run_queue, new_node);
+    ctx->current = new_node;
+    thread       = NODE_TO_THREAD(new_node);
+
+    return (thread);
+}
+
+
+
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nsched_thread_init(
+void nsched_init(
     struct nthread *            thread,
     const struct nthread_define * define)
 {
@@ -91,8 +112,8 @@ void nsched_thread_init(
         nprio_queue_init(&ctx->run_queue);     /* Initialize run_queue structure. */
     }
     nbias_list_init(&thread->node, define->priority);
-    ncore_ref_write(&thread->ref, 0);
-    thread->dispatch_i = local_dispatcher;
+    thread->ref = 0u;
+    thread->vf_dispatch_i = local_dispatcher;
 
 #if (CONFIG_REGISTRY == 1)
     memset(thread->name, 0, sizeof(thread->name));
@@ -108,7 +129,7 @@ void nsched_thread_init(
 
 
 
-void nsched_thread_term(struct nthread * thread)
+void nsched_term(struct nthread * thread)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     ncore_lock                  sys_lock;
@@ -118,7 +139,7 @@ void nsched_thread_term(struct nthread * thread)
 
     ncore_lock_enter(&sys_lock);
 
-    if (ncore_ref_read(&thread->ref) != 0) {
+    if (thread->ref != 0u) {
         nprio_queue_remove(&ctx->run_queue, &thread->node);
     }
     nbias_list_term(&thread->node);
@@ -129,59 +150,35 @@ void nsched_thread_term(struct nthread * thread)
 
 
 
-void nsched_thread_insert_i(struct nthread * thread)
+void nsched_insert_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
-    ncore_ref_increment(&thread->ref);
-
-    if (ncore_ref_read(&thread->ref) == 1u) {
+    if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_insert(&ctx->run_queue, &thread->node);
-        ncore_os_ready(thread);
     }
+    thread->ref++;
+    ncore_os_ready(thread);
 }
 
 
 
-void nsched_thread_remove_i(struct nthread * thread)
+void nsched_remove_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
-    if (ncore_ref_read(&thread->ref) == 1u) {
+    thread->ref--;
+
+    if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
         nprio_queue_remove(&ctx->run_queue, &thread->node);
-        ncore_os_block(thread);
     }
-    ncore_ref_decrement(&thread->ref);
-}
-
-
-
-struct nthread * nsched_schedule_i(void)
-{
-
-    struct sched_ctx *          ctx = &g_sched_ctx;
-    struct nbias_list *         new_node;
-
-    if (!nprio_queue_is_empty(&ctx->run_queue)) {
-        struct nthread *        thread;
-
-        new_node = nprio_queue_peek(&ctx->run_queue);
-        nprio_queue_rotate(&ctx->run_queue, new_node);
-        ctx->current = new_node;
-        thread       = NODE_TO_THREAD(new_node);
-
-        return (thread);
-    } else {
-        ctx->current = NULL;
-
-        return (NULL);
-    }
+    ncore_os_block(thread);
 }
 
 
@@ -189,14 +186,14 @@ struct nthread * nsched_schedule_i(void)
 void nsched_run(void)
 {
     struct ncore_lock           lock;
-    struct nthread *            thread;
 
     ncore_lock_enter(&lock);
 
     for (;!ncore_os_should_exit();) {
+        struct nthread *        thread;
                                    /* Fetch a new thread ready for execution. */
         thread = nsched_schedule_i();
-        thread->dispatch_i(thread);
+        thread->vf_dispatch_i(thread, &lock);
     }
     ncore_lock_exit(&lock);
 }

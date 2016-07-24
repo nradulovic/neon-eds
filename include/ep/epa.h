@@ -55,6 +55,8 @@
 #define NTHREAD_TO_EPA(thread_ptr)                                              \
     PORT_C_CONTAINER_OF(thread_ptr, struct nepa, thread)
 
+#define NEPA_DEF_INIT(wspace, init_state, type, storage, size, name, priority)
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -76,11 +78,20 @@ struct nevent;
  */
 struct nepa_define
 {
-    struct nsm_define           sm;     /**<@brief State machine define       */
-    struct nequeue_define       working_queue;
-                                        /**<@brief Working event queue define */
-    struct nthread_define       thread;
-                                        /**<@brief Thread definition          */
+                                        /**<@brief Workspace pointer          */
+    void *                      sm_wspace;
+                                        /**<@brief Initial state pointer      */
+    nstate *                    sm_init_state;
+                                        /**<@brief State machine type         */
+    enum nsm_type               sm_type;
+                                        /**<@brief Allocated event queue
+                                         *         storage
+                                         */
+    struct nevent **            eq_storage;
+                                        /**<@brief Size of queue in bytes     */
+    size_t                      eq_size;
+    const char *                epa_name;
+    uint8_t                     epa_priority;
 };
 
 /**@brief       Define type for EPA object

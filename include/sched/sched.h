@@ -51,13 +51,8 @@
 /**@brief       Define thread properties
  * @api
  */
-#define NTHREAD_DEF_INIT(name, priority)                                        \
-    {name, priority}
-
-/**@brief       Compatibility macro - this function was removed from Neon
- * @api
- */
-#define nsched_init()                   (void)0
+#define NTHREAD_DEF_INIT(dispatcher, name, priority)                            \
+    {dispatcher, name, priority}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -66,8 +61,11 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+struct nthread;
+
 struct nthread_define
 {
+    void                     (* vf_dispatch)(struct nthread *, ncore_lock *);
     const char *                name;
     uint8_t                     priority;
 };
@@ -75,8 +73,8 @@ struct nthread_define
 struct nthread
 {
     struct nbias_list           node;           /**<@brief Priority queue node*/
-    struct ncore_ref            ref;            /**<@brief Reference count    */
-    void 					 (* dispatch_i)(struct nthread * thread);
+    uint_fast32_t               ref;            /**<@brief Reference count    */
+    void 					 (* vf_dispatch_i)(struct nthread * thread, ncore_lock *);
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
     char                        name[CONFIG_REGISTRY_NAME_SIZE];
     struct ndlist               registry_node;
@@ -90,28 +88,19 @@ struct nthread
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-void nsched_thread_init(
-    struct nthread *            thread,
-    const struct nthread_define * define);
+void nsched_init(struct nthread * thread, const struct nthread_define * define);
 
 
 
-void nsched_thread_term(
-    struct nthread *            thread);
+void nsched_term(struct nthread * thread);
 
 
 
-void nsched_thread_insert_i(
-    struct nthread *            thread);
+void nsched_insert_i(struct nthread * thread);
 
 
 
-void nsched_thread_remove_i(
-    struct nthread *            thread);
-
-
-
-struct nthread * nsched_schedule_i(void);
+void nsched_remove_i(struct nthread * thread);
 
 
 

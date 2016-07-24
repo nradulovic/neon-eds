@@ -179,35 +179,32 @@ typedef struct nsm_define nsm_define;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-void nsm_init(
-    struct nsm *                sm,
-    const struct nsm_define *   sm_define);
+/**@brief       Initialise the state machine
+ * @details     The state machine pointed by sm will be initialised according to
+ *              state machine definition structure @ref nsm_define.
+ * @api
+ */
+void nsm_init(struct nsm * sm, const struct nsm_define * sm_define);
 
 
 
-void nsm_term(
-    struct nsm *                sm);
+void nsm_term(struct nsm * sm);
 
 
 
 PORT_C_INLINE
-void nsm_dispatch(
-    struct nsm *                sm,
-    const struct nevent *       event)
+void nsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     sm->vf_dispatch(sm, event);
 }
 
 
 
-naction ntop_state(
-    struct nsm *                sm,
-    const struct nevent *       event);
+naction ntop_state(struct nsm * sm, const struct nevent * event);
 
 
 
-const struct nevent * nsm_event(
-    enum nsm_event              event_id);
+const struct nevent * nsm_event(enum nsm_event event_id);
 
 
 
