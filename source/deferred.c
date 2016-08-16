@@ -94,6 +94,7 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 
 void nsched_deferred_do(struct nsched_deferred * deferred)
 {
+	ndlist_remove(&deferred->list);
 	ndlist_add_after(g_ctx.pending, &deferred->list);
 	ncore_deferred_do();
 }
@@ -114,6 +115,7 @@ void ncore_deferred_work(void)
 
 		deferred = ndlist_to_deferred(current);
 		deferred->fn(deferred->arg);
+		current = ndlist_next(current);
 	}
 }
 
