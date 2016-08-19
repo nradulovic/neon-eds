@@ -36,23 +36,56 @@
 #include "base/debug.h"
 #include "base/component.h"
 #include "base/bitop.h"
-#include "sched/prio_queue.h"
 #include "sched/sched.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+#define NPRIO_ARRAY_BUCKET_BITS                                                 \
+    NLOG2_8(NDIVISION_ROUNDUP(CONFIG_PRIORITY_LEVELS, CONFIG_PRIORITY_BUCKETS))
 
 #define NODE_TO_THREAD(node_ptr)                                                \
     PORT_C_CONTAINER_OF(node_ptr, struct nthread, node)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
+/**@brief       Priority bitmap structure
+ */
+struct prio_bitmap
+{
+#if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) || defined(__DOXYGEN__)
+                                        /**<@brief Bit group indicator        */
+    ncore_reg                    group;
+#endif  /* (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+                                        /**<@brief Bucket indicator           */
+    ncore_reg                    bit[NDIVISION_ROUNDUP(CONFIG_PRIORITY_BUCKETS,
+                                     NCPU_DATA_WIDTH)];
+};
+
+/**@brief       Priority queue structure
+ * @details     A priority queue consists of an array of sub-queues. There is
+ *              one sub-queue per priority level. Each sub-queue contains the
+ *              nodes at the corresponding priority level. There is also a
+ *              bitmap corresponding to the array that is used to determine
+ *              effectively the highest priority node on the queue.
+ */
+struct prio_queue
+{
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+                                        /**<@brief Priority bitmap            */
+    struct prio_bitmap          bitmap;
+#endif  /* (CONFIG_PRIORITY_BUCKETS != 1) */
+    struct nbias_list           sentinel[CONFIG_PRIORITY_BUCKETS];
+};
+
 /**@brief       Scheduler context structure
  * @details     This structure holds important status data for the scheduler.
  */
 struct sched_ctx
 {
-    struct nbias_list *         current;    /**<@brief The current thread     */
-    struct nprio_queue          run_queue;  /**<@brief Run queue of threads   */
+                                        /**<@brief The current thread         */
+    struct nbias_list *         current;
+                                        /**<@brief Run queue of threads       */
+    struct prio_queue           run_queue;
     bool                        is_initialized;
 };
 
@@ -66,39 +99,236 @@ static struct sched_ctx         g_sched_ctx;
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-static void
-local_dispatcher(struct nthread * thread, ncore_lock * lock)
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+
+
+PORT_C_INLINE void
+bitmap_init(struct prio_bitmap * bitmap)
 {
-	(void)thread;
-    (void)lock;
+#if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH)
+    uint_fast8_t                group;
+
+    bitmap->group = 0u;
+    group = NARRAY_DIMENSION(bitmap->bit);
+
+    while (group-- != 0u) {
+        bitmap->bit[group] = 0u;
+    }
+#else   /*  (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+    bitmap->bit[0] = 0u;
+#endif  /* !(CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+}
+
+
+
+PORT_C_INLINE void
+bitmap_set(struct prio_bitmap * bitmap, uint_fast8_t priority)
+{
+#if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH)
+    uint_fast8_t                group;
+    uint_fast8_t                index;
+
+    index = priority &
+        ((uint_fast8_t)~0u >> (sizeof(priority) * 8u - NLOG2_8(NCPU_DATA_WIDTH)));
+    group = priority >> NLOG2_8(NCPU_DATA_WIDTH);
+    bitmap->group      |= ncore_exp2(group);
+    bitmap->bit[group] |= ncore_exp2(index);
+#else   /*  (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+    bitmap->bit[0] |= ncore_exp2(priority);
+#endif  /* !(CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+}
+
+
+
+PORT_C_INLINE void
+bitmap_clear(struct prio_bitmap * bitmap, uint_fast8_t priority)
+{
+#if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH)
+    uint_fast8_t                group;
+    uint_fast8_t                index;
+
+    index = priority &
+        ((uint_fast8_t)~0u >> (sizeof(priority) * 8u - NLOG2_8(NCPU_DATA_WIDTH)));
+    group = priority >> NLOG2_8(NCPU_DATA_WIDTH);
+    bitmap->bit[group] &= ~ncore_exp2(index);
+
+                                        /* If this is the last bit cleared in */
+                                        /* this array_entry then clear bit    */
+                                        /* group indicator, too.              */
+    if (bitmap->bit[group] == 0u) {
+        bitmap->group &= ~ncore_exp2(group);
+    }
+#else   /*  (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+    bitmap->bit[0] &= ~ncore_exp2(priority);
+#endif  /* !(CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+}
+
+
+
+PORT_C_INLINE uint_fast8_t
+bitmap_get_highest(const struct prio_bitmap * bitmap)
+{
+#if   (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH)
+    uint_fast8_t                group;
+    uint_fast8_t                index;
+
+    group = ncore_log2(bitmap->group);
+    index = ncore_log2(bitmap->bit[group]);
+
+    return ((group << NLOG2_8(NCPU_DATA_WIDTH)) | index);
+#else   /*  (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+    uint_fast8_t                index;
+
+    index = ncore_log2(bitmap->bit[0]);
+
+    return (index);
+#endif  /* !(CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
+}
+
+#endif  /* (CONFIG_PRIORITY_BUCKETS != 1) */
+
+
+
+PORT_C_INLINE void
+prio_queue_init(struct prio_queue * queue)
+{
+    uint_fast8_t                count;
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+    bitmap_init(&queue->bitmap);
+#endif
+    count = NARRAY_DIMENSION(queue->sentinel);
+
+    while (count-- != 0u) {
+                                        /* Initialize each list entry.        */
+        nbias_list_init(&queue->sentinel[count], NBIAS_LIST_MAX_PRIO);
+    }
+}
+
+
+
+PORT_C_INLINE void
+prio_queue_insert(struct prio_queue * queue, struct nbias_list  * node)
+{
+    uint_fast8_t                bucket;
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+    bucket = nbias_list_get_bias(node) >> NPRIO_ARRAY_BUCKET_BITS;
+#else
+    bucket = 0u;
+#endif
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+                                        /* If adding the first entry in list. */
+                                        /* Mark the bucket list as used.      */
+    if (nbias_list_is_empty(&queue->sentinel[bucket])) {
+        bitmap_set(&queue->bitmap, bucket);
+    }
+#endif
+#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
+                                        /* Priority search and insertion.     */
+    nbias_list_sort_insert(&queue->sentinel[bucket], node);
+#else
+                                        /* FIFO insertion.                    */
+    nbias_list_fifo_insert(&queue->sentinel[bucket], node);
+#endif
+}
+
+
+
+PORT_C_INLINE void
+prio_queue_remove(struct prio_queue * queue, struct nbias_list * node)
+{
+    uint_fast8_t                bucket;
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+    bucket = nbias_list_get_bias(node) >> NPRIO_ARRAY_BUCKET_BITS;
+#else
+    bucket = 0u;
+#endif
+    nbias_list_remove(node);
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+                                        /* If this was the last node in list. */
+                                        /* Mark the bucket as unused.         */
+    if (nbias_list_is_empty(&queue->sentinel[bucket])) {
+        bitmap_clear(&queue->bitmap, bucket);
+    }
+#endif
+}
+
+
+
+PORT_C_INLINE void
+prio_queue_rotate(struct prio_queue * queue, struct nbias_list * node)
+{
+    uint_fast8_t                bucket;
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+    bucket = nbias_list_get_bias(node) >> NPRIO_ARRAY_BUCKET_BITS;
+#else
+    bucket = 0u;
+#endif
+                                        /* Remove node from bucket.           */
+    nbias_list_remove(node);
+#if (CONFIG_PRIORITY_BUCKETS != CONFIG_PRIORITY_LEVELS)
+                                        /* Insert the thread at new position. */
+    nbias_list_sort_insert(&queue->sentinel[bucket], node);
+#else
+                                        /* Insert the thread at new position. */
+    nbias_list_fifo_insert(&queue->sentinel[bucket], node);
+#endif
+}
+
+
+
+PORT_C_INLINE struct nbias_list *
+prio_queue_peek(const struct prio_queue * queue)
+{
+    uint_fast8_t                bucket;
+
+#if (CONFIG_PRIORITY_BUCKETS != 1)
+    bucket = bitmap_get_highest(&queue->bitmap);
+#else
+    bucket = 0u;
+#endif
+
+    return (nbias_list_next(&queue->sentinel[bucket]));
 }
 
 
 
 static struct nthread * 
-nsched_schedule_i(void) 
+sched_schedule_i(struct sched_ctx * ctx)
 {
-    struct sched_ctx *          ctx = &g_sched_ctx;
     struct nbias_list *         new_node;
     struct nthread *            thread;
 
-    new_node = nprio_queue_peek(&ctx->run_queue);
-    nprio_queue_rotate(&ctx->run_queue, new_node);
+    new_node = prio_queue_peek(&ctx->run_queue);
     ctx->current = new_node;
-    thread       = NODE_TO_THREAD(new_node);
+    prio_queue_rotate(&ctx->run_queue, new_node);
+    thread = NODE_TO_THREAD(new_node);
 
     return (thread);
 }
 
 
 
+static void
+sched_idle_dispatch_i(struct nthread * thread, struct ncore_lock * lock)
+{
+    (void)thread;
+
+    ncore_lock_exit(lock);
+    ncore_idle();
+    ncore_lock_enter(lock);
+}
+
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nsched_init(
-    struct nthread *            thread,
-    const struct nthread_define * define)
+void nsched_init(struct nthread * thread, const struct nthread_define * define)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     
@@ -107,13 +337,23 @@ void nsched_init(
 
     /* Prepare run_queue for usage */
     if (ctx->is_initialized != true) {
+        struct ncore_lock       lock;
+
+        static const struct nthread_define idle_thread_define =
+                NTHREAD_DEF_INIT(sched_idle_dispatch_i, "idle thread", 0);
+        static struct nthread       idle_thread;
+
         ctx->is_initialized  = true;
         ctx->current         = NULL;
-        nprio_queue_init(&ctx->run_queue);     /* Initialize run_queue structure. */
+        prio_queue_init(&ctx->run_queue); /* Initialize run_queue structure. */
+        nsched_init(&idle_thread, &idle_thread_define);
+        ncore_lock_enter(&lock);
+        nsched_insert_i(&idle_thread);
+        ncore_lock_exit(&lock);
     }
     nbias_list_init(&thread->node, define->priority);
     thread->ref = 0u;
-    thread->vf_dispatch_i = local_dispatcher;
+    thread->vf_dispatch_i = define->vf_dispatch;
 
 #if (CONFIG_REGISTRY == 1)
     memset(thread->name, 0, sizeof(thread->name));
@@ -132,18 +372,18 @@ void nsched_init(
 void nsched_term(struct nthread * thread)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
-    ncore_lock                  sys_lock;
+    ncore_lock                  lock;
 
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
 
-    ncore_lock_enter(&sys_lock);
+    ncore_lock_enter(&lock);
 
     if (thread->ref != 0u) {
-        nprio_queue_remove(&ctx->run_queue, &thread->node);
+        prio_queue_remove(&ctx->run_queue, &thread->node);
     }
     nbias_list_term(&thread->node);
-    ncore_lock_exit(&sys_lock);
+    ncore_lock_exit(&lock);
 
     NOBLIGATION(thread->signature = ~NSIGNATURE_THREAD);
 }
@@ -158,7 +398,7 @@ void nsched_insert_i(struct nthread * thread)
     if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
-        nprio_queue_insert(&ctx->run_queue, &thread->node);
+        prio_queue_insert(&ctx->run_queue, &thread->node);
     }
     thread->ref++;
     ncore_os_ready(thread);
@@ -176,7 +416,7 @@ void nsched_remove_i(struct nthread * thread)
     if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
 
-        nprio_queue_remove(&ctx->run_queue, &thread->node);
+        prio_queue_remove(&ctx->run_queue, &thread->node);
     }
     ncore_os_block(thread);
 }
@@ -185,14 +425,15 @@ void nsched_remove_i(struct nthread * thread)
 
 void nsched_run(void)
 {
+    struct sched_ctx *          ctx = &g_sched_ctx;
     struct ncore_lock           lock;
 
     ncore_lock_enter(&lock);
 
     for (;!ncore_os_should_exit();) {
         struct nthread *        thread;
-                                   /* Fetch a new thread ready for execution. */
-        thread = nsched_schedule_i();
+                                        /* Fetch a new thread for execution.  */
+        thread = sched_schedule_i(ctx);
         thread->vf_dispatch_i(thread, &lock);
     }
     ncore_lock_exit(&lock);

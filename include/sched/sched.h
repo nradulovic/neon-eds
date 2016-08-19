@@ -31,7 +31,6 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "port/core.h"
 #include "base/config.h"
 #include "base/bias_list.h"
 #include "base/list.h"
@@ -62,10 +61,12 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 
 struct nthread;
+struct ncore_lock;
 
 struct nthread_define
 {
-    void                     (* vf_dispatch)(struct nthread *, ncore_lock *);
+    void                     (* vf_dispatch)(struct nthread *,
+            struct ncore_lock *);
     const char *                name;
     uint8_t                     priority;
 };
@@ -74,7 +75,8 @@ struct nthread
 {
     struct nbias_list           node;           /**<@brief Priority queue node*/
     uint_fast32_t               ref;            /**<@brief Reference count    */
-    void 					 (* vf_dispatch_i)(struct nthread * thread, ncore_lock *);
+    void 					 (* vf_dispatch_i)(struct nthread * thread,
+            struct ncore_lock *);
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
     char                        name[CONFIG_REGISTRY_NAME_SIZE];
     struct ndlist               registry_node;
@@ -86,6 +88,9 @@ struct nthread
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
+
+#define nsched_set_dispatch(thread, dispatch)                                   \
+    (thread)->vf_dispatch_i = (dispatch)
 
 
 void nsched_init(struct nthread * thread, const struct nthread_define * define);
