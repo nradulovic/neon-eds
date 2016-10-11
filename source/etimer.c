@@ -100,11 +100,7 @@ void netimer_after(
     ncore_lock_enter(&lock);
     ntimer_cancel_i(&timer->timer);
     timer->event.id = event_id;
-    ntimer_start_i(
-            &timer->timer,
-            tick,
-            etimer_handler,
-            timer,
+    ntimer_start_i(&timer->timer, tick, etimer_handler, timer,
             NTIMER_ATTR_ONE_SHOT);
     ncore_lock_exit(&lock);
 }

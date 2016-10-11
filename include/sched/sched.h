@@ -45,13 +45,19 @@
 /**@brief       Minimum level of priority possible for application thread
  * @api
  */
-#define NTHREAD_PRIORITY_MIN            (0u)
+#define NTHREAD_PRIORITY_MIN            (1u)
 
 /**@brief       Define thread properties
  * @api
  */
 #define NTHREAD_DEF_INIT(dispatcher, name, priority)                            \
     {dispatcher, name, priority}
+
+/**@brief       Define thread properties
+ * @api
+ */
+#define NTASK_DEF_INIT(task_fn, name, priority)                                 \
+    {task_fn, name, priority}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -60,6 +66,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+struct ntask;
 struct nthread;
 struct ncore_lock;
 
@@ -86,34 +93,61 @@ struct nthread
 #endif
 };
 
+struct ntask_define
+{
+    void                     (* vf_task)(struct ntask *, void * arg);
+    const char *                name;
+    uint8_t                     priority;
+};
+
+struct ntask
+{
+    struct nthread              thread;
+    void                     (* vf_task)(struct ntask * task, void * arg);
+    void *                      arg;
+};
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-#define nsched_set_dispatch(thread, dispatch)                                   \
+#define nthread_set_dispatch(thread, dispatch)                                  \
     (thread)->vf_dispatch_i = (dispatch)
 
 
-void nsched_init(struct nthread * thread, const struct nthread_define * define);
+void nthread_init(struct nthread * thread, const struct nthread_define * define);
 
 
 
-void nsched_term(struct nthread * thread);
+void nthread_term(struct nthread * thread);
 
 
 
-void nsched_insert_i(struct nthread * thread);
+void nthread_insert_i(struct nthread * thread);
 
 
 
-void nsched_remove_i(struct nthread * thread);
+void nthread_remove_i(struct nthread * thread);
 
 
 
-struct nthread * nsched_get_current(void);
+void nthread_schedule(void);
 
 
 
-void nsched_run(void);
+struct nthread * nthread_get_current(void);
+
+
+
+void ntask_init(struct ntask * task, const struct ntask_define * define,
+        void * arg);
+
+
+
+void ntask_ready(struct ntask * task);
+
+
+
+void ntask_block(struct ntask * task);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

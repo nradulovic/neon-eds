@@ -66,7 +66,7 @@ epa_dispatch_i(struct nthread * thread, ncore_lock * lock)
     ncore_lock_enter(lock);
     nevent_ref_down(event);
     nevent_destroy_i(event);
-    nsched_remove_i(thread);               /* Block the thread */
+    nthread_remove_i(thread);               /* Block the thread */
 }
 
 
@@ -77,8 +77,8 @@ epa_init_i(struct nthread * thread, ncore_lock * lock)
     ncore_lock_exit(lock);
     nsm_dispatch(&NTHREAD_TO_EPA(thread)->sm, nsm_event(NSM_INIT));
     ncore_lock_enter(lock);
-    nsched_remove_i(thread);                              /* Block the thread */
-    nsched_set_dispatch(thread, epa_dispatch_i);
+    nthread_remove_i(thread);                              /* Block the thread */
+    nthread_set_dispatch(thread, epa_dispatch_i);
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -204,10 +204,10 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
     thread_define.name        = define->epa_name;
     thread_define.priority    = define->epa_priority;
     thread_define.vf_dispatch = &epa_init_i;
-    nsched_init(&epa->thread, &thread_define);
+    nthread_init(&epa->thread, &thread_define);
 
     ncore_lock_enter(&sys_lock);
-    nsched_insert_i(&epa->thread);
+    nthread_insert_i(&epa->thread);
     ncore_lock_exit(&sys_lock);
 
     NOBLIGATION(epa->signature = NSIGNATURE_EPA);
@@ -222,7 +222,7 @@ void nepa_term(struct nepa * epa)
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     ncore_lock_enter(&sys_lock);
-    nsched_term(&epa->thread);
+    nthread_term(&epa->thread);
     nsm_term(&epa->sm);
     nequeue_term(&epa->working_queue);
     ncore_lock_exit(&sys_lock);
@@ -293,7 +293,7 @@ nerror nepa_send_event_i(struct nepa * epa, const struct nevent * event)
 
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_fifo(&epa->working_queue, event);
-            nsched_insert_i(&epa->thread);
+            nthread_insert_i(&epa->thread);
             error = NERROR_NONE;
         } else {
             nevent_ref_down(event);
@@ -337,7 +337,7 @@ nerror nepa_send_event_ahead_i(struct nepa * epa, struct nevent * event)
 
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_lifo(&epa->working_queue, event);
-            nsched_insert_i(&epa->thread);
+            nthread_insert_i(&epa->thread);
             error = NERROR_NONE;
         } else {
             nevent_destroy_i(event);

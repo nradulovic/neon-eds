@@ -325,10 +325,23 @@ sched_idle_dispatch_i(struct nthread * thread, struct ncore_lock * lock)
 }
 
 
+
+static void
+sched_task_dispatch_i(struct nthread * thread, struct ncore_lock * lock)
+{
+    struct ntask *              task;
+
+    ncore_lock_exit(lock);
+    task = PORT_C_CONTAINER_OF(thread, struct ntask, thread);
+    task->vf_task(task, task->arg);
+    ncore_lock_enter(lock);
+}
+
+
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nsched_init(struct nthread * thread, const struct nthread_define * define)
+void nthread_init(struct nthread * thread, const struct nthread_define * define)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     
@@ -346,9 +359,9 @@ void nsched_init(struct nthread * thread, const struct nthread_define * define)
         ctx->is_initialized  = true;
         ctx->current         = NULL;
         prio_queue_init(&ctx->run_queue); /* Initialize run_queue structure. */
-        nsched_init(&idle_thread, &idle_thread_define);
+        nthread_init(&idle_thread, &idle_thread_define);
         ncore_lock_enter(&lock);
-        nsched_insert_i(&idle_thread);
+        nthread_insert_i(&idle_thread);
         ncore_lock_exit(&lock);
     }
     nbias_list_init(&thread->node, define->priority);
@@ -369,7 +382,7 @@ void nsched_init(struct nthread * thread, const struct nthread_define * define)
 
 
 
-void nsched_term(struct nthread * thread)
+void nthread_term(struct nthread * thread)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     ncore_lock                  lock;
@@ -390,7 +403,7 @@ void nsched_term(struct nthread * thread)
 
 
 
-void nsched_insert_i(struct nthread * thread)
+void nthread_insert_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
@@ -406,7 +419,7 @@ void nsched_insert_i(struct nthread * thread)
 
 
 
-void nsched_remove_i(struct nthread * thread)
+void nthread_remove_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
@@ -423,17 +436,16 @@ void nsched_remove_i(struct nthread * thread)
 
 
 
-void nsched_run(void)
+void nthread_schedule(void)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     struct ncore_lock           lock;
+    struct nthread *            thread;
 
     ncore_lock_enter(&lock);
 
     for (;!ncore_os_should_exit();) {
-        struct nthread *        thread;
-                                        /* Fetch a new thread for execution.  */
-        thread = sched_schedule_i(ctx);
+        thread = sched_schedule_i(ctx);  /* Fetch a new thread for execution. */
         thread->vf_dispatch_i(thread, &lock);
     }
     ncore_lock_exit(&lock);
@@ -441,11 +453,50 @@ void nsched_run(void)
 
 
 
-struct nthread * nsched_get_current(void)
+struct nthread * nthread_get_current(void)
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
 
     return (NODE_TO_THREAD(ctx->current));
+}
+
+
+
+void ntask_init(struct ntask * task, const struct ntask_define * define,
+        void * arg)
+{
+    struct nthread_define       thread_define;
+
+    thread_define.name = define->name;
+    thread_define.priority = define->priority;
+    thread_define.vf_dispatch = sched_task_dispatch_i;
+
+    task->vf_task = define->vf_task;
+    task->arg = arg;
+
+    nthread_init(&task->thread, &thread_define);
+}
+
+
+
+void ntask_ready(struct ntask * task)
+{
+    struct ncore_lock           lock;
+
+    ncore_lock_enter(&lock);
+    nthread_insert_i(&task->thread);
+    ncore_lock_exit(&lock);
+}
+
+
+
+void ntask_block(struct ntask * task)
+{
+    struct ncore_lock           lock;
+
+    ncore_lock_enter(&lock);
+    nthread_remove_i(&task->thread);
+    ncore_lock_exit(&lock);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

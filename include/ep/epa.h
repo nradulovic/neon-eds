@@ -134,7 +134,7 @@ typedef struct nepa nepa;
 PORT_C_INLINE
 struct nepa * nepa_get_current(void)
 {
-    return (NTHREAD_TO_EPA(nsched_get_current()));
+    return (NTHREAD_TO_EPA(nthread_get_current()));
 }
 
 
