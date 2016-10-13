@@ -56,7 +56,6 @@ neonportinc_HEADERS = \
     include/port/os.h
 neonschedinc_HEADERS = \
     include/sched/deferred.h \
-    include/sched/prio_queue.h \
     include/sched/sched.h
 neontimerinc_HEADERS = \
     include/timer/timer.h

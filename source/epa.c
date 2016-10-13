@@ -45,22 +45,43 @@
  */
 static const NCOMPONENT_DEFINE("Event Processing Agent");
 
-static void (* g_idle)(void) = ncore_idle;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
-/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void neds_set_idle(void (* idle)(void))
+static void
+epa_dispatch_i(struct nthread * thread, ncore_lock * lock)
 {
-    if (idle) {
-        g_idle = idle;
-    } else {
-        g_idle = ncore_idle;
-    }
+    struct nepa *               epa;
+    const struct nevent *       event;
+                                                           /* Get EPA pointer */
+    epa = NTHREAD_TO_EPA(thread);
+    event = nequeue_get(&epa->working_queue);            /* Get Event pointer */
+    ncore_lock_exit(lock);
+    /* ********************************************************************** *
+     * NOTE: Dispatch the state machine. This is a good place to              *
+     * place a breakpoint when debugging state machines.                      *
+     * ********************************************************************** */
+    nsm_dispatch(&epa->sm, event);
+    ncore_lock_enter(lock);
+    nevent_ref_down(event);
+    nevent_destroy_i(event);
+    nthread_remove_i(thread);               /* Block the thread */
 }
 
+
+
+static void
+epa_init_i(struct nthread * thread, ncore_lock * lock)
+{
+    ncore_lock_exit(lock);
+    nsm_dispatch(&NTHREAD_TO_EPA(thread)->sm, nsm_event(NSM_INIT));
+    ncore_lock_enter(lock);
+    nthread_remove_i(thread);                              /* Block the thread */
+    nthread_set_dispatch(thread, epa_dispatch_i);
+}
+
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
 void * nepa_create_storage(size_t size)
@@ -159,35 +180,6 @@ nerror nepa_defer_fetch_all(struct nequeue * queue)
 
 
 
-void neds_term(void)
-{
-	ncore_os_exit();
-    ncore_term();
-}
-
-
-
-static void epa_dispatch_i(struct nthread * thread, ncore_lock * lock)
-{
-    struct nepa *               epa;
-    const struct nevent *       event;
-                                                           /* Get EPA pointer */
-    epa = PORT_C_CONTAINER_OF(thread, struct nepa, thread);
-    event = nequeue_get(&epa->working_queue);            /* Get Event pointer */
-    ncore_lock_exit(lock);
-    /* ************************************************************** *
-    * NOTE: Dispatch the state machine. This is a good place to      *
-    * place a breakpoint when debugging state machines.              *
-    * ************************************************************** */
-    nsm_dispatch(&epa->sm, event);
-    ncore_lock_enter(lock);
-    nevent_ref_down(event);
-    nevent_destroy_i(event);
-    nsched_remove_i(thread);               /* Block the thread */
-}
-
-
-
 void nepa_init(struct nepa * epa, const struct nepa_define * define)
 {
     ncore_lock                  sys_lock;
@@ -203,7 +195,6 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
     equeue_define.storage = define->eq_storage;
     equeue_define.size    = define->eq_size;
     nequeue_init(&epa->working_queue, &equeue_define);
-    nequeue_put_fifo(&epa->working_queue, nsm_event(NSM_INIT));
 
     sm_define.wspace     = define->sm_wspace;
     sm_define.init_state = define->sm_init_state;
@@ -212,11 +203,11 @@ void nepa_init(struct nepa * epa, const struct nepa_define * define)
 
     thread_define.name        = define->epa_name;
     thread_define.priority    = define->epa_priority;
-    thread_define.vf_dispatch = &epa_dispatch_i;
-    nsched_init(&epa->thread, &thread_define);
+    thread_define.vf_dispatch = &epa_init_i;
+    nthread_init(&epa->thread, &thread_define);
 
     ncore_lock_enter(&sys_lock);
-    nsched_insert_i(&epa->thread);
+    nthread_insert_i(&epa->thread);
     ncore_lock_exit(&sys_lock);
 
     NOBLIGATION(epa->signature = NSIGNATURE_EPA);
@@ -231,7 +222,7 @@ void nepa_term(struct nepa * epa)
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
 
     ncore_lock_enter(&sys_lock);
-    nsched_term(&epa->thread);
+    nthread_term(&epa->thread);
     nsm_term(&epa->sm);
     nequeue_term(&epa->working_queue);
     ncore_lock_exit(&sys_lock);
@@ -302,7 +293,7 @@ nerror nepa_send_event_i(struct nepa * epa, const struct nevent * event)
 
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_fifo(&epa->working_queue, event);
-            nsched_insert_i(&epa->thread);
+            nthread_insert_i(&epa->thread);
             error = NERROR_NONE;
         } else {
             nevent_ref_down(event);
@@ -346,7 +337,7 @@ nerror nepa_send_event_ahead_i(struct nepa * epa, struct nevent * event)
 
         if (!nequeue_is_full(&epa->working_queue)) {
             nequeue_put_lifo(&epa->working_queue, event);
-            nsched_insert_i(&epa->thread);
+            nthread_insert_i(&epa->thread);
             error = NERROR_NONE;
         } else {
             nevent_destroy_i(event);

@@ -31,7 +31,6 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "port/core.h"
 #include "base/config.h"
 #include "base/bias_list.h"
 #include "base/list.h"
@@ -46,13 +45,19 @@
 /**@brief       Minimum level of priority possible for application thread
  * @api
  */
-#define NTHREAD_PRIORITY_MIN            (0u)
+#define NTHREAD_PRIORITY_MIN            (1u)
 
 /**@brief       Define thread properties
  * @api
  */
 #define NTHREAD_DEF_INIT(dispatcher, name, priority)                            \
     {dispatcher, name, priority}
+
+/**@brief       Define thread properties
+ * @api
+ */
+#define NTASK_DEF_INIT(task_fn, name, priority)                                 \
+    {task_fn, name, priority}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -61,11 +66,14 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
+struct ntask;
 struct nthread;
+struct ncore_lock;
 
 struct nthread_define
 {
-    void                     (* vf_dispatch)(struct nthread *, ncore_lock *);
+    void                     (* vf_dispatch)(struct nthread *,
+            struct ncore_lock *);
     const char *                name;
     uint8_t                     priority;
 };
@@ -74,7 +82,8 @@ struct nthread
 {
     struct nbias_list           node;           /**<@brief Priority queue node*/
     uint_fast32_t               ref;            /**<@brief Reference count    */
-    void 					 (* vf_dispatch_i)(struct nthread * thread, ncore_lock *);
+    void 					 (* vf_dispatch_i)(struct nthread * thread,
+            struct ncore_lock *);
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
     char                        name[CONFIG_REGISTRY_NAME_SIZE];
     struct ndlist               registry_node;
@@ -84,31 +93,61 @@ struct nthread
 #endif
 };
 
+struct ntask_define
+{
+    void                     (* vf_task)(struct ntask *, void * arg);
+    const char *                name;
+    uint8_t                     priority;
+};
+
+struct ntask
+{
+    struct nthread              thread;
+    void                     (* vf_task)(struct ntask * task, void * arg);
+    void *                      arg;
+};
+
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-
-void nsched_init(struct nthread * thread, const struct nthread_define * define);
-
-
-
-void nsched_term(struct nthread * thread);
+#define nthread_set_dispatch(thread, dispatch)                                  \
+    (thread)->vf_dispatch_i = (dispatch)
 
 
-
-void nsched_insert_i(struct nthread * thread);
+void nthread_init(struct nthread * thread, const struct nthread_define * define);
 
 
 
-void nsched_remove_i(struct nthread * thread);
+void nthread_term(struct nthread * thread);
 
 
 
-struct nthread * nsched_get_current(void);
+void nthread_insert_i(struct nthread * thread);
 
 
 
-void nsched_run(void);
+void nthread_remove_i(struct nthread * thread);
+
+
+
+void nthread_schedule(void);
+
+
+
+struct nthread * nthread_get_current(void);
+
+
+
+void ntask_init(struct ntask * task, const struct ntask_define * define,
+        void * arg);
+
+
+
+void ntask_ready(struct ntask * task);
+
+
+
+void ntask_block(struct ntask * task);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
