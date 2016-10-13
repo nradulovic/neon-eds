@@ -50,7 +50,7 @@ static const NCOMPONENT_DEFINE("Deferred work");
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-struct sched_deferred_sentinel 	g_ctx;
+static struct sched_deferred_sentinel 	g_ctx;
 
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
