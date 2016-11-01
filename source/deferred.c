@@ -76,7 +76,7 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 	static bool 				is_initialized;
 
 	NREQUIRE(NAPI_POINTER, deferred != NULL);
-    NREQUIRE(NAPI_OBJECT, deferred->signature != NSIGNATURE_DEFER)
+    NREQUIRE(NAPI_OBJECT, deferred->signature != NSIGNATURE_DEFER);
 	NREQUIRE(NAPI_POINTER, fn != NULL);
 
 	if (!is_initialized) {
@@ -90,7 +90,7 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 	deferred->arg = arg;
 	ndlist_init(&deferred->list);
 
-    NOBLIGATION(deferred->signature = NSIGNATURE_DEFER)
+    NOBLIGATION(deferred->signature = NSIGNATURE_DEFER);
 }
 
 
@@ -120,7 +120,7 @@ void ncore_deferred_work(void)
 		struct nsched_deferred * deferred;
 
 		deferred = ndlist_to_deferred(current);
-        NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER)
+        NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
 		deferred->fn(deferred->arg);
 		current = ndlist_next(current);
 	}
