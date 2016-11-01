@@ -98,7 +98,7 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 void nsched_deferred_do(struct nsched_deferred * deferred)
 {
 	NREQUIRE(NAPI_POINTER, deferred != NULL);
-    NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER)
+    NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
 
 	ndlist_remove(&deferred->list);
 	ndlist_add_after(g_ctx.pending, &deferred->list);
