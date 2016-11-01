@@ -192,6 +192,7 @@
 #define NSIGNATURE_ETIMER                   ((unsigned int)0xdeadfeecu)
 #define NSIGNATURE_EVENT                    ((unsigned int)0xdeadfeedu)
 #define NSIGNATURE_SM                       ((unsigned int)0xdeadfeeeu)
+#define NSIGNATURE_DEFER                    ((unsigned int)0xdeadfeefu)
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

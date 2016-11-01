@@ -49,6 +49,9 @@ struct nsched_deferred
 	struct ndlist 				list;
 	void 					 (* fn)(void * arg);
 	void *						arg;
+#if (CONFIG_API_VALIDATION == 1)
+    unsigned int                signature;
+#endif
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
