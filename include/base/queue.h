@@ -35,10 +35,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stddef.h>
 
 #include "port/compiler.h"
-#include "port/core.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -60,10 +58,10 @@ extern "C" {
 struct nqueue
 {
     void **                     storage;
-    ncore_reg                   head;
-    ncore_reg                   tail;
-    ncore_reg                   free;
-    ncore_reg                   size;
+    uint32_t                    head;
+    uint32_t                    tail;
+    uint32_t                    free;
+    uint32_t                    size;
 };
 
 typedef struct nqueue nqueue;
@@ -72,24 +70,20 @@ typedef struct nqueue nqueue;
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE 
-void nqueue_init(
-    struct nqueue *             queue,
-    void *                      storage,
-    size_t                      size)
+PORT_C_INLINE void
+nqueue_init(struct nqueue * queue, void * storage, uint32_t size)
 {
     queue->storage = storage;
     queue->head    = 0u;
     queue->tail    = 0u;
-    queue->free    = (ncore_reg)size;
-    queue->size    = (ncore_reg)size;
+    queue->free    = size;
+    queue->size    = size;
 }
 
 
 
-PORT_C_INLINE 
-void nqueue_term(
-    struct nqueue *             queue)
+PORT_C_INLINE void
+nqueue_term(struct nqueue * queue)
 {
     queue->head = 0u;
     queue->tail = 0u;
@@ -99,10 +93,8 @@ void nqueue_term(
 
 
 
-PORT_C_INLINE 
-void nqueue_put_fifo(
-    struct nqueue *             queue,
-    void *                      item)
+PORT_C_INLINE void
+nqueue_put_fifo(struct nqueue * queue, void * item)
 {
     queue->storage[queue->head++] = item;
 
@@ -114,10 +106,8 @@ void nqueue_put_fifo(
 
 
 
-PORT_C_INLINE 
-void nqueue_put_lifo(
-    struct nqueue *             queue,
-    void *                      item)
+PORT_C_INLINE void
+nqueue_put_lifo(struct nqueue * queue, void * item)
 {
     if (queue->tail == 0u) {
         queue->tail = queue->size;
@@ -128,9 +118,8 @@ void nqueue_put_lifo(
 
 
 
-PORT_C_INLINE
-void * nqueue_get(
-    struct nqueue *             queue)
+PORT_C_INLINE void *
+nqueue_get(struct nqueue * queue)
 {
     void *                      tmp;
 
@@ -146,54 +135,48 @@ void * nqueue_get(
 
 
 
-PORT_C_INLINE
-void * nqueue_head(
-    const struct nqueue *       queue)
+PORT_C_INLINE void *
+nqueue_head(const struct nqueue * queue)
 {
     return (queue->storage[queue->head]);
 }
 
 
 
-PORT_C_INLINE
-void * nqueue_tail(
-    const struct nqueue *       queue)
+PORT_C_INLINE void *
+nqueue_tail(const struct nqueue * queue)
 {
     return (queue->storage[queue->tail]);
 }
 
 
 
-PORT_C_INLINE 
-size_t nqueue_size(
-    const struct nqueue *       queue)
+PORT_C_INLINE uint32_t
+nqueue_size(const struct nqueue * queue)
 {
-    return ((size_t)queue->size);
+    return (queue->size);
 }
 
 
 
-PORT_C_INLINE 
-ncore_reg nqueue_free(
-    const struct nqueue *       queue)
+PORT_C_INLINE uint32_t
+nqueue_free(const struct nqueue * queue)
 {
     return (queue->free);
 }
 
 
 
-PORT_C_INLINE 
-void * nqueue_storage(
-    const struct nqueue *       queue)
+PORT_C_INLINE void *
+nqueue_storage(const struct nqueue * queue)
 {
     return (queue->storage);
 }
 
 
 
-PORT_C_INLINE 
-bool nqueue_is_full(
-    const struct nqueue *       queue)
+PORT_C_INLINE bool
+nqueue_is_full(const struct nqueue * queue)
 {
     if (queue->free) {
         return (false);
@@ -204,9 +187,8 @@ bool nqueue_is_full(
 
 
 
-PORT_C_INLINE 
-bool nqueue_is_empty(
-    const struct nqueue *       queue)
+PORT_C_INLINE bool
+nqueue_is_empty(const struct nqueue * queue)
 {
     if (queue->free == queue->size) {
         return (true);

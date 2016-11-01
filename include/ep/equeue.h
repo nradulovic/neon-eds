@@ -43,6 +43,14 @@
 
 /*===============================================================  MACRO's  ==*/
 
+/**@brief       Validate the pointer to Event Queue
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_EQUEUE_OBJECT(equeue_obj)                                          \
+    (((equeue_obj) != NULL) && ((equeue_obj)->signature == NSIGNATURE_EQUEUE))
+
 #define NEQUEUE_SIZEOF(elements)                                                \
     (sizeof(struct nevent * [elements]))
 
@@ -77,7 +85,7 @@ struct nequeue
 {
     struct nqueue               queue;
 #if (CONFIG_REGISTRY == 1)
-    ncore_reg                   min;
+    uint32_t                    min;
 #endif
 #if (CONFIG_API_VALIDATION == 1)
     unsigned int                signature;
@@ -99,8 +107,8 @@ void nequeue_term(
 
 
 
-PORT_C_INLINE
-void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
+PORT_C_INLINE void
+nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
     ncore_reg                   empty;
@@ -119,10 +127,8 @@ void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 
 
 
-PORT_C_INLINE
-void nequeue_put_lifo(
-    struct nequeue *            queue,
-    const struct nevent *       event)
+PORT_C_INLINE void
+nequeue_put_lifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
     ncore_reg                   empty;
@@ -141,36 +147,32 @@ void nequeue_put_lifo(
 
 
 
-PORT_C_INLINE
-const struct nevent * nequeue_get(
-    struct nequeue *            queue)
+PORT_C_INLINE const struct nevent *
+nequeue_get(struct nequeue * queue)
 {
     return (nqueue_get(&queue->queue));
 }
 
 
 
-PORT_C_INLINE
-bool nequeue_is_full(
-    const struct nequeue *      queue)
+PORT_C_INLINE bool
+nequeue_is_full(const struct nequeue * queue)
 {
     return (nqueue_is_full(&queue->queue));
 }
 
 
 
-PORT_C_INLINE
-bool nequeue_is_empty(
-    const struct nequeue *      queue)
+PORT_C_INLINE bool
+nequeue_is_empty(const struct nequeue * queue)
 {
     return (nqueue_is_empty(&queue->queue));
 }
 
 
 
-PORT_C_INLINE
-void * nequeue_storage(
-    const struct nequeue *      queue)
+PORT_C_INLINE void *
+nequeue_storage(const struct nequeue * queue)
 {
     return (nqueue_storage(&queue->queue));
 }

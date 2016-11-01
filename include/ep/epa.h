@@ -55,6 +55,9 @@
 #define NTHREAD_TO_EPA(thread_ptr)                                              \
     PORT_C_CONTAINER_OF(thread_ptr, struct nepa, thread)
 
+#define NEPA_DEF_INIT(wspace, init_state, type, storage, size, name, priority)  \
+    {wspace, init_state, type, storage, size, name, priority}
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -76,11 +79,20 @@ struct nevent;
  */
 struct nepa_define
 {
-    struct nsm_define           sm;     /**<@brief State machine define       */
-    struct nequeue_define       working_queue;
-                                        /**<@brief Working event queue define */
-    struct nthread_define       thread;
-                                        /**<@brief Thread definition          */
+                                        /**<@brief Workspace pointer          */
+    void *                      sm_wspace;
+                                        /**<@brief Initial state pointer      */
+    nstate *                    sm_init_state;
+                                        /**<@brief State machine type         */
+    enum nsm_type               sm_type;
+                                        /**<@brief Allocated event queue
+                                         *         storage
+                                         */
+    struct nevent **            eq_storage;
+                                        /**<@brief Size of queue in bytes     */
+    size_t                      eq_size;
+    const char *                epa_name;
+    uint8_t                     epa_priority;
 };
 
 /**@brief       Define type for EPA object
@@ -116,36 +128,13 @@ typedef struct nepa nepa;
  * @name        EPA General functions
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Start the event processing loop
- */
-void neds_run(void);
-
-
-
-void neds_term(void);
-
-/**@brief       Set an user implementation of idle routine.
- * @param       idle
- *              Pointer to idle routine. If this pointer is NULL the portable
- *              idle routine will be used instead. Usually the portable idle
- *              routine will put the CPU in sleep state.
- * @details     Idle routine is called when there is no available EPA for 
- *              execution. Idle routine can be used to run user loop code which
- *              is typically used by USB, TCP/IP frameworks.
- * @api
- */
-void neds_set_idle(
-    void                     (* idle)(void));
-
-
-
 /**@brief       Get currently executed EPA object pointer
  * @api
  */
 PORT_C_INLINE
 struct nepa * nepa_get_current(void)
 {
-    return (NTHREAD_TO_EPA(nsched_get_current()));
+    return (NTHREAD_TO_EPA(nthread_get_current()));
 }
 
 
