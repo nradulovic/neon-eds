@@ -208,7 +208,27 @@ bool n_is_power_of2(unsigned int value)
 PORT_C_INLINE
 uint32_t n_float_to_u32(float val)
 {
-    return (*(uint32_t *)&val);
+	union float_to_u32
+	{
+		float  						fvalue;
+		uint32_t					ivalue;
+	}							u;
+	u.fvalue = val;
+
+    return (u.ivalue);
+}
+
+PORT_C_INLINE
+float n_u32_to_float(uint32_t val)
+{
+	union u32_to_float
+	{
+		uint32_t					ivalue;
+		float						fvalue;
+	}							u;
+	u.ivalue = val;
+
+	return (u.fvalue);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
