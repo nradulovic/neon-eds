@@ -351,6 +351,11 @@ void PendSV_Handler(void)
 	ncore_deferred_work();
 }
 
+void ncore_dummy_rd(volatile uint32_t value)
+{
+	(void)value;
+}
+
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
 #if ((CONFIG_CORE_TIMER_SOURCE != 0) && (CONFIG_CORE_TIMER_SOURCE != 2) && \

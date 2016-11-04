@@ -65,6 +65,9 @@
  */
 #define NCORE_CODE_TO_LOCK(code)                                                \
     (255 - ((code) << NCORE_LOCK_LEVEL_BITS))
+
+#define ncore_lock_is_valid()													\
+	true
  
 #define ncore_os_ready(thread)              (void)thread
 
@@ -358,6 +361,8 @@ ncore_ext_i24(int32_t data)
 
 	return (retval);
 }
+
+void ncore_dummy_rd(volatile uint32_t value);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
