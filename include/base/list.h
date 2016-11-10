@@ -37,6 +37,7 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
+#include "base/debug.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -104,10 +105,13 @@ void ndlist_remove(
     node->prev->next = node->next;
 
     /** NOTE:
-     * The timer is tested if it is in the list before it is removed from it.
-     * Because of that we have to ensure that it's list is initialized properly.
+     *  The list is tested if it is empty by checking if next points to itself.
      */
     node->next = node;
+    /** NOTE:
+     *  During debugging it is easier to catch errors will NULL pointer.
+     */
+    NOBLIGATION(node->prev = NULL);
 }
 
 
