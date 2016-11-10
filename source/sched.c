@@ -407,6 +407,7 @@ void nthread_insert_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
@@ -423,6 +424,7 @@ void nthread_remove_i(struct nthread * thread)
 {
     NREQUIRE(NAPI_POINTER, thread != NULL);
     NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     thread->ref--;
 

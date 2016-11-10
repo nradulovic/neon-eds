@@ -64,6 +64,7 @@ static void * stdheap_alloc_i(
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
     NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     (void)mem_class;
 
@@ -76,6 +77,7 @@ static void stdheap_free_i(
 {
 	NREQUIRE(NAPI_POINTER, mem_class != NULL);
 	NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
+	NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
 	(void)mem_class;
 	free(mem);

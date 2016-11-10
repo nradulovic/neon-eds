@@ -81,6 +81,7 @@ static void * pool_alloc_i(
     struct pool_block *         block;
 
     NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     block = mem_obj->base;
     (void)size;
@@ -105,6 +106,7 @@ static void pool_free_i(
 
     NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
     NREQUIRE(NAPI_POINTER, mem != NULL);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     block            = (struct pool_block *)mem;
     block->next      = mem_obj->base;

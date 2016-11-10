@@ -240,6 +240,8 @@ struct nevent * nevent_create_i(size_t size, uint16_t id)
     struct nmem *               mem;
     struct nevent *             event;
 
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+
     mem   = find_memory_i(size);
     event = nmem_alloc_i(mem, size);
     
@@ -259,6 +261,7 @@ struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, uint16_t id
     struct nevent *             event;
 
     NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     event = nmem_alloc_i(mem, size);
 
@@ -285,6 +288,7 @@ void nevent_destroy(const struct nevent * event)
 void nevent_destroy_i(const struct nevent * event)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (nevent_ref(event) == 0u) {
         event_term((struct nevent *)event);

@@ -88,7 +88,6 @@ static void remove_timer(
     struct ntimer *         timer)
 {
     ndlist_remove(&timer->list);
-    NOBLIGATION(ndlist_init(&timer->list));
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -101,7 +100,7 @@ void ntimer_init(
     NREQUIRE(NAPI_POINTER, timer != NULL);
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_TIMER);
 
-    NOBLIGATION(ndlist_init(&timer->list));
+    ndlist_init(&timer->list);
 
     NOBLIGATION(timer->signature = NSIGNATURE_TIMER);
 }
@@ -126,6 +125,7 @@ void ntimer_cancel_i(
     struct ntimer *             timer)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (ntimer_is_running_i(timer)) {
 
@@ -161,6 +161,7 @@ void ntimer_start_i(
     NREQUIRE(NAPI_RANGE,   tick > 0);
     NREQUIRE(NAPI_POINTER, fn != NULL);
     NREQUIRE(NAPI_USAGE,   !ntimer_is_running_i(timer));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     tick++;
     timer->fn    = fn;
@@ -197,6 +198,7 @@ bool ntimer_is_running_i(
     const struct ntimer *       timer)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (!ndlist_is_empty(&timer->list)) {
         return (true);
@@ -235,6 +237,8 @@ ncore_time_tick ntimer_remaining(
 
 void ncore_timer_isr(void)
 {
+	NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+
     if (!ndlist_is_empty(&g_timer_sentinel.list)) {
         struct ntimer *         current;
 

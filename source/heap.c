@@ -95,6 +95,7 @@ static void * heap_alloc_i(
 
     NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
     NREQUIRE(NAPI_RANGE,  (size != 0u) && (size < NCPU_SSIZE_MAX));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     mem      = NULL;
     size     = NALIGN_UP(size, sizeof(struct heap_phy [1]));
@@ -160,6 +161,7 @@ static void heap_free_i(
 
     NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
     NREQUIRE(NAPI_POINTER, mem != NULL);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     curr           = (struct heap_block *)
         ((uint8_t *)mem - offsetof(struct heap_block, free));

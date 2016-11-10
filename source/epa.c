@@ -290,6 +290,7 @@ nerror nepa_send_event_i(struct nepa * epa, const struct nevent * event)
 
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
@@ -334,6 +335,7 @@ nerror nepa_send_event_ahead_i(struct nepa * epa, struct nevent * event)
 
     NREQUIRE(NAPI_OBJECT, N_IS_EPA_OBJECT(epa));
     NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (nevent_ref(event) < NEVENT_REF_LIMIT) {
         nevent_ref_up(event);
@@ -375,6 +377,8 @@ nerror nepa_send_signal_i(struct nepa * epa, uint16_t event_id)
 {
     nerror                      error;
     struct nevent *             event;
+
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     event = nevent_create_i(sizeof(struct nevent), event_id);
 

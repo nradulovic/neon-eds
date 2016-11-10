@@ -64,6 +64,7 @@ static void * static_alloc_i(
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
     NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STATIC);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     size = NALIGN_UP(size, NCPU_DATA_ALIGNMENT);
 

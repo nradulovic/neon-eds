@@ -66,9 +66,6 @@
 #define NCORE_CODE_TO_LOCK(code)                                                \
     (255 - ((code) << NCORE_LOCK_LEVEL_BITS))
 
-#define ncore_lock_is_valid()													\
-	true
- 
 #define ncore_os_ready(thread)              (void)thread
 
 #define ncore_os_block(thread)              (void)thread
@@ -227,6 +224,7 @@ ncore_atomic_dec(struct ncore_atomic * ref)
 PORT_C_INLINE void
 ncore_lock_enter(struct ncore_lock * lock)
 {
+	extern bool 				g_core_is_locked;
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
 
@@ -250,6 +248,7 @@ ncore_lock_enter(struct ncore_lock * lock)
         : "=&r"(lock->level)
         : "r"(new_mask));
 #endif
+    g_core_is_locked = true;
 }
 
 
@@ -257,6 +256,9 @@ ncore_lock_enter(struct ncore_lock * lock)
 PORT_C_INLINE void
 ncore_lock_exit(struct ncore_lock * lock)
 {
+	extern bool 				g_core_is_locked;
+
+	g_core_is_locked = false;
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     __asm __volatile__ (
         "@  ncore_lock_exit                                 \n"
@@ -274,6 +276,19 @@ ncore_lock_exit(struct ncore_lock * lock)
 
 
 
+PORT_C_INLINE bool
+ncore_is_lock_valid(void)
+{
+	extern bool					g_core_is_locked;
+	bool						is_isr;
+
+	is_isr = !!(*((uint32_t volatile *)0xe000ed04u) & 0x1ffu);
+
+	return (!g_core_is_locked != !is_isr);
+}
+
+
+
 void ncore_deferred_init(void);
 
 
@@ -281,9 +296,8 @@ void ncore_deferred_init(void);
 PORT_C_INLINE void
 ncore_deferred_do(void)
 {
-	/* Trigger PendSV
-	 */
-	*((uint32_t volatile *)0xE000ED04) = 0x10000000;
+	/* Interrupt Control and State Register & PENDSVSET */
+	*((uint32_t volatile *)0xe000ed04u) = 0x10000000u;
 }
 
 

@@ -109,6 +109,9 @@ extern void PendSV_Handler(void);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+bool 						g_core_is_locked;
+
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
