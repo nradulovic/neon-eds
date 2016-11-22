@@ -3,14 +3,16 @@
 Neon is a collection of software components for real-time applications.
 
 Main Neon EDS components are:
-* **port** - Portable system that offers consistent API to control the
-    underlaying microcontroller and OS (if used).
+
 * **base** - Bare minimum headers needed by other Neon components.
-* **mm** - Memory management
-* **sched** - Contains priority array and the cooperative scheduler
-* **timer** - Virtual general purpose timers. 
 * **ep** - Event processing provides event generation and handling, event 
     queues, broadcasting services and execution of finite state machines.
+* **mm** - Memory management
+* **port** - Portable system that offers consistent API to control the
+    underlaying microcontroller and OS (if used).
+* **sched** - Contains priority array and the cooperative scheduler
+* **timer** - Virtual general purpose timers. 
+
 
 ## Features
 
@@ -42,21 +44,21 @@ Main Neon EDS components are:
     threads are added to scheduler's ready queue.
 * Hardware support for efficient schedulers algorithm execution.
 
-### Thread
+### Task
 
-A thread is a function with the following prototype: 
+A task is a function with the following prototype: 
 
-        void function(void * stack)
+        void function(struct ntask * ctx, void * arg)
     
-Each thread **must return** after some defined time. When the thread returns it 
-leaves the CPU time for other threads to execute. Ideally, threads are written 
+Each task **must return** after some defined time. When the task returns it 
+leaves the CPU time for other tasks to execute. Ideally, tasks are written 
 as finite state machines which by definition are always returning.
 
-During the thread execution interrupts are allowed. 
+During the task execution interrupts are allowed. 
 
-The argument to thread function is always the stack pointer which was given 
-during the thread creation process. This gives the ability to write parametrized 
-thread functions.
+The arguments to task function is always the task context structure and an
+argument pointer which was given during the task creation process. This gives 
+the ability to write parametrized task functions.
 
 # Using Event Driven System 
 
@@ -78,6 +80,7 @@ by `base/config.h` header file, which is in included by all Neon components.
 
 ### Source files
 
+- `source/deferred.c` - Deferred job execution
 - `source/epa.c` - Event Processing Agent
 - `source/equeue.c` - Event Queue
 - `source/etimer.c` - Event Timer
@@ -87,8 +90,8 @@ by `base/config.h` header file, which is in included by all Neon components.
 - `source/pool.c` - Pool memory allocator
 - `source/sched.c` - Scheduler
 - `source/smp.c` - State machine processor
-- `source/stdheap.c` - wrapper around C library malloc/free
 - `source/static.c` - Static memory allocator
+- `source/stdheap.c` - wrapper around C library malloc/free
 - `source/timer.c` - Virtual timer
 - `port/_port-name_/p_core.c` - main Neon core port source file. Ports may have 
     additional source files located in `port/_port-name_` directory which need 
