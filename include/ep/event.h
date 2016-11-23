@@ -196,7 +196,11 @@ void nevent_unregister_mem(
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
  * @{ *//*--------------------------------------------------------------------*/
-#define NEVENT_CREATE(type, id)         (type *)nevent_create(sizeof(type), (id))
+#define NEVENT_CREATE(type, id)         \
+	(type *)nevent_create(sizeof(type), (id))
+
+#define NEVENT_CREATE_I(type, id)		\
+	(type *)nevent_create_i(sizeof(type), (id))
 
 /**@brief       Create an event
  * @param       size
