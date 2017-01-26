@@ -32,6 +32,7 @@
 
 #include <stdlib.h>
 
+#include "port/core.h"
 #include "base/component.h"
 #include "mm/stdheap.h"
 
