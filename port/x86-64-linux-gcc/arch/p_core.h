@@ -30,6 +30,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <pthread.h>
 
 #include "port/compiler.h"
@@ -69,6 +70,8 @@
 	do {																		\
 		g_should_exit = true;													\
 	} while (0u)
+
+#define ncore_is_lock_valid()               true
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
