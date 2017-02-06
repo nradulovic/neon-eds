@@ -34,6 +34,7 @@
 
 #include "port/core.h"
 #include "base/component.h"
+#include "port/core.h"
 #include "mm/stdheap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
