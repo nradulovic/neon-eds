@@ -64,8 +64,8 @@ static struct ntimer g_timer_sentinel =
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static void insert_timer(
-    struct ntimer *         timer)
+static
+void insert_timer(struct ntimer * timer)
 {
     struct ntimer *         current;
 
@@ -84,8 +84,8 @@ static void insert_timer(
 
 
 
-static void remove_timer(
-    struct ntimer *         timer)
+static
+void remove_timer(struct ntimer * timer)
 {
     ndlist_remove(&timer->list);
 }
@@ -94,8 +94,7 @@ static void remove_timer(
 
 
 #if (CONFIG_API_VALIDATION == 1)
-void ntimer_init(
-    struct ntimer *             timer)
+void ntimer_init(struct ntimer * timer)
 {
     NREQUIRE(NAPI_POINTER, timer != NULL);
     NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_TIMER);
@@ -109,8 +108,7 @@ void ntimer_init(
 
 
 #if (CONFIG_API_VALIDATION == 1)
-void ntimer_term(
-    struct ntimer *             timer)
+void ntimer_term(struct ntimer * timer)
 {
 	(void)timer;
 
@@ -121,8 +119,7 @@ void ntimer_term(
 
 
 
-void ntimer_cancel_i(
-    struct ntimer *             timer)
+void ntimer_cancel_i(struct ntimer * timer)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
     NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
@@ -138,8 +135,7 @@ void ntimer_cancel_i(
 
 
 
-void ntimer_cancel(
-    struct ntimer *             timer)
+void ntimer_cancel(struct ntimer * timer)
 {
     ncore_lock                  sys_lock;
 
@@ -150,12 +146,8 @@ void ntimer_cancel(
 
 
 
-void ntimer_start_i(
-    struct ntimer *             timer,
-    ncore_time_tick             tick,
-    void                     (* fn)(void *),
-    void *                      arg,
-    uint8_t                     flags)
+void ntimer_start_i(struct ntimer * timer, ncore_time_tick tick,
+        void (* fn)(void *), void * arg, uint8_t flags)
 {
     NREQUIRE(NAPI_OBJECT,  N_IS_TIMER_OBJECT(timer));
     NREQUIRE(NAPI_RANGE,   tick > 0);
@@ -178,12 +170,8 @@ void ntimer_start_i(
 
 
 
-void ntimer_start(
-    struct ntimer *             timer,
-    ncore_time_tick              tick,
-    void                     (* fn)(void *),
-    void *                      arg,
-    uint8_t                     flags)
+void ntimer_start(struct ntimer * timer, ncore_time_tick tick,
+        void (* fn)(void *), void * arg, uint8_t flags)
 {
     ncore_lock                   sys_lock;
 
@@ -194,8 +182,7 @@ void ntimer_start(
 
 
 
-bool ntimer_is_running_i(
-    const struct ntimer *       timer)
+bool ntimer_is_running_i(const struct ntimer * timer)
 {
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
     NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
@@ -210,8 +197,7 @@ bool ntimer_is_running_i(
 
 
 
-ncore_time_tick ntimer_remaining(
-    const struct ntimer *       timer)
+ncore_time_tick ntimer_remaining(const struct ntimer * timer)
 {
     ncore_lock                   sys_lock;
     ncore_time_tick              remaining;
@@ -243,7 +229,8 @@ void ncore_timer_isr(void)
         struct ntimer *         current;
 
         current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
-        NASSERT_INTERNAL("corrupted timer list", current->signature == NSIGNATURE_TIMER);
+        NASSERT_INTERNAL("corrupted timer list",
+                current->signature == NSIGNATURE_TIMER);
         --current->rtick;
 
         while (current->rtick == 0u) {
@@ -257,7 +244,8 @@ void ncore_timer_isr(void)
             }
             tmp     = current;
             current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
-            NASSERT_INTERNAL("corrupted timer list", current->signature == NSIGNATURE_TIMER);
+            NASSERT_INTERNAL("corrupted timer list",
+                    current->signature == NSIGNATURE_TIMER);
             tmp->fn(tmp->arg);
         }
     }

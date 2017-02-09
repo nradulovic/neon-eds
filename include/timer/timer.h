@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -45,8 +45,12 @@
  *              macro is enabled.
  * @api
  */
+#if (CONFIG_API_VALIDATION == 1)
 #define N_IS_TIMER_OBJECT(timer_obj)                                            \
     (((timer_obj) != NULL) && ((timer_obj)->signature == NSIGNATURE_TIMER))
+#else
+#define N_IS_TIMER_OBJECT(timer_obj)    true
+#endif
 
 /**@brief       Convert time (given in seconds) into core timer ticks
  * @param       time_sec
@@ -80,8 +84,18 @@
     ((ncore_time_tick)(((uint32_t)(time_us) *                                   \
         (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ + 999999ul) / 1000000ul))
 
-
+/**@brief       Timer attribute: one shot
+ * @details     When this attribute is specified then the timer will fire up
+ *              once and then stop.
+ * @api
+ */
 #define NTIMER_ATTR_ONE_SHOT            (0x1u << 0)
+
+/**@brief       Timer attribute: repeat
+ * @details     When this attribute is specified then the timer will
+ *              fire up until it is explicitly stopped with ntimer_cancel().
+ * @api
+ */
 #define NTIMER_ATTR_REPEAT              (0x1u << 1)
 
 /*------------------------------------------------------  C++ extern begin  --*/
@@ -92,6 +106,10 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 
 /**@brief       Virtual Timer structure
+ * @details     All elements of this structure are private members. This
+ *              implementation detail is only exposed so the structure can be
+ *              allocated on stack.
+ * @api
  */
 struct ntimer
 {
@@ -106,6 +124,7 @@ struct ntimer
 };
 
 /**@brief       Virtual Timer structure type
+ * @api
  */
 typedef struct ntimer ntimer;
 
@@ -114,8 +133,17 @@ typedef struct ntimer ntimer;
 
 
 #if (CONFIG_API_VALIDATION == 1)
-void ntimer_init(
-    struct ntimer *             timer);
+/**@brief       Initialise the timer structure
+ * @details     This function will initialise the timer structure. When
+ *              @ref CONFIG_API_VALIDATION is enabled it will make the structure
+ *              valid before using other timer functions. Also, the function
+ *              will raise assert if you try to initialise already initialised
+ *              timer.
+ * @param       timer
+ *              Pointer to timer structure
+ * @api
+ */
+void ntimer_init(struct ntimer * timer);
 #else
 #define ntimer_init(timer)				(void)timer
 #endif
@@ -123,8 +151,12 @@ void ntimer_init(
 
 
 #if (CONFIG_API_VALIDATION == 1)
-void ntimer_term(
-    struct ntimer *             timer);
+/**@brief       Deinitialise the timer structure
+ * @param       timer
+ *              Pointer to timer structure
+ * @api
+ */
+void ntimer_term(struct ntimer * timer);
 #else
 #define ntimer_term(timer)				(void)timer
 #endif
@@ -141,13 +173,10 @@ void ntimer_term(
  * @param       arg
  *              Argument for callback function
  * @iclass
+ * @api
  */
-void ntimer_start_i(
-    struct ntimer *             timer,
-    ncore_time_tick             tick,
-    void                     (* fn)(void *),
-    void *                      arg,
-    uint8_t                     flags);
+void ntimer_start_i(struct ntimer * timer, ncore_time_tick tick,
+        void (* fn)(void *), void * arg, uint8_t flags);
 
 
 
@@ -162,12 +191,8 @@ void ntimer_start_i(
  *              Argument for callback function
  * @api
  */
-void ntimer_start(
-    struct ntimer *             timer,
-    ncore_time_tick             tick,
-    void                     (* fn)(void *),
-    void *                      arg,
-    uint8_t                     flags);
+void ntimer_start(struct ntimer * timer, ncore_time_tick tick,
+        void (* fn)(void *), void * arg, uint8_t flags);
 
 
 
@@ -176,8 +201,7 @@ void ntimer_start(
  *              Pointer to timer structure
  * @iclass
  */
-void ntimer_cancel_i(
-    struct ntimer *             timer);
+void ntimer_cancel_i(struct ntimer * timer);
 
 
 
@@ -186,8 +210,7 @@ void ntimer_cancel_i(
  *              Pointer to timer structure
  * @api
  */
-void ntimer_cancel(
-    struct ntimer *             timer);
+void ntimer_cancel(struct ntimer * timer);
 
 
 
@@ -199,13 +222,18 @@ void ntimer_cancel(
  *  @retval     FALSE - timer has finished running
  * @iclass
  */
-bool ntimer_is_running_i(
-    const struct ntimer *       timer);
+bool ntimer_is_running_i(const struct ntimer * timer);
 
 
-
-ncore_time_tick ntimer_remaining(
-    const struct ntimer *       timer);
+/**@brief       Returns the numbers if ticks that is remaining before the timer
+ *              fires up
+ * @param       timer
+ *              Pointer to timer structure
+ * @return      Return the number of ticks remaining. If the is not running the
+ *              return value is 0.
+ * @api
+ */
+ncore_time_tick ntimer_remaining(const struct ntimer * timer);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus
@@ -214,6 +242,6 @@ ncore_time_tick ntimer_remaining(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//******************************************************
- * END of ntimer.h
+ * END of timer.h
  ******************************************************************************/
 #endif /* NEON_TIMER_TIMER_H_ */
