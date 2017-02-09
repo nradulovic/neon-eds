@@ -38,9 +38,8 @@
 /*===============================================================  MACRO's  ==*/
 
 /**@brief       Declare a module information
+ * @param       description
  *              Module description : string
- * @param       author
- *              Module author : string
  * @api
  */
 #define NCOMPONENT_DEFINE(description)                                          \

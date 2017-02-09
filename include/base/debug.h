@@ -139,7 +139,8 @@
  * @api
  */
 #if (CONFIG_API_VALIDATION == 1)
-# define NENSURE(msg, expr)                 NASSERT("Method call failure: " msg, expr)
+# define NENSURE(msg, expr)                                                     \
+    NASSERT("Method call failure: " msg, expr)
 #else
 # define NENSURE(msg, expr)                 (void)0
 #endif

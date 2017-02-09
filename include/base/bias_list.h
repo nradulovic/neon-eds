@@ -36,13 +36,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "base/dlist.h"
 #include "port/compiler.h"
-#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 
 #define NDLIST_TO_BIAS_LIST(node)                                               \
-    PORT_C_CONTAINER_OF(node, struct nbias_list, list)
+    NDLIST_ENTRY(node, struct nbias_list, list)
 
 #define NBIAS_LIST_MAX_PRIO             255u
 
@@ -63,8 +63,8 @@ struct nbias_list
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE void
-nbias_list_init(struct nbias_list * node, uint_fast8_t bias)
+PORT_C_INLINE
+void nbias_list_init(struct nbias_list * node, uint_fast8_t bias)
 {
     ndlist_init(&node->list);
     node->bias = bias;
@@ -72,16 +72,16 @@ nbias_list_init(struct nbias_list * node, uint_fast8_t bias)
 
 
 
-PORT_C_INLINE void
-nbias_list_reinit(struct nbias_list * node)
+PORT_C_INLINE
+void nbias_list_reinit(struct nbias_list * node)
 {
 	ndlist_init(&node->list);
 }
 
 
 
-PORT_C_INLINE void
-nbias_list_term(struct nbias_list * node)
+PORT_C_INLINE
+void nbias_list_term(struct nbias_list * node)
 {
     node->bias = 0;
     ndlist_init(&node->list);
@@ -89,8 +89,8 @@ nbias_list_term(struct nbias_list * node)
 
 
 
-PORT_C_INLINE void
-nbias_list_sort_insert(struct nbias_list * list, struct nbias_list * node)
+PORT_C_INLINE
+void nbias_list_sort_insert(struct nbias_list * list, struct nbias_list * node)
 {
     struct ndlist *             current;
 
@@ -101,70 +101,70 @@ nbias_list_sort_insert(struct nbias_list * list, struct nbias_list * node)
                                         /* Not end of list and node has equal */
                                         /* or higher bias than given node?    */
     } while ((current != &list->list) &&                                        
-             (NDLIST_TO_BIAS_LIST(current)->bias >= node->bias));               
+             (NDLIST_TO_BIAS_LIST(current)->bias >= node->bias));
     ndlist_add_before(current, &node->list);
 }
 
 
 
-PORT_C_INLINE void
-nbias_list_fifo_insert(struct nbias_list * list, struct nbias_list * node)
+PORT_C_INLINE
+void nbias_list_fifo_insert(struct nbias_list * list, struct nbias_list * node)
 {
     ndlist_add_before(&list->list, &node->list);
 }
 
 
 
-PORT_C_INLINE void
-nbias_list_remove(struct nbias_list * node)
+PORT_C_INLINE
+void nbias_list_remove(struct nbias_list * node)
 {
     ndlist_remove(&node->list);
 }
 
 
 
-PORT_C_INLINE struct nbias_list *
-nbias_list_tail(const struct nbias_list * list)
+PORT_C_INLINE
+struct nbias_list * nbias_list_tail(const struct nbias_list * list)
 {
     return (NDLIST_TO_BIAS_LIST(ndlist_next(&list->list)));
 }
 
 
 
-PORT_C_INLINE struct nbias_list *
-nbias_list_head(struct nbias_list * list)
+PORT_C_INLINE
+struct nbias_list * nbias_list_head(struct nbias_list * list)
 {
     return (NDLIST_TO_BIAS_LIST(ndlist_prev(&list->list)));
 }
 
 
 
-PORT_C_INLINE bool
-nbias_list_is_empty(const struct nbias_list * list)
+PORT_C_INLINE
+bool nbias_list_is_empty(const struct nbias_list * list)
 {
     return (ndlist_is_empty(&list->list));
 }
 
 
 
-PORT_C_INLINE struct nbias_list *
-nbias_list_next(const struct nbias_list * node)
+PORT_C_INLINE
+struct nbias_list * nbias_list_next(const struct nbias_list * node)
 {
     return (NDLIST_TO_BIAS_LIST(ndlist_next(&node->list)));
 }
 
 
 
-PORT_C_INLINE uint_fast8_t
-nbias_list_get_bias(const struct nbias_list * node)
+PORT_C_INLINE
+uint_fast8_t nbias_list_get_bias(const struct nbias_list * node)
 {
     return (node->bias);
 }
 
 
 
-PORT_C_INLINE void
-nbias_list_set_bias(struct nbias_list * node, uint_fast8_t bias)
+PORT_C_INLINE
+void nbias_list_set_bias(struct nbias_list * node, uint_fast8_t bias)
 {
     node->bias = bias;
 }

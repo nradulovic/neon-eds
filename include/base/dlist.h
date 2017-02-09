@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -24,12 +24,12 @@
  * @brief       Linked lists header
  * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    base_list Linked list
- * @brief       Linked list
+/**@defgroup    base_list Doubly linked list
+ * @brief       Doubly linked list
  * @{ *//*--------------------------------------------------------------------*/
 
-#ifndef NEON_BASE_LIST_H_
-#define NEON_BASE_LIST_H_
+#ifndef NEON_BASE_DLIST_H_
+#define NEON_BASE_DLIST_H_
 
 /*=========================================================  INCLUDE FILES  ==*/
 
@@ -41,7 +41,10 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NDLIST_INIT(list)               {(list), (list)}
+#define NDLIST_INITIALIZER(list)        {(list), (list)}
+
+#define NDLIST_ENTRY(ptr, type, member)                                         \
+    PORT_C_CONTAINER_OF(ptr, type, member)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
@@ -60,8 +63,8 @@ struct ndlist
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE struct ndlist *
-ndlist_init(struct ndlist * node)
+PORT_C_INLINE
+struct ndlist * ndlist_init(struct ndlist * node)
 {
     node->next = node;
     node->prev = node;
@@ -72,9 +75,7 @@ ndlist_init(struct ndlist * node)
 
 
 PORT_C_INLINE
-void ndlist_add_before(
-    struct ndlist *             current,
-    struct ndlist *             node)
+void ndlist_add_before(struct ndlist * current, struct ndlist * node)
 {
     node->next          = current;
     node->prev          = current->prev;
@@ -85,9 +86,7 @@ void ndlist_add_before(
 
 
 PORT_C_INLINE
-void ndlist_add_after(
-    struct ndlist *             current,
-    struct ndlist *             node)
+void ndlist_add_after(struct ndlist * current, struct ndlist * node)
 {
     node->prev          = current;
     node->next          = current->next;
@@ -98,8 +97,7 @@ void ndlist_add_after(
 
 
 PORT_C_INLINE
-void ndlist_remove(
-    struct ndlist *             node)
+void ndlist_remove(struct ndlist * node)
 {
     node->next->prev = node->prev;
     node->prev->next = node->next;
@@ -109,7 +107,7 @@ void ndlist_remove(
      */
     node->next = node;
     /** NOTE:
-     *  During debugging it is easier to catch errors will NULL pointer.
+     *  During debugging it is easier to catch errors with NULL pointer.
      */
     NOBLIGATION(node->prev = NULL);
 }
@@ -117,21 +115,15 @@ void ndlist_remove(
 
 
 PORT_C_INLINE
-bool ndlist_is_empty(
-    const struct ndlist *       node)
+bool ndlist_is_empty(const struct ndlist * node)
 {
-    if (node->next == node) {
-        return (true);
-    } else {
-        return (false);
-    }
+    return (!!(node->next == node));
 }
 
 
 
 PORT_C_INLINE
-struct ndlist * ndlist_next(
-    const struct ndlist *       node)
+struct ndlist * ndlist_next(const struct ndlist * node)
 {
     return (node->next);
 }
@@ -139,8 +131,7 @@ struct ndlist * ndlist_next(
 
 
 PORT_C_INLINE
-struct ndlist * ndlist_prev(
-    const struct ndlist *       node)
+struct ndlist * ndlist_prev(const struct ndlist * node)
 {
     return (node->prev);
 }
@@ -152,6 +143,6 @@ struct ndlist * ndlist_prev(
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of list.h
+ * END of dlist.h
  ******************************************************************************/
-#endif /* NEON_BASE_LIST_H_ */
+#endif /* NEON_BASE_DLIST_H_ */

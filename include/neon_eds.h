@@ -59,8 +59,8 @@
 #include "base/component.h"
 #include "base/config.h"
 #include "base/debug.h"
+#include "base/dlist.h"
 #include "base/error.h"
-#include "base/list.h"
 #include "base/queue.h"
 
 /* EDS Timer */

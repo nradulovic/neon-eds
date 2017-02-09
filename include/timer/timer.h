@@ -33,10 +33,10 @@
 
 #include <stdbool.h>
 
+#include "../base/dlist.h"
 #include "port/compiler.h"
 #include "port/core.h"
 #include "base/config.h"
-#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 

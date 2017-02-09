@@ -31,9 +31,9 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include "../base/dlist.h"
 #include "base/config.h"
 #include "base/bias_list.h"
-#include "base/list.h"
 
 /*===============================================================  MACRO's  ==*/
 

@@ -50,7 +50,7 @@ static const NCOMPONENT_DEFINE("Virtual timer");
 
 static struct ntimer g_timer_sentinel =
 {
-    NDLIST_INIT(&g_timer_sentinel.list),
+    NDLIST_INITIALIZER(&g_timer_sentinel.list),
     NCORE_TIME_TICK_MAX,
     0,
     NULL,
