@@ -75,6 +75,7 @@
 
 /* EDS Scheduler */
 #include "sched/sched.h"
+#include "sched/deferred.h"
 
 /* EDS Event Procesing */
 #include "ep/epa.h"
