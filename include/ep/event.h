@@ -356,14 +356,25 @@ uint_fast16_t nevent_ref(
 
 
 /**@brief       Cast event pointer to void pointer
- * @details     This is only a convenience function which will shorted the user
- *              code a bit.
+ * @details     This is only a convenience function for cleaner application code.
  * @api
  */
 PORT_C_INLINE
 const void * nevent_data(const struct nevent * event)
 {
 	return ((const void *)event);
+}
+
+
+
+/**@brief       Access event id number
+ * @details     This is only a convenience function for cleaner application code.
+ * @api
+ */
+PORT_C_INLINE
+uint16_t nevent_id(const struct nevent * event)
+{
+    return ((uint16_t)event->id);
 }
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
