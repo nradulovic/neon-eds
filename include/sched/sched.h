@@ -143,7 +143,15 @@ void ntask_init(struct ntask * task, const struct ntask_define * define,
 
 
 
+#define ntask_ready_i(task)				nthread_insert_i(&(task)->thread)
+
+
+
 void ntask_ready(struct ntask * task);
+
+
+
+#define ntask_block_i(task)				nthread_remove_i(&(task)->thread)
 
 
 

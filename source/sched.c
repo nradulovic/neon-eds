@@ -486,7 +486,7 @@ void ntask_ready(struct ntask * task)
     struct ncore_lock           lock;
 
     ncore_lock_enter(&lock);
-    nthread_insert_i(&task->thread);
+    ntask_ready_i(task);
     ncore_lock_exit(&lock);
 }
 
@@ -497,7 +497,7 @@ void ntask_block(struct ntask * task)
     struct ncore_lock           lock;
 
     ncore_lock_enter(&lock);
-    nthread_remove_i(&task->thread);
+    ntask_block_i(task);
     ncore_lock_exit(&lock);
 }
 
