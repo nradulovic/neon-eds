@@ -319,7 +319,7 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
 
     if (ret) {
         memcpy(ret, event, event->size);
-        ret->id = id;
+        event_init(ret, id, event->mem, event->size);
     }
 
     NENSURE("event not forwarded", ret != NULL);
