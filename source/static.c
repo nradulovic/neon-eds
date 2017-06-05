@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -39,16 +39,9 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
+static void * static_alloc_i(struct nmem * mem_class, size_t size);
 
-static void * static_alloc_i(
-    struct nmem *               mem_class,
-    size_t                      size);
-
-
-
-static void static_free_i(
-    struct nmem *               mem_class,
-    void *                      mem);
+static void static_free_i(struct nmem * mem_class, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -58,9 +51,7 @@ static const NCOMPONENT_DEFINE("Static Memory Management");
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static void * static_alloc_i(
-    struct nmem *               mem_class,
-    size_t                      size)
+static void * static_alloc_i(struct nmem * mem_class, size_t size)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
     NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STATIC);
@@ -78,9 +69,7 @@ static void * static_alloc_i(
     }
 }
 
-static void static_free_i(
-    struct nmem *               mem_class,
-    void *                      mem)
+static void static_free_i(struct nmem * mem_class, void * mem)
 {
     (void)mem;
     (void)mem_class;
@@ -91,10 +80,7 @@ static void static_free_i(
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nstatic_init(
-    struct nstatic *            static_obj,
-    void *                      storage,
-    size_t                      size)
+void nstatic_init(struct nstatic * static_obj, void * storage, size_t size)
 {
     NREQUIRE(NAPI_POINTER, static_obj != NULL);
     NREQUIRE(NAPI_OBJECT,  static_obj->mem_class.signature != NSIGNATURE_STATIC);
@@ -119,9 +105,7 @@ void * nstatic_alloc_i(struct nstatic * static_obj, size_t size)
 
 
 
-void * nstatic_alloc(
-    struct nstatic *            static_mem,
-    size_t                      size)
+void * nstatic_alloc(struct nstatic * static_mem, size_t size)
 {
     ncore_lock                   sys_lock;
     void *                      mem;

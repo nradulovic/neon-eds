@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -47,9 +47,7 @@ struct nmem *                   g_generic_heap_;
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void * nmem_alloc(
-    struct nmem *               mem,
-    size_t                      size)
+void * nmem_alloc(struct nmem * mem, size_t size)
 {
     ncore_lock                  sys_lock;
     void *                      mem_storage;
@@ -63,9 +61,7 @@ void * nmem_alloc(
 
 
 
-void * nmem_zalloc(
-    struct nmem *               mem,
-    size_t                      size)
+void * nmem_zalloc(struct nmem * mem, size_t size)
 {
     void *                      mem_storage;
 
@@ -80,9 +76,7 @@ void * nmem_zalloc(
 
 
 
-void nmem_free(
-    struct nmem *               mem,
-    void *                      mem_storage)
+void nmem_free(struct nmem * mem, void * mem_storage)
 {
     ncore_lock                  sys_lock;
 

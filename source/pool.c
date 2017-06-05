@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -56,15 +56,9 @@ struct pool_block
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void * pool_alloc_i(
-    struct nmem *               mem_obj,
-    size_t                      size);
+static void * pool_alloc_i(struct nmem * mem_obj, size_t size);
 
-
-
-static void pool_free_i(
-    struct nmem *               mem_obj,
-    void *                      mem);
+static void pool_free_i(struct nmem * mem_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -74,9 +68,7 @@ static const NCOMPONENT_DEFINE("Pool Memory Module");
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static void * pool_alloc_i(
-    struct nmem *               mem_obj,
-    size_t                      size)
+static void * pool_alloc_i(struct nmem * mem_obj, size_t size)
 {
     struct pool_block *         block;
 
@@ -98,9 +90,7 @@ static void * pool_alloc_i(
 
 
 
-static void pool_free_i(
-    struct nmem *               mem_obj,
-    void *                      mem)
+static void pool_free_i(struct nmem * mem_obj, void * mem)
 {
     struct pool_block *         block;
 
@@ -117,11 +107,8 @@ static void pool_free_i(
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void npool_init(
-    struct npool *              pool,
-    void *                      array,
-    size_t                      array_size,
-    size_t                      block_size)
+void npool_init(struct npool * pool, void * array, size_t array_size, 
+        size_t block_size)
 {
     size_t                      block_cnt;
     size_t                      nblocks;
@@ -153,16 +140,14 @@ void npool_init(
 
 
 
-void * npool_alloc_i(
-    struct npool *              pool)
+void * npool_alloc_i(struct npool * pool)
 {
     return (pool_alloc_i(&pool->mem_class, 0));
 }
 
 
 
-void * npool_alloc(
-    struct npool *              pool)
+void * npool_alloc(struct npool * pool)
 {
     ncore_lock                   sys_lock;
     void *                      mem;
@@ -176,18 +161,14 @@ void * npool_alloc(
 
 
 
-void npool_free_i(
-    struct npool *              pool,
-    void *                      mem)
+void npool_free_i(struct npool * pool, void * mem)
 {
     pool_free_i(&pool->mem_class, mem);
 }
 
 
 
-void npool_free(
-    struct npool *              pool,
-    void *                      mem)
+void npool_free(struct npool * pool, void * mem)
 {
     ncore_lock                 sys_lock;
 

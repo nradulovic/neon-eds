@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -40,16 +40,9 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
+static void * stdheap_alloc_i(struct nmem * mem_class, size_t size);
 
-static void * stdheap_alloc_i(
-    struct nmem *               mem_class,
-    size_t                      size);
-
-
-
-static void stdheap_free_i(
-    struct nmem *               mem_class,
-    void *                      mem);
+static void stdheap_free_i(struct nmem * mem_class, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -58,13 +51,10 @@ static const NCOMPONENT_DEFINE("Static Memory Management");
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
-static void * stdheap_alloc_i(
-    struct nmem *               mem_class,
-    size_t                      size)
+static void * stdheap_alloc_i(struct nmem * mem_class, size_t size)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
+    NREQUIRE(NAPI_OBJECT, mem_class->signature == NSIGNATURE_STDHEAP);
     NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     (void)mem_class;
@@ -72,12 +62,10 @@ static void * stdheap_alloc_i(
     return (malloc(size));
 }
 
-static void stdheap_free_i(
-    struct nmem *               mem_class,
-    void *                      mem)
+static void stdheap_free_i(struct nmem * mem_class, void * mem)
 {
     NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
+    NREQUIRE(NAPI_OBJECT, mem_class->signature == NSIGNATURE_STDHEAP);
     NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     (void)mem_class;
@@ -87,11 +75,10 @@ static void stdheap_free_i(
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nstdheap_init(
-    struct nstdheap *           stdheap_obj)
+void nstdheap_init(struct nstdheap * stdheap_obj)
 {
     NREQUIRE(NAPI_POINTER, stdheap_obj != NULL);
-    NREQUIRE(NAPI_OBJECT,  stdheap_obj->mem_class.signature != NSIGNATURE_STDHEAP);
+    NREQUIRE(NAPI_OBJECT, stdheap_obj->mem_class.signature != NSIGNATURE_STDHEAP);
 
     stdheap_obj->mem_class.base     = NULL;
     stdheap_obj->mem_class.size     = 0u;
@@ -111,9 +98,7 @@ void * nstdheap_alloc_i(struct nstdheap * stdheap_obj, size_t size)
 
 
 
-void nstdheap_free_i(
-    struct nstdheap *           stdheap_obj,
-    void *                      mem)
+void nstdheap_free_i(struct nstdheap * stdheap_obj, void * mem)
 {
     stdheap_free_i(&stdheap_obj->mem_class, mem);
 }

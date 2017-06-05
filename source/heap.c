@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -66,16 +66,9 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) heap_block
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
+static void * heap_alloc_i(struct nmem * mem_obj, size_t size);
 
-static void * heap_alloc_i(
-    struct nmem *               mem_obj,
-    size_t                      size);
-
-
-
-static void heap_free_i(
-    struct nmem *               mem_obj,
-    void *                      mem);
+static void heap_free_i(struct nmem * mem_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 
@@ -85,16 +78,14 @@ static const NCOMPONENT_DEFINE("Heap Memory Management");
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static void * heap_alloc_i(
-    struct nmem *               mem_obj,
-    size_t                      size)
+static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         curr;
     void *                      mem;
 
     NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
-    NREQUIRE(NAPI_RANGE,  (size != 0u) && (size < NCPU_SSIZE_MAX));
+    NREQUIRE(NAPI_RANGE, (size != 0u) && (size < NCPU_SSIZE_MAX));
     NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     mem      = NULL;
@@ -152,9 +143,7 @@ static void * heap_alloc_i(
 }
 
 
-static void heap_free_i(
-    struct nmem *               mem_obj,
-    void *                      mem)
+static void heap_free_i(struct nmem * mem_obj, void * mem)
 {
     struct heap_block *         curr;
     struct heap_block *         tmp;
@@ -210,10 +199,7 @@ static void heap_free_i(
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
 
-void nheap_init(
-    struct nheap *              heap_obj,
-    void *                      storage,
-    size_t                      size)
+void nheap_init(struct nheap * heap_obj, void * storage, size_t size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         begin;
@@ -250,8 +236,7 @@ void nheap_init(
 
 
 
-void nheap_term(
-    struct nheap *              heap_obj)
+void nheap_term(struct nheap * heap_obj)
 {
     NREQUIRE(NAPI_POINTER, heap_obj != NULL);
     NREQUIRE(NAPI_OBJECT,  heap_obj->mem_class.signature == NSIGNATURE_HEAP);
@@ -263,18 +248,14 @@ void nheap_term(
 
 
 
-void * nheap_alloc_i(
-    struct nheap *              heap_obj,
-    size_t                      size)
+void * nheap_alloc_i(struct nheap * heap_obj, size_t size)
 {
     return (heap_alloc_i(&heap_obj->mem_class, size));
 }
 
 
 
-void * nheap_alloc(
-    struct nheap *              heap,
-    size_t                      size)
+void * nheap_alloc(struct nheap * heap, size_t size)
 {
     ncore_lock                  sys_lock;
     void *                      mem;
@@ -288,18 +269,14 @@ void * nheap_alloc(
 
 
 
-void nheap_free_i(
-    struct nheap *              heap,
-    void *                      mem)
+void nheap_free_i(struct nheap * heap, void * mem)
 {
     heap_free_i(&heap->mem_class, mem);
 }
 
 
 
-void nheap_free(
-    struct nheap *              heap,
-    void *                      mem)
+void nheap_free(struct nheap * heap, void * mem)
 {
     ncore_lock                   sys_lock;
 
