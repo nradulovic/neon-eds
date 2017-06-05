@@ -51,7 +51,7 @@
  *              - 1 - Debug options can be enabled individually
  */
 #if !defined(CONFIG_DEBUG)
-# define CONFIG_DEBUG                  	1
+# define CONFIG_DEBUG                   1
 #endif
 
 /**@brief       Enable/disable API arguments validation
@@ -96,15 +96,15 @@
 
 /**@brief       Select the peripheral that will be used as clock source
  * @details     0 - use dedicated tick timer, often called as System Tick or
- * 					Core timer
- * 				1 - use Timer 1
- * 				2 - use Timer 2...
+ *                  Core timer
+ *              1 - use Timer 1
+ *              2 - use Timer 2...
  *
- * 				Check MCU documentation which hardware timers are available.
- * 				Also make sure that portable layer supports chosen timer.
+ *              Check MCU documentation which hardware timers are available.
+ *              Also make sure that portable layer supports chosen timer.
  */
 #if !defined(CONFIG_CORE_TIMER_SOURCE)
-# define CONFIG_CORE_TIMER_SOURCE   	0
+# define CONFIG_CORE_TIMER_SOURCE       0
 #endif
 
 

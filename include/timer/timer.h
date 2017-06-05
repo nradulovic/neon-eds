@@ -115,7 +115,7 @@ struct ntimer
 {
     struct ndlist               list;               /**<@brief Linked list    */
     ncore_time_tick             rtick;              /**<@brief Relative ticks */
-    ncore_time_tick             itick;            	/**<@brief Initial ticks  */
+    ncore_time_tick             itick;              /**<@brief Initial ticks  */
     void                     (* fn)(void *);        /**<@brief Callback       */
     void *                      arg;                /**<@brief Argument       */
 #if (CONFIG_API_VALIDATION == 1)
@@ -145,7 +145,7 @@ typedef struct ntimer ntimer;
  */
 void ntimer_init(struct ntimer * timer);
 #else
-#define ntimer_init(timer)				(void)timer
+#define ntimer_init(timer)              (void)timer
 #endif
 
 
@@ -158,7 +158,7 @@ void ntimer_init(struct ntimer * timer);
  */
 void ntimer_term(struct ntimer * timer);
 #else
-#define ntimer_term(timer)				(void)timer
+#define ntimer_term(timer)              (void)timer
 #endif
 
 

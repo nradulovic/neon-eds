@@ -110,7 +110,7 @@ void ntimer_init(struct ntimer * timer)
 #if (CONFIG_API_VALIDATION == 1)
 void ntimer_term(struct ntimer * timer)
 {
-	(void)timer;
+    (void)timer;
 
     NREQUIRE(NAPI_OBJECT, N_IS_TIMER_OBJECT(timer));
     NOBLIGATION(timer->signature = ~NSIGNATURE_TIMER);
@@ -223,7 +223,7 @@ ncore_time_tick ntimer_remaining(const struct ntimer * timer)
 
 void ncore_timer_isr(void)
 {
-	NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
     if (!ndlist_is_empty(&g_timer_sentinel.list)) {
         struct ntimer *         current;

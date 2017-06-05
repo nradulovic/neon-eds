@@ -76,12 +76,12 @@ static void stdheap_free_i(
     struct nmem *               mem_class,
     void *                      mem)
 {
-	NREQUIRE(NAPI_POINTER, mem_class != NULL);
-	NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
-	NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(NAPI_POINTER, mem_class != NULL);
+    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STDHEAP);
+    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
 
-	(void)mem_class;
-	free(mem);
+    (void)mem_class;
+    free(mem);
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -115,7 +115,7 @@ void nstdheap_free_i(
     struct nstdheap *           stdheap_obj,
     void *                      mem)
 {
-	stdheap_free_i(&stdheap_obj->mem_class, mem);
+    stdheap_free_i(&stdheap_obj->mem_class, mem);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

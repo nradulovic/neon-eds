@@ -87,14 +87,14 @@
 #define PORT_C_CONTAINER_OF(ptr, type, member)                                  \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
-/**@brief		Prevent the compiler from merging or refetching accesses.
- * @details		The compiler is also forbidden from reordering successive
- * 				instances of PORT_C_ACCESS_ONCE(), but only when the compiler is
- * 				aware of some particular ordering.  One way to make the compiler
- * 				aware of ordering is to put the two invocations of
- * 				PORT_C_ACCESS_ONCE() in different C statements.
+/**@brief       Prevent the compiler from merging or refetching accesses.
+ * @details     The compiler is also forbidden from reordering successive
+ *              instances of PORT_C_ACCESS_ONCE(), but only when the compiler is
+ *              aware of some particular ordering.  One way to make the compiler
+ *              aware of ordering is to put the two invocations of
+ *              PORT_C_ACCESS_ONCE() in different C statements.
  */
-#define PORT_C_ACCESS_ONCE(x) 			(*(volatile typeof(x) *)&(x))
+#define PORT_C_ACCESS_ONCE(x)           (*(volatile typeof(x) *)&(x))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus

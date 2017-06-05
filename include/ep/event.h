@@ -90,7 +90,7 @@
  * @notapi
  */
 #if (CONFIG_EVENT_SIZE == 1)
-#define N_EVENT_SIZE_INIT(size)		(size),
+#define N_EVENT_SIZE_INIT(size)     (size),
 #else
 #define N_EVENT_SIZE_INIT(size)
 #endif
@@ -99,7 +99,7 @@
  * @notapi
  */
 #if (CONFIG_API_VALIDATION == 1)
-#define N_EVENT_SIGNATURE			NSIGNATURE_EVENT,
+#define N_EVENT_SIGNATURE           NSIGNATURE_EVENT,
 #else
 #define N_EVENT_SIGNATURE
 #endif
@@ -107,16 +107,16 @@
 /**@brief       Initialization macro for an event
  * @api
  */
-#define NEVENT_INITIALIZER(event_id, producer, size) 							\
-	{																			\
-		(event_id), 															\
-		0, 																		\
-		0, 																		\
-		NULL, 																	\
-		N_EVENT_PRODUCER_INIT(producer)											\
-		N_EVENT_SIZE_INIT(size) 												\
-		N_EVENT_SIGNATURE														\
-	}
+#define NEVENT_INITIALIZER(event_id, producer, size)                            \
+    {                                                                           \
+        (event_id),                                                             \
+        0,                                                                      \
+        0,                                                                      \
+        NULL,                                                                   \
+        N_EVENT_PRODUCER_INIT(producer)                                         \
+        N_EVENT_SIZE_INIT(size)                                                 \
+        N_EVENT_SIGNATURE                                                       \
+    }
 
 
 /*------------------------------------------------------  C++ extern base  --*/
@@ -164,7 +164,7 @@ typedef struct nevent nevent;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern const struct nevent 		g_default_event;
+extern const struct nevent      g_default_event;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
@@ -197,10 +197,10 @@ void nevent_unregister_mem(
  * @name        Event creation / deletion
  * @{ *//*--------------------------------------------------------------------*/
 #define NEVENT_CREATE(type, id)         \
-	(type *)nevent_create(sizeof(type), (id))
+    (type *)nevent_create(sizeof(type), (id))
 
-#define NEVENT_CREATE_I(type, id)		\
-	(type *)nevent_create_i(sizeof(type), (id))
+#define NEVENT_CREATE_I(type, id)       \
+    (type *)nevent_create_i(sizeof(type), (id))
 
 /**@brief       Create an event
  * @param       size
@@ -362,7 +362,7 @@ uint_fast16_t nevent_ref(
 PORT_C_INLINE
 const void * nevent_data(const struct nevent * event)
 {
-	return ((const void *)event);
+    return ((const void *)event);
 }
 
 

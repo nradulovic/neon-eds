@@ -90,7 +90,7 @@ typedef   signed int ncpu_ssize;
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
 {
-	uint32_t					value;
+    uint32_t                    value;
 };
 
 /**@brief       Interrupt context structure
@@ -104,7 +104,7 @@ struct ncore_lock
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 {
-	int32_t						value;
+    int32_t                     value;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -136,16 +136,16 @@ ncore_reg ncore_exp2(
 PORT_C_INLINE_ALWAYS
 void ncore_ref_write(
     struct ncore_ref *          ref,
-	uint32_t					value)
+    uint32_t                    value)
 {
-	ref->value = value;
+    ref->value = value;
 }
 
 
 
 PORT_C_INLINE_ALWAYS
 uint32_t ncore_ref_read(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     return (ref->value);
 }
@@ -154,7 +154,7 @@ uint32_t ncore_ref_read(
 
 PORT_C_INLINE_ALWAYS
 void ncore_ref_increment(
-	struct ncore_ref *      	ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != UINT32_MAX) {
         ref->value++;
@@ -165,7 +165,7 @@ void ncore_ref_increment(
 
 PORT_C_INLINE_ALWAYS
 void ncore_ref_decrement(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != 0u) {
         ref->value--;
@@ -180,7 +180,7 @@ void ncore_ref_decrement(
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
-	v->value = i;
+    v->value = i;
 }
 
 
@@ -190,7 +190,7 @@ void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
  */
 PORT_C_INLINE_ALWAYS
 int32_t ncore_atomic_read(
-	struct ncore_atomic *       ref)
+    struct ncore_atomic *       ref)
 {
     return (ref->value);
 }
@@ -202,10 +202,10 @@ int32_t ncore_atomic_read(
  */
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_inc(
-	struct ncore_atomic *      	ref)
+    struct ncore_atomic *       ref)
 {
     if (ref->value != INT32_MAX) {
-    	ref->value++;
+        ref->value++;
     }
 }
 
@@ -216,10 +216,10 @@ void ncore_atomic_inc(
  */
 PORT_C_INLINE_ALWAYS
 void ncore_atomic_dec(
-	struct ncore_atomic *        ref)
+    struct ncore_atomic *        ref)
 {
     if (ref->value != 0u) {
-    	ref->value--;
+        ref->value--;
     }
 }
 
@@ -231,7 +231,7 @@ void ncore_lock_enter(
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
-	unsigned int				ipl_status;
+    unsigned int                ipl_status;
 
     new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
     new_mask <<= _CP0_STATUS_IPL_POSITION;
@@ -242,9 +242,9 @@ void ncore_lock_enter(
     ipl_status |= new_mask;
     _CP0_SET_STATUS(ipl_status);
 #else
-	__asm__ __volatile__(
-		"   di      %0                                  \n"
-		: "=r"(lock->level)
+    __asm__ __volatile__(
+        "   di      %0                                  \n"
+        : "=r"(lock->level)
         : 
         : "memory");
 #endif
@@ -258,7 +258,7 @@ void ncore_lock_exit(
 {
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
-	unsigned int				ipl_status;
+    unsigned int                ipl_status;
 
     new_mask = NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL);
     new_mask <<= _CP0_STATUS_IPL_POSITION;

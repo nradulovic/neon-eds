@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief		Short description
- * @author		Nenad Radulovic
- * @date		Oct 6, 2015
+ * @brief       Short description
+ * @author      Nenad Radulovic
+ * @date        Oct 6, 2015
  */
 
 #ifndef NEON_EDS_INCLUDE_PORT_OS_H_

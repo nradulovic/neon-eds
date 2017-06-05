@@ -40,10 +40,10 @@
 
 struct sched_deferred_ctx
 {
-	struct ndlist				a;
-	struct ndlist				b;
-	struct ndlist * 			pending;
-	struct ndlist *				working;
+    struct ndlist               a;
+    struct ndlist               b;
+    struct ndlist *             pending;
+    struct ndlist *             working;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
@@ -65,7 +65,7 @@ static struct sched_deferred_ctx g_ctx;
 static struct nsched_deferred *
 ndlist_to_deferred(struct ndlist * list)
 {
-	return (PORT_C_CONTAINER_OF(list, struct nsched_deferred, list));
+    return (PORT_C_CONTAINER_OF(list, struct nsched_deferred, list));
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -73,22 +73,22 @@ ndlist_to_deferred(struct ndlist * list)
 
 void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg)
 {
-	static bool 				is_initialized;
+    static bool                 is_initialized;
 
-	NREQUIRE(NAPI_POINTER, deferred != NULL);
+    NREQUIRE(NAPI_POINTER, deferred != NULL);
     NREQUIRE(NAPI_OBJECT, deferred->signature != NSIGNATURE_DEFER);
-	NREQUIRE(NAPI_POINTER, fn != NULL);
+    NREQUIRE(NAPI_POINTER, fn != NULL);
 
-	if (!is_initialized) {
-		is_initialized = true;
+    if (!is_initialized) {
+        is_initialized = true;
 
-		ncore_deferred_init();
-		g_ctx.pending = ndlist_init(&g_ctx.a);
-		g_ctx.working = ndlist_init(&g_ctx.b);
-	}
-	deferred->fn = fn;
-	deferred->arg = arg;
-	ndlist_init(&deferred->list);
+        ncore_deferred_init();
+        g_ctx.pending = ndlist_init(&g_ctx.a);
+        g_ctx.working = ndlist_init(&g_ctx.b);
+    }
+    deferred->fn = fn;
+    deferred->arg = arg;
+    ndlist_init(&deferred->list);
 
     NOBLIGATION(deferred->signature = NSIGNATURE_DEFER);
 }
@@ -97,35 +97,35 @@ void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *)
 
 void nsched_deferred_do(struct nsched_deferred * deferred)
 {
-	NREQUIRE(NAPI_POINTER, deferred != NULL);
+    NREQUIRE(NAPI_POINTER, deferred != NULL);
     NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
 
     if (!ndlist_is_empty(&deferred->list)) {
         ndlist_remove(&deferred->list);
     }
-	ndlist_add_after(g_ctx.pending, &deferred->list);
-	ncore_deferred_do();
+    ndlist_add_after(g_ctx.pending, &deferred->list);
+    ncore_deferred_do();
 }
 
 
 
 void ncore_deferred_work(void)
 {
-	struct ndlist *			current;
+    struct ndlist *         current;
 
-	current 	  = g_ctx.pending;
-	g_ctx.pending = g_ctx.working;
-	g_ctx.working = current;
-	current 	  = ndlist_next(current);
+    current       = g_ctx.pending;
+    g_ctx.pending = g_ctx.working;
+    g_ctx.working = current;
+    current       = ndlist_next(current);
 
-	while (current != g_ctx.working) {
-		struct nsched_deferred * deferred;
+    while (current != g_ctx.working) {
+        struct nsched_deferred * deferred;
 
-		deferred = ndlist_to_deferred(current);
+        deferred = ndlist_to_deferred(current);
         NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
-		deferred->fn(deferred->arg);
-		current = ndlist_next(current);
-	}
+        deferred->fn(deferred->arg);
+        current = ndlist_next(current);
+    }
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

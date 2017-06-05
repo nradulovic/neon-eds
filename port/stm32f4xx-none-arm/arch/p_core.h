@@ -69,7 +69,7 @@
 
 #define ncore_os_block(thread)              (void)thread
 
-#define ncore_os_should_exit() 				false
+#define ncore_os_should_exit()              false
 
 #define ncore_os_exit()
 
@@ -90,7 +90,7 @@ typedef   signed int ncpu_ssize;
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
 {
-	uint32_t					value;
+    uint32_t                    value;
 };
 
 /**@brief       Interrupt context structure
@@ -104,7 +104,7 @@ struct ncore_lock
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 {
-	int32_t						value;
+    int32_t                     value;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -132,16 +132,16 @@ ncore_reg ncore_exp2(
 PORT_C_INLINE
 void ncore_ref_write(
     struct ncore_ref *          ref,
-	uint32_t					value)
+    uint32_t                    value)
 {
-	ref->value = value;
+    ref->value = value;
 }
 
 
 
 PORT_C_INLINE
 uint32_t ncore_ref_read(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     return (ref->value);
 }
@@ -150,7 +150,7 @@ uint32_t ncore_ref_read(
 
 PORT_C_INLINE
 void ncore_ref_increment(
-	struct ncore_ref *      	ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != UINT32_MAX) {
         ref->value++;
@@ -161,7 +161,7 @@ void ncore_ref_increment(
 
 PORT_C_INLINE
 void ncore_ref_decrement(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != 0u) {
         ref->value--;
@@ -176,7 +176,7 @@ void ncore_ref_decrement(
 PORT_C_INLINE
 void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
-	v->value = i;
+    v->value = i;
 }
 
 
@@ -186,7 +186,7 @@ void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
  */
 PORT_C_INLINE
 int32_t ncore_atomic_read(
-	struct ncore_atomic *       ref)
+    struct ncore_atomic *       ref)
 {
     return (ref->value);
 }
@@ -198,10 +198,10 @@ int32_t ncore_atomic_read(
  */
 PORT_C_INLINE
 void ncore_atomic_inc(
-	struct ncore_atomic *      	ref)
+    struct ncore_atomic *       ref)
 {
     if (ref->value != INT32_MAX) {
-    	ref->value++;
+        ref->value++;
     }
 }
 
@@ -212,10 +212,10 @@ void ncore_atomic_inc(
  */
 PORT_C_INLINE
 void ncore_atomic_dec(
-	struct ncore_atomic *        ref)
+    struct ncore_atomic *        ref)
 {
     if (ref->value != 0u) {
-    	ref->value--;
+        ref->value--;
     }
 }
 
@@ -265,9 +265,9 @@ void ncore_deferred_init(void);
 PORT_C_INLINE
 void ncore_deferred_do(void)
 {
-	/* Trigger PendSV
-	 */
-	*((uint32_t volatile *)0xE000ED04) = 0x10000000;
+    /* Trigger PendSV
+     */
+    *((uint32_t volatile *)0xE000ED04) = 0x10000000;
 }
 
 
@@ -279,14 +279,14 @@ extern void ncore_deferred_work(void);
 PORT_C_INLINE
 uint8_t ncore_exu4(uint32_t data)
 {
-	uint32_t		retval;
+    uint32_t        retval;
 
-	__asm
-	{
-		UBFX	retval, data, 24, 8
-	}
+    __asm
+    {
+        UBFX    retval, data, 24, 8
+    }
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -294,14 +294,14 @@ uint8_t ncore_exu4(uint32_t data)
 PORT_C_INLINE
 uint8_t ncore_exu3(uint32_t data)
 {
-	uint32_t		retval;
+    uint32_t        retval;
 
-	__asm
-	{
-		UBFX	retval, data, 16, 8
-	}
+    __asm
+    {
+        UBFX    retval, data, 16, 8
+    }
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -309,14 +309,14 @@ uint8_t ncore_exu3(uint32_t data)
 PORT_C_INLINE
 uint8_t ncore_exu2(uint32_t data)
 {
-	uint32_t					retval;
+    uint32_t                    retval;
 
-	__asm
-	{
-		UBFX	retval, data, 8, 8
-	}
+    __asm
+    {
+        UBFX    retval, data, 8, 8
+    }
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -324,7 +324,7 @@ uint8_t ncore_exu2(uint32_t data)
 PORT_C_INLINE
 uint8_t ncore_exu1(uint32_t data)
 {
-	return ((uint8_t)data);
+    return ((uint8_t)data);
 }
 
 
@@ -332,14 +332,14 @@ uint8_t ncore_exu1(uint32_t data)
 PORT_C_INLINE int32_t
 ncore_ext_i24(int32_t data)
 {
-	int32_t						retval;
+    int32_t                     retval;
 
-	__asm
-	{
-		SBFX  	retval, data, 0, 24
-	}
+    __asm
+    {
+        SBFX    retval, data, 0, 24
+    }
 
-	return (retval);
+    return (retval);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/

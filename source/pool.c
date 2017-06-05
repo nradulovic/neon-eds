@@ -51,7 +51,7 @@
  */
 struct pool_block
 {
-	struct pool_block *			next;
+    struct pool_block *         next;
 };
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/

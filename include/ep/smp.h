@@ -88,7 +88,7 @@ enum nsm_event
     NSM_ENTRY           = 1u,           /**<@brief Process state entry        */
     NSM_EXIT            = 2u,           /**<@brief Process state exit         */
     NSM_INIT            = 3u,           /**<@brief Process state init         */
-    NSM_NULL            = 14u,			/**<@brief NULL event 				  */
+    NSM_NULL            = 14u,          /**<@brief NULL event                 */
     NEVENT_USER_ID      = 15u
 };
 
@@ -219,9 +219,9 @@ const struct nevent * nsm_event(enum nsm_event event_id);
 PORT_C_INLINE
 naction naction_super(struct nsm * sm, nstate * state)
 {
-	sm->state = state;
+    sm->state = state;
 
-	return (NACTION_SUPER);
+    return (NACTION_SUPER);
 }
 
 
@@ -238,9 +238,9 @@ naction naction_super(struct nsm * sm, nstate * state)
 PORT_C_INLINE
 naction  naction_transit_to(struct nsm * sm, nstate * state)
 {
-	sm->state = state;
+    sm->state = state;
 
-	return (NACTION_TRANSIT_TO);
+    return (NACTION_TRANSIT_TO);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/

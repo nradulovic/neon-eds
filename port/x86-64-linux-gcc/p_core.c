@@ -75,7 +75,7 @@ static pthread_mutex_t          g_timer_lock;
 
 pthread_mutex_t                 g_idle_lock;
 pthread_mutex_t                 g_global_lock;
-bool							g_should_exit = false;
+bool                            g_should_exit = false;
 
 const uint_fast8_t              g_log2_lookup[256] =
 {

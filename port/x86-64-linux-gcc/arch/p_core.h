@@ -56,7 +56,7 @@
  * @note        Since the Linux port is not using interrupts then define this
  *              macro to zero.
  */
-#define NCORE_LOCK_LEVEL_BITS           	0u
+#define NCORE_LOCK_LEVEL_BITS               0u
 
 /**@brief       Convert Neon priority level to port code (NOT USED)
  * @note        Since the Linux port is not using interrupts then define this
@@ -64,12 +64,12 @@
  */
 #define NCORE_LOCK_TO_CODE(level)           0u
 
-#define ncore_os_should_exit()				g_should_exit
+#define ncore_os_should_exit()              g_should_exit
 
-#define ncore_os_exit()															\
-	do {																		\
-		g_should_exit = true;													\
-	} while (0u)
+#define ncore_os_exit()                                                         \
+    do {                                                                        \
+        g_should_exit = true;                                                   \
+    } while (0u)
 
 #define ncore_is_lock_valid()               true
 
@@ -90,7 +90,7 @@ typedef int64_t  ncpu_ssize;
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
 {
-	uint32_t					value;
+    uint32_t                    value;
 };
 
 /**@brief       Interrupt context structure - (not used in this port)
@@ -102,14 +102,14 @@ struct ncore_lock
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 {
-	int32_t						value;
+    int32_t                     value;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 extern pthread_mutex_t          g_idle_lock;
 extern pthread_mutex_t          g_global_lock;
-extern bool						g_should_exit;
+extern bool                     g_should_exit;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
@@ -145,16 +145,16 @@ ncore_reg ncore_exp2(
 PORT_C_INLINE_ALWAYS
 void ncore_ref_write(
     struct ncore_ref *          ref,
-	uint32_t					value)
+    uint32_t                    value)
 {
-	ref->value = value;
+    ref->value = value;
 }
 
 
 
 PORT_C_INLINE_ALWAYS
 uint32_t ncore_ref_read(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     return (ref->value);
 }
@@ -163,10 +163,10 @@ uint32_t ncore_ref_read(
 
 PORT_C_INLINE_ALWAYS
 void ncore_ref_increment(
-	struct ncore_ref *      	ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != UINT32_MAX) {
-    	ref->value++;
+        ref->value++;
     }
 }
 
@@ -174,10 +174,10 @@ void ncore_ref_increment(
 
 PORT_C_INLINE_ALWAYS
 void ncore_ref_decrement(
-	struct ncore_ref *          ref)
+    struct ncore_ref *          ref)
 {
     if (ref->value != 0u) {
-    	ref->value--;
+        ref->value--;
     }
 }
 

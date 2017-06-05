@@ -75,7 +75,7 @@ void nbias_list_init(struct nbias_list * node, uint_fast8_t bias)
 PORT_C_INLINE
 void nbias_list_reinit(struct nbias_list * node)
 {
-	ndlist_init(&node->list);
+    ndlist_init(&node->list);
 }
 
 

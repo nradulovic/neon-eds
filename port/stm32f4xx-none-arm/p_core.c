@@ -261,11 +261,11 @@ void ncore_timer_enable(void)
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk |
                     SysTick_CTRL_ENABLE_Msk;
 #else
-    volatile unsigned int 		dummy;
-    											    	/* Enable timer clock */
+    volatile unsigned int       dummy;
+                                                        /* Enable timer clock */
     TIMER_CLK   |= TIMER_CLK_BIT;
-	dummy        = TIMER_CLK;         /* Dummy read to generate a small delay */
-	(void)dummy;
+    dummy        = TIMER_CLK;         /* Dummy read to generate a small delay */
+    (void)dummy;
 
     TIMER->DIER |= TIM_DIER_UIE;                    /* Enable timer interrupt */
     TIMER->CR1  |= TIM_CR1_CEN;                              /* Turn on timer */
@@ -302,7 +302,7 @@ void SysTick_Handler(void);
 
 void SysTick_Handler(void)
 {
-	ncore_timer_isr();
+    ncore_timer_isr();
 }
 #else
 /* NOTE:
@@ -322,26 +322,26 @@ void TIMER_HANDLER(void)
 
 void ncore_deferred_init(void)
 {
-	SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
+    SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
 
-	NVIC_SetPriority(PendSV_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
-	NVIC_ClearPendingIRQ(PendSV_IRQn);
-	NVIC_EnableIRQ(PendSV_IRQn);
+    NVIC_SetPriority(PendSV_IRQn, NCORE_LOCK_TO_CODE(CONFIG_CORE_LOCK_MAX_LEVEL));
+    NVIC_ClearPendingIRQ(PendSV_IRQn);
+    NVIC_EnableIRQ(PendSV_IRQn);
 }
 
 
 void PendSV_Handler(void)
 {
-	SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
+    SCB->ICSR = SCB_ICSR_PENDSVCLR_Msk;
 
-	ncore_deferred_work();
+    ncore_deferred_work();
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 
 #if ((CONFIG_CORE_TIMER_SOURCE != 0) && (CONFIG_CORE_TIMER_SOURCE != 2) && \
-	 (CONFIG_CORE_TIMER_SOURCE != 3) && (CONFIG_CORE_TIMER_SOURCE != 4) && \
-	 (CONFIG_CORE_TIMER_SOURCE != 5))
+     (CONFIG_CORE_TIMER_SOURCE != 3) && (CONFIG_CORE_TIMER_SOURCE != 4) && \
+     (CONFIG_CORE_TIMER_SOURCE != 5))
 # error "NEON::base::port::stm32f4xx-none-gcc: The selected timer in CONFIG_CORE_TIMER_SOURCE is not supported!"
 #endif
 

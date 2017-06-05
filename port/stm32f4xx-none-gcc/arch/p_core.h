@@ -70,7 +70,7 @@
 
 #define ncore_os_block(thread)              (void)thread
 
-#define ncore_os_should_exit()				false
+#define ncore_os_should_exit()              false
 
 #define ncore_os_exit()
 
@@ -91,7 +91,7 @@ typedef   signed int ncpu_ssize;
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
 {
-	uint32_t					value;
+    uint32_t                    value;
 };
 
 /**@brief       Interrupt context structure
@@ -105,7 +105,7 @@ struct ncore_lock
 
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 {
-	int32_t						value;
+    int32_t                     value;
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -138,9 +138,9 @@ ncore_exp2(uint_fast8_t value)
 
 PORT_C_INLINE_ALWAYS void
 ncore_ref_write(struct ncore_ref * ref,
-	uint32_t					value)
+    uint32_t                    value)
 {
-	ref->value = value;
+    ref->value = value;
 }
 
 
@@ -179,7 +179,7 @@ ncore_ref_decrement(struct ncore_ref * ref)
 PORT_C_INLINE_ALWAYS void
 ncore_atomic_write(struct ncore_atomic * v, int32_t i)
 {
-	v->value = i;
+    v->value = i;
 }
 
 
@@ -202,7 +202,7 @@ PORT_C_INLINE_ALWAYS void
 ncore_atomic_inc(struct ncore_atomic * ref)
 {
     if (ref->value != INT32_MAX) {
-    	ref->value++;
+        ref->value++;
     }
 }
 
@@ -215,7 +215,7 @@ PORT_C_INLINE_ALWAYS void
 ncore_atomic_dec(struct ncore_atomic * ref)
 {
     if (ref->value != 0u) {
-    	ref->value--;
+        ref->value--;
     }
 }
 
@@ -224,7 +224,7 @@ ncore_atomic_dec(struct ncore_atomic * ref)
 PORT_C_INLINE void
 ncore_lock_enter(struct ncore_lock * lock)
 {
-	extern bool 				g_core_is_locked;
+    extern bool                 g_core_is_locked;
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     unsigned int                new_mask;
 
@@ -256,9 +256,9 @@ ncore_lock_enter(struct ncore_lock * lock)
 PORT_C_INLINE void
 ncore_lock_exit(struct ncore_lock * lock)
 {
-	extern bool 				g_core_is_locked;
+    extern bool                 g_core_is_locked;
 
-	g_core_is_locked = false;
+    g_core_is_locked = false;
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
     __asm __volatile__ (
         "@  ncore_lock_exit                                 \n"
@@ -279,12 +279,12 @@ ncore_lock_exit(struct ncore_lock * lock)
 PORT_C_INLINE bool
 ncore_is_lock_valid(void)
 {
-	extern bool					g_core_is_locked;
-	bool						is_isr;
+    extern bool                 g_core_is_locked;
+    bool                        is_isr;
 
-	is_isr = !!(*((uint32_t volatile *)0xe000ed04u) & 0x1ffu);
+    is_isr = !!(*((uint32_t volatile *)0xe000ed04u) & 0x1ffu);
 
-	return (!g_core_is_locked != !is_isr);
+    return (!g_core_is_locked != !is_isr);
 }
 
 
@@ -296,8 +296,8 @@ void ncore_deferred_init(void);
 PORT_C_INLINE void
 ncore_deferred_do(void)
 {
-	/* Interrupt Control and State Register & PENDSVSET */
-	*((uint32_t volatile *)0xe000ed04u) = 0x10000000u;
+    /* Interrupt Control and State Register & PENDSVSET */
+    *((uint32_t volatile *)0xe000ed04u) = 0x10000000u;
 }
 
 
@@ -309,15 +309,15 @@ extern void ncore_deferred_work(void);
 PORT_C_INLINE uint8_t
 ncore_exu4(uint32_t data)
 {
-	uint32_t		retval;
+    uint32_t        retval;
 
-	__asm __volatile__(
-		"@ ncore_exu4										\n"
-		"    ubfx	%0, %1, #24, #8							\n"
-		: "=r"(retval)
-		: "r"(data));
+    __asm __volatile__(
+        "@ ncore_exu4                                       \n"
+        "    ubfx   %0, %1, #24, #8                         \n"
+        : "=r"(retval)
+        : "r"(data));
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -325,15 +325,15 @@ ncore_exu4(uint32_t data)
 PORT_C_INLINE uint8_t
 ncore_exu3(uint32_t data)
 {
-	uint32_t		retval;
+    uint32_t        retval;
 
-	__asm __volatile__(
-		"@ ncore_exu3										\n"
-		"    ubfx	%0, %1, #16, #8							\n"
-		: "=r"(retval)
-		: "r"(data));
+    __asm __volatile__(
+        "@ ncore_exu3                                       \n"
+        "    ubfx   %0, %1, #16, #8                         \n"
+        : "=r"(retval)
+        : "r"(data));
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -341,15 +341,15 @@ ncore_exu3(uint32_t data)
 PORT_C_INLINE uint8_t
 ncore_exu2(uint32_t data)
 {
-	uint32_t					retval;
+    uint32_t                    retval;
 
-	__asm __volatile__(
-		"@ ncore_exu2										\n"
-		"    ubfx	%0, %1, #8, #8							\n"
-		: "=r"(retval)
-		: "r"(data));
+    __asm __volatile__(
+        "@ ncore_exu2                                       \n"
+        "    ubfx   %0, %1, #8, #8                          \n"
+        : "=r"(retval)
+        : "r"(data));
 
-	return ((uint8_t)retval);
+    return ((uint8_t)retval);
 }
 
 
@@ -357,7 +357,7 @@ ncore_exu2(uint32_t data)
 PORT_C_INLINE uint8_t
 ncore_exu1(uint32_t data)
 {
-	return ((uint8_t)data);
+    return ((uint8_t)data);
 }
 
 
@@ -365,15 +365,15 @@ ncore_exu1(uint32_t data)
 PORT_C_INLINE int32_t
 ncore_ext_i24(int32_t data)
 {
-	int32_t						retval;
+    int32_t                     retval;
 
-	__asm __volatile__(
-		"@ ncore_ext_i24									\n"
-		" 	sbfx 	%0, %1, #0, #24							\n"
-		: "=r"(retval)
-		: "r"(data));
+    __asm __volatile__(
+        "@ ncore_ext_i24                                    \n"
+        "   sbfx    %0, %1, #0, #24                         \n"
+        : "=r"(retval)
+        : "r"(data));
 
-	return (retval);
+    return (retval);
 }
 
 void ncore_dummy_rd(volatile uint32_t value);

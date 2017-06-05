@@ -50,7 +50,7 @@ void nequeue_init(
     struct nequeue *            queue,
     const struct nequeue_define * define)
 {
-    size_t                   	size;
+    size_t                      size;
 
     NREQUIRE(NAPI_POINTER, queue != NULL);
     NREQUIRE(NAPI_OBJECT,  queue->signature != NSIGNATURE_EQUEUE);
@@ -73,11 +73,11 @@ void nequeue_term(
     NREQUIRE(NAPI_OBJECT,  queue->signature == NSIGNATURE_EQUEUE);
 
     while (!nequeue_is_empty(queue)) {
-    	const struct nevent *	event;
+        const struct nevent *   event;
 
-    	event = nequeue_get(queue);
-    	nevent_ref_down(event);
-    	nevent_destroy(event);
+        event = nequeue_get(queue);
+        nevent_ref_down(event);
+        nevent_destroy(event);
     }
     nqueue_term(&queue->queue);
 #if (CONFIG_REGISTRY == 1)

@@ -59,7 +59,7 @@ struct nepa;
 struct netimer
 {
     struct ntimer               timer;
-    struct nevent				event;
+    struct nevent               event;
     struct nepa *               client;
 #if (CONFIG_API_VALIDATION == 1)
     unsigned int                signature;

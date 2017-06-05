@@ -66,7 +66,7 @@ typedef struct nstdheap nstdheap;
  * @param       stdheap_obj
  *              Pointer to standard heap object
  * @details     This function shall be called before any other standard heap
- * 				memory management function.
+ *              memory management function.
  * @api
  */
 void nstdheap_init(

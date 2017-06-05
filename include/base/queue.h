@@ -40,7 +40,7 @@
 
 /*===============================================================  MACRO's  ==*/
 
-/**@brief	Calculates number of bytes needed to store N elements
+/**@brief   Calculates number of bytes needed to store N elements
  * @api
  */
 #define NQUEUE_SIZEOF(elements)             (sizeof(void * [1]) * (elements))

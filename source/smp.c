@@ -104,10 +104,10 @@ static const NCOMPONENT_DEFINE("State Machine Processor");
  */
 static const struct nevent g_smp_events[4] =
 {
-	NEVENT_INITIALIZER(NSM_SUPER, NULL, sizeof(struct nevent)),
-	NEVENT_INITIALIZER(NSM_ENTRY, NULL, sizeof(struct nevent)),
-	NEVENT_INITIALIZER(NSM_EXIT,  NULL, sizeof(struct nevent)),
-	NEVENT_INITIALIZER(NSM_INIT,  NULL, sizeof(struct nevent))
+    NEVENT_INITIALIZER(NSM_SUPER, NULL, sizeof(struct nevent)),
+    NEVENT_INITIALIZER(NSM_ENTRY, NULL, sizeof(struct nevent)),
+    NEVENT_INITIALIZER(NSM_EXIT,  NULL, sizeof(struct nevent)),
+    NEVENT_INITIALIZER(NSM_INIT,  NULL, sizeof(struct nevent))
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -202,7 +202,7 @@ static void hsm_build_path(
         entry->index = 0u;
 
         do {
-        	entry->index++;
+            entry->index++;
 
             if (exit->buff[exit->index] == entry->buff[entry->index]) {
 

@@ -229,10 +229,10 @@ struct ncomponent_info;
 PORT_C_NORETURN
 void hook_at_assert(
     const struct ncomponent_info * component_info,
-    const char *     			fn,
+    const char *                fn,
     uint32_t                    line,
-    const char *     			expr,
-    const char *     			msg);
+    const char *                expr,
+    const char *                msg);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

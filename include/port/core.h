@@ -61,7 +61,7 @@
 # define NCORE_CODE_TO_LOCK(code)       (code)
 #endif
  
-#define NCORE_ATOMIC_INIT(v)			{v}
+#define NCORE_ATOMIC_INIT(v)            {v}
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -79,10 +79,10 @@ typedef uint32_t                ncore_time_tick;
  */
 typedef struct ncore_lock       ncore_lock;
 
-/**@brief		Atomic type
+/**@brief       Atomic type
  * @note        Structure 'ncore_atomic' is defined in port p_core.h header.
  */
-typedef struct ncore_atomic		ncore_atomic;
+typedef struct ncore_atomic     ncore_atomic;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
@@ -114,61 +114,61 @@ ncore_reg ncore_exp2(
  */
 void ncore_ref_write(
     struct ncore_ref *          ref,
-	uint32_t					value);
+    uint32_t                    value);
 
 
 
 /**@brief       Read the value from reference integer value
  */
 uint32_t ncore_ref_read(
-	struct ncore_ref *          ref);
+    struct ncore_ref *          ref);
 
 
 
 /**@brief       Increment reference integer value
  */
 void ncore_ref_increment(
-	struct ncore_ref *      	ref);
+    struct ncore_ref *          ref);
 
 
 
 /**@brief       Decrement reference integer value
  */
 void ncore_ref_decrement(
-	struct ncore_ref *          ref);
+    struct ncore_ref *          ref);
 
 
 
-/**@brief		Atomically read the integer value of v
+/**@brief       Atomically read the integer value of v
  */
 int32_t ncore_atomic_read(struct ncore_atomic * v);
 
 
 
-/**@brief		Atomically set v equal to i
+/**@brief       Atomically set v equal to i
  */
 void ncore_atomic_write(struct ncore_atomic * v, int32_t i);
 
 
 
-/**@brief		Atomically increment v by one
+/**@brief       Atomically increment v by one
  */
 void ncore_atomic_inc(struct ncore_atomic * v);
 
 
-/**@brief		Atomically decrement v by one
+/**@brief       Atomically decrement v by one
  */
 void ncore_atomic_dec(struct ncore_atomic * v);
 
 
-/**@brief		Atomically increment v by one and return true if zero; false
- * 				otherwise
+/**@brief       Atomically increment v by one and return true if zero; false
+ *              otherwise
  */
 bool ncore_atomic_inc_and_test(struct ncore_atomic * v);
 
 
-/**@brief		Atomically decrement v by one and return true if zero; false
- * 				otherwise
+/**@brief       Atomically decrement v by one and return true if zero; false
+ *              otherwise
  */
 bool ncore_atomic_dec_and_test(struct ncore_atomic * v);
 

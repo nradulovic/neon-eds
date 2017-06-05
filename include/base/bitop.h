@@ -185,35 +185,35 @@ bool n_is_power_of2(unsigned int value)
 
 
 
-#define n_xb4(value)  					ncore_exu4(value)
+#define n_xb4(value)                    ncore_exu4(value)
 
 
 
-#define n_xb3(value) 					ncore_exu3(value)
+#define n_xb3(value)                    ncore_exu3(value)
 
 
 
-#define n_xb2(value)					ncore_exu2(value)
+#define n_xb2(value)                    ncore_exu2(value)
 
 
 
-#define n_xb1(value)					((uint8_t)(value))
+#define n_xb1(value)                    ((uint8_t)(value))
 
-/**@brief		Sign extend signed 24 bit integer to signed 32 bits integer
- * @param 		val - signed 24 bit integer
+/**@brief       Sign extend signed 24 bit integer to signed 32 bits integer
+ * @param       val - signed 24 bit integer
  * @return
  */
-#define n_ext_i24(value)				ncore_ext_i24(value)
+#define n_ext_i24(value)                ncore_ext_i24(value)
 
 PORT_C_INLINE
 uint32_t n_float_to_u32(float val)
 {
-	union float_to_u32
-	{
-		float  						fvalue;
-		uint32_t					ivalue;
-	}							u;
-	u.fvalue = val;
+    union float_to_u32
+    {
+        float                       fvalue;
+        uint32_t                    ivalue;
+    }                           u;
+    u.fvalue = val;
 
     return (u.ivalue);
 }
@@ -221,14 +221,14 @@ uint32_t n_float_to_u32(float val)
 PORT_C_INLINE
 float n_u32_to_float(uint32_t val)
 {
-	union u32_to_float
-	{
-		uint32_t					ivalue;
-		float						fvalue;
-	}							u;
-	u.ivalue = val;
+    union u32_to_float
+    {
+        uint32_t                    ivalue;
+        float                       fvalue;
+    }                           u;
+    u.ivalue = val;
 
-	return (u.fvalue);
+    return (u.fvalue);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
