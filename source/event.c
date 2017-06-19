@@ -87,7 +87,8 @@ static struct event_storage     g_event_storage;
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-const struct nevent             g_default_event = NEVENT_INITIALIZER(UINT_FAST16_MAX, NULL, sizeof(struct nevent));
+const struct nevent             g_default_event = 
+        NEVENT_INITIALIZER(UINT_FAST16_MAX, NULL, sizeof(struct nevent));
 
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
@@ -125,7 +126,7 @@ static void event_term(struct nevent * event)
     NOBLIGATION(event->signature = ~NSIGNATURE_EVENT);
 
 #if (CONFIG_API_VALIDATION == 0)
-    (void)event;                                            /* Remove compiler warning */
+    (void)event;                                   /* Remove compiler warning */
 #endif
 }
 
@@ -256,7 +257,8 @@ struct nevent * nevent_create_i(size_t size, uint16_t id)
 
 
 
-struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, uint16_t id)
+struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, 
+        uint16_t id)
 {
     struct nevent *             event;
 

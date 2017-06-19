@@ -118,7 +118,8 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
                 tmp->free.next->free.prev = tmp;
                 tmp->free.prev->free.next = tmp;
                 curr           = (struct heap_block *)
-                    ((uint8_t *)tmp + tmp->phy.size + sizeof(struct heap_phy [1]));
+                    ((uint8_t *)tmp + tmp->phy.size + 
+                     sizeof(struct heap_phy [1]));
                                        /* Point to the newly created block    */
                 curr->phy.prev = tmp;
 

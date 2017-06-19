@@ -71,7 +71,8 @@ ndlist_to_deferred(struct ndlist * list)
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nsched_deferred_init(struct nsched_deferred * deferred, void (* fn)(void *), void * arg)
+void nsched_deferred_init(struct nsched_deferred * deferred, 
+        void (* fn)(void *), void * arg)
 {
     static bool                 is_initialized;
 
