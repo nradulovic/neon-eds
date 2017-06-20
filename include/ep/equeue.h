@@ -96,19 +96,16 @@ struct nequeue
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-void nequeue_init(
-    struct nequeue *            queue,
-    const struct nequeue_define * define);
+void nequeue_init(struct nequeue * queue, const struct nequeue_define * define);
 
 
 
-void nequeue_term(
-    struct nequeue *            queue);
+void nequeue_term(struct nequeue * queue);
 
 
 
-PORT_C_INLINE void
-nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
+PORT_C_INLINE 
+void nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
     ncore_reg                   empty;
@@ -127,8 +124,8 @@ nequeue_put_fifo(struct nequeue * queue, const struct nevent * event)
 
 
 
-PORT_C_INLINE void
-nequeue_put_lifo(struct nequeue * queue, const struct nevent * event)
+PORT_C_INLINE 
+void nequeue_put_lifo(struct nequeue * queue, const struct nevent * event)
 {
 #if (CONFIG_REGISTRY == 1)
     ncore_reg                   empty;
@@ -147,32 +144,32 @@ nequeue_put_lifo(struct nequeue * queue, const struct nevent * event)
 
 
 
-PORT_C_INLINE const struct nevent *
-nequeue_get(struct nequeue * queue)
+PORT_C_INLINE 
+const struct nevent * nequeue_get(struct nequeue * queue)
 {
     return (nqueue_get(&queue->queue));
 }
 
 
 
-PORT_C_INLINE bool
-nequeue_is_full(const struct nequeue * queue)
+PORT_C_INLINE 
+bool nequeue_is_full(const struct nequeue * queue)
 {
     return (nqueue_is_full(&queue->queue));
 }
 
 
 
-PORT_C_INLINE bool
-nequeue_is_empty(const struct nequeue * queue)
+PORT_C_INLINE 
+bool nequeue_is_empty(const struct nequeue * queue)
 {
     return (nqueue_is_empty(&queue->queue));
 }
 
 
 
-PORT_C_INLINE void *
-nequeue_storage(const struct nequeue * queue)
+PORT_C_INLINE 
+void * nequeue_storage(const struct nequeue * queue)
 {
     return (nqueue_storage(&queue->queue));
 }
