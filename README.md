@@ -2,12 +2,12 @@
 
 Neon is a collection of software components for real-time applications.
 
-Main Neon EDS components are:
+Neon EDS components are:
 
-* **base** - Bare minimum headers needed by other Neon components.
+* **base** - Base headers needed by other Neon components.
 * **ep** - Event processing provides event generation and handling, event 
     queues, broadcasting services and execution of finite state machines.
-* **mm** - Memory management
+* **mm** - Dynamic memory management
 * **port** - Portable system that offers consistent API to control the
     underlaying microcontroller and OS (if used).
 * **sched** - Contains priority array and the cooperative scheduler
