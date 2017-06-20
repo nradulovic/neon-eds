@@ -204,6 +204,7 @@ ALIASES = "iclass=@par Function class:\n <b>I class</b>, Interrupt-lock API     
           "notapi=@par Object class:\n <b>Not API</b> object, this object is not\
             part of the application programming interface and it is intended for\
             internal use only."                                                 \
+          "mfuncw=@par This macro is a wrapper to a function call."             \
           "mseffect=@attention Macro does have side effects."                   \
           "inline=@note This is @c inline function."                            \
           "schedno=@par Rescheduling:\n - never"                                \
