@@ -195,6 +195,12 @@
 #define NSIGNATURE_SM                       ((unsigned int)0xdeadfeeeu)
 #define NSIGNATURE_DEFER                    ((unsigned int)0xdeadfeefu)
 
+#if (CONFIG_API_VALIDATION == 1)
+#define NSIGNATURE_DECLARE                  int _signature;
+#else
+#define NSIGNATURE_DECLARE
+#endif
+
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
