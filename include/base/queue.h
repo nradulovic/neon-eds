@@ -153,6 +153,7 @@ struct application_struct
  * @param       queue
  *              Pointer to the declared queue data-type
  * @mfuncw
+ * @mseffect
  * @api
  */
 #define NQUEUE_INITIALIZE(queue)                                                \
