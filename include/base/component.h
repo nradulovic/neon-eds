@@ -43,7 +43,7 @@
  * @api
  */
 #define NCOMPONENT_DEFINE(description)                                          \
-    struct PORT_C_UNUSED ncomponent_info g_component_info =                     \
+    struct ncomponent_info PORT_C_UNUSED g_component_info =                     \
     {                                                                           \
         description,                                                            \
         PORT_C_FILE                                                             \
@@ -67,7 +67,7 @@ struct ncomponent_info
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 
-extern PORT_C_UNUSED const struct ncomponent_info g_unknown_component;
+extern const struct ncomponent_info PORT_C_UNUSED g_unknown_component;
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/
