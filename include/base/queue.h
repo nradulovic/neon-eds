@@ -24,9 +24,60 @@
  * @brief       Generic queue header
  * @addtogroup  base_intf
  *********************************************************************//** @{ */
-/**@defgroup    base_queue Generic Queue
+/**
+ * @defgroup    base_queue Generic Queue
  * @brief       Generic Queue
  * @{ *//*--------------------------------------------------------------------*/
+ 
+/** 
+@addtogroup     base_queue
+@section        queue_alloc Queue allocation
+@par            Static queue allocation
+
+The following code will statically allocate a queue of 16 items in size. 
+
+@code
+static NQUEUE_DEFINE(my_queue, 16);
+@endcode
+
+Then you can use the 'my_queue' queue. The following example shows two 
+application methods using queue to put and get items into 'my_queue' queue.
+
+@code
+static NQUEUE_DEFINE(my_queue, 16);
+
+int put_item(void * item) 
+{
+    if (!nqueue_is_full(&my_queue)) {
+        nqueue_put_fifo(&my_queue, item);
+        return (0);
+    } else {
+        return (-1);
+    }
+}
+
+void * get_item(void)
+{
+    if (!nqueue_is_empty(&my_queue)) {
+        return (nqueue_get(&my_queue));
+    } else {
+        return (NULL);
+    }
+}
+@endcode
+ 
+@par            Embedding in other structure
+
+The queue structure can be embedded in other structures. 
+
+@code
+struct application_struct
+{
+    NQUEUE_DECLARE(my_queue, 16);
+    int other_member;
+};
+@endcode
+*/
 
 #ifndef NEON_BASE_QUEUE_H_
 #define NEON_BASE_QUEUE_H_
@@ -49,23 +100,36 @@
 #define NQUEUE_SIZEOF(elements)             (sizeof(void * [1]) * (elements))
 
 /**
+ * @brief       Macro to declare a queue structure
+ * @param       name
+ *              Name of the declared queue data-type
+ * @param       elements 
+ *              Number of elements in the queue
+ * @details     This macro can be used to declare a queue of fixed size. Then
+ *              the structure can be instanced as needed.
+ * @api
+ */
+#define NQUEUE_STRUCT(name, elements)                                           \
+    struct name {                                                               \
+        struct np_queue         p_queue;                                        \
+        void *                  buffer[elements];                               \
+    }
+
+/**
  * @brief       Macro to declare a queue object
  * @param       name
- *              Name of the declared queue datatype
+ *              Name of the declared queue data-type
  * @param       elements 
  *              Number of elements in the queue
  * @api
  */
 #define NQUEUE_DECLARE(name, elements)                                          \
-    struct nqueue_ ## name {                                                    \
-        struct nqueue           queue;                                          \
-        uint8_t                 storage_buffer[NQUEUE_SIZEOF(elements)];        \
-    }
-
+    NQUEUE_STRUCT(name, elements) name
+    
 /**
  * @brief       Macro to define and initialize a queue
  * @param       name
- *              Name of the declared queue datatype
+ *              Name of the declared queue data-type
  * @param       elements 
  *              Number of elements in the queue
  * @note        The macro can be used for global and local queue data type 
@@ -73,16 +137,117 @@
  * @api
  */
 #define NQUEUE_DEFINE(name, elements)                                           \
-    NQUEUE_DECLARE(name, elements) name = {                                     \
-        {0},                                                                    \
+    NQUEUE_DECLARE(name, elements) = {                                          \
         {                                                                       \
-            name.storage_buffer,                                                \
             0,                                                                  \
             0,                                                                  \
             elements,                                                           \
-            elements                                                            \
-        }                                                                       \
+            elements,                                                           \
+            name._buffer                                                        \
+        },                                                                      \
+        {0}                                                                     \
     }
+
+/**
+ * @brief       Initialize a queue declared by @ref NQUEUE_DECLARE
+ * @param       queue
+ *              Pointer to the declared queue data-type
+ * @mfuncw
+ * @api
+ */
+#define NQUEUE_INITIALIZE(queue)                                                \
+    np_queue_init(&(queue)->p_queue, (queue)->buffer, sizeof((queue)->buffer))
+
+/**
+ * @brief       Initialize a queue which was dynamically allocated
+ * @param       queue
+ *              Pointer to the declared queue data-type
+ * @mfuncw
+ * @api
+ */
+#define nqueue_init(queue, storage, size)                                       \
+    np_queue_init(&(queue)->p_queue, storage, size)
+    
+/**
+ * @brief       Put an item to queue in FIFO mode
+ * @note        Before calling this method ensure that queue can accept new 
+ *              item. See @ref nqueue_is_full.
+ * @mfuncw
+ * @api         
+ */
+#define nqueue_put_fifo(queue, item)                                            \
+    np_queue_put_fifo(&(queue)->p_queue, (item))
+    
+/**
+ * @brief       Put an item to queue in LIFO mode
+ * @note        Before calling this function ensure that queue can accept new 
+ *              item. See @ref nqueue_is_full.
+ * @mfuncw
+ * @api
+ */
+#define nqueue_put_lifo(queue, item)                                            \
+    np_queue_put_lifo(&(queue)->p_queue, (item))
+    
+/**
+ * @brief       Get an item from queue
+ * @note        Before calling this function ensure that queue has an item. See 
+ *              @ref nqueue_is_empty.
+ * @mfuncw
+ * @api
+ */ 
+#define nqueue_get(queue)                                                       \
+    np_queue_get(&(queue)->p_queue)
+    
+/**
+ * @brief       Peek to queue head
+ * @details     Get the pointer to head item in the queue. The item is not 
+ *              removed from queue.
+ * @mfuncw
+ * @api
+ */
+#define nqueue_head(queue, item)                                                \
+    np_queue_head(&(queue)->p_queue, (item))
+    
+/**
+ * @brief       Peek to queue tail
+ * @details     Get the pointer to tail item in the queue. The item is not 
+ *              removed from queue.
+ * @mfuncw
+ * @api
+ */
+#define nqueue_tail(queue, item)                                                \
+    np_queue_tail(&(queue)->p_queue, (item))
+    
+/**
+ * @brief       Returns the max number of items in queue
+ * @api
+ */
+#define nqueue_size(queue)              (queue)->p_queue.size
+
+/**
+ * @brief       Returns the current number of free slots in queue
+ * @api
+ */
+#define nqueue_free(queue)              (queue)->p_queue.free
+
+/**
+ * @brief       Return pointer to queue storage
+ * @api         
+ */
+#define nqueue_storage(queue)           (queue)->p_queue.storage
+
+/**
+ * @brief       Return true if queue is full else false
+ * @api
+ */
+#define nqueue_is_full(queue)           (!(queue)->p_queue.free)
+
+/**
+ * @brief       Return true if queue is empty else false
+ * @api
+ */
+#define nqueue_is_empty(queue)                                                  \
+    (((queue)->p_queue.free != (queue)->p_queue.size))
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -91,16 +256,27 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Queue structure
- * @api
+/**@brief       Private queue structure
+ * @notapi
  */
-struct nqueue
+struct np_queue
 {
-    void **                     storage;
     uint32_t                    head;
     uint32_t                    tail;
     uint32_t                    free;
     uint32_t                    size;
+    void **                     storage;
+};
+
+/**@brief       Queue structure for dynamic allocation
+ * @details     Use this structure only on dynamically allocated objects. For
+ *              all other purposes using @ref NQUEUE_DECLARE or 
+ *              @ref NQUEUE_DEFINE macros is encouraged. 
+ * @api
+ */
+struct nqueue
+{
+    struct np_queue             p_queue;
 };
 
 typedef struct nqueue nqueue;
@@ -111,11 +287,16 @@ typedef struct nqueue nqueue;
 
 /**
  * @brief       Initialize queue structure
- * @details     Before using the queue the structure needs to be initialized
+ * @details     Before using the queue the structure needs to be initialized.
+ *              This function should be called only on dynamically allocated
+ *              queue.
+ * @note        The function does not check the size of storage buffer. It's up
+ *              to user to ensure that buffer is big enough to hold 'void *'
+ *              pointers for all items in the queue.
  * @api         
  */
 PORT_C_INLINE 
-void nqueue_init(struct nqueue * queue, void * storage, uint32_t size)
+void np_queue_init(struct np_queue * queue, void * storage, uint32_t size)
 {
     queue->storage = storage;
     queue->head    = 0u;
@@ -131,13 +312,11 @@ void nqueue_init(struct nqueue * queue, void * storage, uint32_t size)
  * @api
  */
 PORT_C_INLINE 
-void nqueue_term(struct nqueue * queue)
+void np_queue_term(struct np_queue * queue)
 {
     /* Set everything to NULL or 0 since it is easier to catch NULL pointer 
        bugs */
     queue->storage = NULL; 
-    queue->head = 0u;
-    queue->tail = 0u;
     queue->free = 0u;
     queue->size = 0u;
 }
@@ -146,10 +325,11 @@ void nqueue_term(struct nqueue * queue)
 
 /**
  * @brief       Put an item to queue in FIFO mode
- * @api         
+ * @note        This is a private function, use @ref nqueue_put_fifo.
+ * @notapi
  */
 PORT_C_INLINE 
-void nqueue_put_fifo(struct nqueue * queue, void * item)
+void np_queue_put_fifo(struct np_queue * queue, void * item)
 {
     queue->storage[queue->head++] = item;
 
@@ -163,10 +343,11 @@ void nqueue_put_fifo(struct nqueue * queue, void * item)
 
 /**
  * @brief       Put an item to queue in LIFO mode
- * @api
+ * @note        This is a private function, use @ref nqueue_put_lifo.
+ * @notapi
  */
 PORT_C_INLINE 
-void nqueue_put_lifo(struct nqueue * queue, void * item)
+void np_queue_put_lifo(struct np_queue * queue, void * item)
 {
     if (queue->tail == 0u) {
         queue->tail = queue->size;
@@ -179,10 +360,12 @@ void nqueue_put_lifo(struct nqueue * queue, void * item)
 
 /**
  * @brief       Get an item from queue
+ * @note        Before calling this function ensure that queue has an item. See 
+ *              @ref nqueue_is_empty.
  * @api
  */ 
 PORT_C_INLINE 
-void * nqueue_get(struct nqueue * queue)
+void * np_queue_get(struct np_queue * queue)
 {
     void *                      tmp;
 
@@ -205,7 +388,7 @@ void * nqueue_get(struct nqueue * queue)
  * @api
  */
 PORT_C_INLINE 
-void * nqueue_head(const struct nqueue * queue)
+void * np_queue_head(const struct np_queue * queue)
 {
     uint32_t                    real_head;
     
@@ -228,69 +411,9 @@ void * nqueue_head(const struct nqueue * queue)
  * @api
  */
 PORT_C_INLINE 
-void * nqueue_tail(const struct nqueue * queue)
+void * np_queue_tail(const struct np_queue * queue)
 {
     return (queue->storage[queue->tail]);
-}
-
-
-
-/**
- * @brief       Returns the max number of items in queue
- * @api
- */
-PORT_C_INLINE 
-uint32_t nqueue_size(const struct nqueue * queue)
-{
-    return (queue->size);
-}
-
-
-
-/**
- * @brief       Returns the current number of free slots in queue
- * @api
- */
-PORT_C_INLINE 
-uint32_t nqueue_free(const struct nqueue * queue)
-{
-    return (queue->free);
-}
-
-
-
-/**
- * @brief       Return pointer to queue storage
- * @api         
- */
-PORT_C_INLINE 
-void * nqueue_storage(const struct nqueue * queue)
-{
-    return (queue->storage);
-}
-
-
-
-/**
- * @brief       Return true if queue is full else false
- * @api
- */
-PORT_C_INLINE 
-bool nqueue_is_full(const struct nqueue * queue)
-{
-    return (queue->free == 0u);
-}
-
-
-
-/**
- * @brief       Return true if queue is empty else false
- * @api
- */
-PORT_C_INLINE 
-bool nqueue_is_empty(const struct nqueue * queue)
-{
-    return (queue->free == queue->size);
 }
 
 /*--------------------------------------------------------  C++ extern end  --*/
