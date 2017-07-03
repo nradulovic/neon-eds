@@ -34,7 +34,6 @@
 #include <string.h>
 
 #include "port/core.h"
-#include "base/component.h"
 #include "mm/mem.h"
 #include "ep/event.h"
 #include "ep/epa.h"
@@ -50,8 +49,8 @@ struct event_storage
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-
-/**@brief       Initialise new event
+/**
+ * @brief       Initialise new event
  * @param       size
  *              The size of event
  * @param       id
@@ -59,29 +58,19 @@ struct event_storage
  * @param       event
  *              Event to initialise
  */
-static void event_init(
-    struct nevent *             event,
-    uint16_t                    id,
-    struct nmem *               mem,
-    size_t                      size);
+static void event_init(struct nevent * event, uint16_t id, struct nmem * mem,
+    size_t size);
 
-
-
-/**@brief       Terminate an event
+/**
+ * @brief       Terminate an event
  * @param       event
  *              Event to terminate
  */
-static void event_term(
-    struct nevent *             event);
+static void event_term(struct nevent * event);
 
-
-
-static struct nmem * find_memory_i(
-    size_t                      size);
+static struct nmem * find_memory_i(size_t size);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Event management");
 
 static struct event_storage     g_event_storage;
 
@@ -92,19 +81,15 @@ const struct nevent             g_default_event =
 
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
-static void event_init(
-    struct nevent *             event,
-    uint16_t                    id,
-    struct nmem *               mem,
-    size_t                      size)
+static void event_init(struct nevent * event, uint16_t id, struct nmem * mem,
+    size_t size)
 {
     /* NOTE:
      * Size parameter is already checked by event_create_i()
      */
 
     event->id       = id;
-    event->ref      = 0u;
+    ncore_atomic_write(&event->ref, 0);
     event->attrib   = NEVENT_ATTR_DYNAMIC;
     event->mem      = mem;
 #if (CONFIG_EVENT_PRODUCER == 1)
@@ -115,22 +100,18 @@ static void event_init(
 #else
     (void)size;
 #endif
-    NOBLIGATION(event->signature = NSIGNATURE_EVENT);
+    NOBLIGATION(NSIGNATURE_IS(event, NSIGNATURE_EVENT));
 }
-
-
 
 static void event_term(struct nevent * event)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
-    NOBLIGATION(event->signature = ~NSIGNATURE_EVENT);
+    NREQUIRE(N_IS_EVENT_OBJECT(event));
+    NOBLIGATION(NSIGNATURE_IS(event, ~NSIGNATURE_EVENT));
 
 #if (CONFIG_API_VALIDATION == 0)
     (void)event;                                   /* Remove compiler warning */
 #endif
 }
-
-
 
 static struct nmem * find_memory_i(size_t size)
 {
@@ -138,7 +119,7 @@ static struct nmem * find_memory_i(size_t size)
     struct nmem *               mem;
     uint_fast8_t                cnt;
 
-    NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
+    NREQUIRE(size >= sizeof(struct nevent));
 
     mem = NULL;
 
@@ -150,7 +131,7 @@ static struct nmem * find_memory_i(size_t size)
             break;
         }
     }
-    NENSURE("event not allocated", mem != NULL);
+    NENSURE(mem);
 
     return (mem);
 #else
@@ -167,8 +148,8 @@ void nevent_register_mem(struct nmem * mem)
     uint_fast8_t                cnt;
     size_t                      size;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
-    NREQUIRE(NAPI_USAGE, g_event_storage.pools < CONFIG_EVENT_STORAGE_NPOOLS);
+    NREQUIRE(N_IS_MEM_OBJECT(mem));
+    NREQUIRE(g_event_storage.pools < CONFIG_EVENT_STORAGE_NPOOLS);
 
     ncore_lock_enter(&sys_lock);
     size = nmem_get_size_i(mem);
@@ -193,8 +174,8 @@ void nevent_unregister_mem(struct nmem * mem)
     ncore_lock                  sys_lock;
     uint_fast8_t                cnt;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_MEM_OBJECT(mem));
-    NREQUIRE(NAPI_USAGE, g_event_storage.pools != 0);
+    NREQUIRE(N_IS_MEM_OBJECT(mem));
+    NREQUIRE(g_event_storage.pools != 0);
 
     ncore_lock_enter(&sys_lock);
     cnt = g_event_storage.pools;
@@ -202,7 +183,7 @@ void nevent_unregister_mem(struct nmem * mem)
     while ((0u < cnt) && (mem != g_event_storage.mem[cnt])) {
         cnt--;
     }
-    NENSURE(NAPI_RANGE, mem == g_event_storage.mem[cnt]);
+    NENSURE(mem == g_event_storage.mem[cnt]);
 
     g_event_storage.pools--;
 
@@ -241,7 +222,7 @@ struct nevent * nevent_create_i(size_t size, uint16_t id)
     struct nmem *               mem;
     struct nevent *             event;
 
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(ncore_is_lock_valid());
 
     mem   = find_memory_i(size);
     event = nmem_alloc_i(mem, size);
@@ -249,8 +230,7 @@ struct nevent * nevent_create_i(size_t size, uint16_t id)
     if (event) {
         event_init(event, id, mem, size);
     }
-
-    NENSURE("event not created", event != NULL);
+    NENSURE(event);
 
     return (event);
 }
@@ -258,12 +238,12 @@ struct nevent * nevent_create_i(size_t size, uint16_t id)
 
 
 struct nevent * nevent_create_from_i(struct nmem * mem, size_t size, 
-        uint16_t id)
+	uint16_t id)
 {
     struct nevent *             event;
 
-    NREQUIRE(NAPI_RANGE, size >= sizeof(struct nevent));
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(size >= sizeof(struct nevent));
+    NREQUIRE(ncore_is_lock_valid());
 
     event = nmem_alloc_i(mem, size);
 
@@ -289,8 +269,8 @@ void nevent_destroy(const struct nevent * event)
 
 void nevent_destroy_i(const struct nevent * event)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_EVENT_OBJECT(event));
+    NREQUIRE(ncore_is_lock_valid());
 
     if (nevent_ref(event) == 0u) {
         event_term((struct nevent *)event);
@@ -307,7 +287,7 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
     struct nmem *               mem;
     struct nevent *             ret;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(N_IS_EVENT_OBJECT(event));
 
     ncore_lock_enter(&lock);
 
@@ -323,8 +303,7 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
         memcpy(ret, event, event->size);
         event_init(ret, id, event->mem, event->size);
     }
-
-    NENSURE("event not forwarded", ret != NULL);
+    NENSURE(ret);
 
     return (ret);
 #else
@@ -334,7 +313,7 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
     (void)id;
     ret = NULL;
 
-    NENSURE("event forward depends on event size configuration", ret != NULL);
+    NENSURE(ret);
 
     return (ret);
 #endif
@@ -344,7 +323,7 @@ struct nevent * nevent_forward(const struct nevent * event, uint16_t id)
 
 void nevent_lock(const struct nevent * event)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(N_IS_EVENT_OBJECT(event));
 
     if (event->attrib) {
         ((struct nevent *)event)->attrib = NEVENT_ATTR_RESERVED;
@@ -355,14 +334,14 @@ void nevent_lock(const struct nevent * event)
 
 void nevent_unlock(const struct nevent * event)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_EVENT_OBJECT(event));
+    NREQUIRE(N_IS_EVENT_OBJECT(event));
 
     if (event->attrib) {
         struct nevent * event_ = (struct nevent *)event;
 
         event_->attrib = NEVENT_ATTR_DYNAMIC;
 
-        if (event_->ref == 0u) {
+        if (ncore_atomic_read(&event_->ref) == 0u) {
             struct ncore_lock    sys_lock;
 
             event_term(event_);

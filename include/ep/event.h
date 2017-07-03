@@ -35,6 +35,7 @@
 #include <stddef.h>
 
 #include "port/compiler.h"
+#include "port/core.h"
 #include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -47,7 +48,7 @@
  *              consideration for recycle process.
  * @api
  */
-#define NEVENT_ATTR_RESERVED            ((uint16_t)0xff00u | NEVENT_ATTR_DYNAMIC)
+#define NEVENT_ATTR_RESERVED            ((int16_t)0x0f00 | NEVENT_ATTR_DYNAMIC)
 
 /**@brief       Bit mask which defines a dynamic event
  * @details     When the bits defined in this bit mask are set the given event
@@ -55,7 +56,7 @@
  *              the event if it is not referenced by any EPA object.
  * @api
  */
-#define NEVENT_ATTR_DYNAMIC             ((uint16_t)0x00ffu)
+#define NEVENT_ATTR_DYNAMIC             ((int16_t)0x00ff)
 
 /**@brief       This macro defines limit for event reference counter
  * @api
@@ -74,34 +75,34 @@
  * @api
  */
 #define N_IS_EVENT_OBJECT(event)                                                \
-    (((event) != NULL) && (event->signature == NSIGNATURE_EVENT))
+    (NSIGNATURE_OF(event) == NSIGNATURE_EVENT)
 
 
 /**@brief       Create initialization macro for event producer
  * @notapi
  */
-#if (CONFIG_EVENT_PRODUCER == 1)
-#define N_EVENT_PRODUCER_INIT(prod)  (prod),
+#if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
+#define NP_EVENT_PRODUCER_INIT(prod)    (prod),
 #else
-#define N_EVENT_PRODUCER_INIT(prod)
+#define NP_EVENT_PRODUCER_INIT(prod)
 #endif
 
 /**@brief       Create initialization macro for event size
  * @notapi
  */
-#if (CONFIG_EVENT_SIZE == 1)
-#define N_EVENT_SIZE_INIT(size)     (size),
+#if (CONFIG_EVENT_SIZE == 1) || defined(__DOXYGEN__)
+#define NP_EVENT_SIZE_INIT(size)        (size),
 #else
-#define N_EVENT_SIZE_INIT(size)
+#define NP_EVENT_SIZE_INIT(size)
 #endif
 
 /**@brief       Create initialization macro for event signature
  * @notapi
  */
-#if (CONFIG_API_VALIDATION == 1)
-#define N_EVENT_SIGNATURE           NSIGNATURE_EVENT,
+#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
+#define NP_EVENT_SIGNATURE_INIT         NSIGNATURE_EVENT,
 #else
-#define N_EVENT_SIGNATURE
+#define NP_EVENT_SIGNATURE_INIT
 #endif
 
 /**@brief       Initialization macro for an event
@@ -109,13 +110,13 @@
  */
 #define NEVENT_INITIALIZER(event_id, producer, size)                            \
     {                                                                           \
+		NP_EVENT_SIGNATURE_INIT                                                 \
+        NULL,                                                                   \
         (event_id),                                                             \
         0,                                                                      \
-        0,                                                                      \
-        NULL,                                                                   \
-        N_EVENT_PRODUCER_INIT(producer)                                         \
-        N_EVENT_SIZE_INIT(size)                                                 \
-        N_EVENT_SIGNATURE                                                       \
+        {0},                                                                    \
+        NP_EVENT_PRODUCER_INIT(producer)                                        \
+        NP_EVENT_SIZE_INIT(size)                                                \
     }
 
 
@@ -139,10 +140,11 @@ struct nepa;
  * @api
  */
 struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
+	NSIGNATURE_DECLARE                  /**<@brief Event signature            */
+	struct nmem *               mem;    /**<@brief Memory object              */
     uint_fast16_t               id;     /**<@brief Event ID number            */
-    uint_fast16_t               ref;    /**<@brief Reference counter          */
-    uint_fast16_t               attrib; /**<@brief Dynamic attributes         */
-    struct nmem *               mem;    /**<@brief Memory object              */
+    int_fast16_t                attrib; /**<@brief Dynamic attributes         */
+    struct ncore_atomic         ref;    /**<@brief Reference counter          */
 #if (CONFIG_EVENT_PRODUCER == 1) || defined(__DOXYGEN__)
                                         /**<@brief Event producer             */
     struct nepa *               producer;
@@ -150,10 +152,6 @@ struct CONFIG_EVENT_STRUCT_ATTRIBUTE nevent {
 #if (CONFIG_EVENT_SIZE == 1)     || defined(__DOXYGEN__)
                                         /**<@brief Size of event in bytes     */
     size_t                      size;
-#endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-                                        /**<@brief Event signature            */
-    unsigned int                signature;
 #endif
 };
 
@@ -172,30 +170,28 @@ extern const struct nevent      g_default_event;
  * @name        Event storage
  * @{ *//*--------------------------------------------------------------------*/
 
-
-/**@brief       Register a memory object to be used for event storage
+/**
+ * @brief       Register a memory object to be used for event storage
  * @param       mem
  *              Memory object
  * @details     Event module can accept up to @ref CONFIG_EVENT_STORAGE_NPOOLS
  *              memory object for event storage.
  * @api
  */
-void nevent_register_mem(
-    struct nmem *               mem);
+void nevent_register_mem(struct nmem * mem);
 
-
-
-/**@brief       Unregister a memory object
+/**
+ * @brief       Unregister a memory object
  * @param       mem
  *              Memory object
  * @api
  */
-void nevent_unregister_mem(
-    struct nmem *               mem);
+void nevent_unregister_mem(struct nmem * mem);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event creation / deletion
  * @{ *//*--------------------------------------------------------------------*/
+
 #define NEVENT_CREATE(type, id)         \
     (type *)nevent_create(sizeof(type), (id))
 
@@ -280,9 +276,8 @@ struct nevent * nevent_forward(
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reservation
- * @brief       Event reservation provides methods to freeze events after their
- *              creation. This can be used to speed up the application since
- *              the destroy the event after it has been used.
+ * @brief       Event reservation methods provide a way to prevent events 
+ *              recycling.
  * @{ *//*--------------------------------------------------------------------*/
 
 
@@ -291,8 +286,7 @@ struct nevent * nevent_forward(
  *              Pointer to the event.
  * @api
  */
-void nevent_lock(
-    const struct nevent *       event);
+void nevent_lock(const struct nevent * event);
 
 
 
@@ -301,8 +295,7 @@ void nevent_lock(
  *              Pointer to the event.
  * @api
  */
-void nevent_unlock(
-    const struct nevent *       event);
+void nevent_unlock(const struct nevent * event);
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Event reference management
@@ -314,11 +307,13 @@ void nevent_unlock(
  *              Pointer to event
  */
 PORT_C_INLINE
-void nevent_ref_up(
-    const struct nevent *       event)
+void nevent_ref_up(const struct nevent * event)
 {
     if (event->attrib) {
-        ((struct nevent *)event)->ref++;
+        /* NOTE:
+         * Cast away const qualifier
+         */
+        ncore_atomic_inc(&((struct nevent *)event)->ref);
     }
 }
 
@@ -329,11 +324,13 @@ void nevent_ref_up(
  *              Pointer to event
  */
 PORT_C_INLINE
-void nevent_ref_down(
-    const struct nevent *       event)
+void nevent_ref_down(const struct nevent * event)
 {
     if (event->attrib) {
-        ((struct nevent *)event)->ref--;
+        /* NOTE:
+         * Cast away const qualifier
+         */
+        ncore_atomic_dec(&((struct nevent *)event)->ref);
     }
 }
 
@@ -347,35 +344,24 @@ void nevent_ref_down(
  * @api
  */
 PORT_C_INLINE
-uint_fast16_t nevent_ref(
-    const struct nevent *       event)
+int_fast16_t nevent_ref(const struct nevent * event)
 {
-    return (event->ref | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
+    return (ncore_atomic_read(&event->ref) | (event->attrib ^ NEVENT_ATTR_DYNAMIC));
 }
 
 
 
-/**@brief       Cast event pointer to void pointer
+/**@brief       Get event data pointer
  * @details     This is only a convenience function for cleaner application code.
  * @api
  */
-PORT_C_INLINE
-const void * nevent_data(const struct nevent * event)
-{
-    return ((const void *)event);
-}
-
-
+#define nevent_data(event)              ((void *)(event))
 
 /**@brief       Access event id number
  * @details     This is only a convenience function for cleaner application code.
  * @api
  */
-PORT_C_INLINE
-uint16_t nevent_id(const struct nevent * event)
-{
-    return ((uint16_t)event->id);
-}
+#define nevent_id(event)                ((event)->id)
 
 /** @} *//*-----------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

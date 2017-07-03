@@ -33,9 +33,7 @@
 
 #include <stdbool.h>
 
-#include "../base/dlist.h"
-#include "port/compiler.h"
-#include "port/core.h"
+#include "base/dlist.h"
 #include "base/config.h"
 
 /*===============================================================  MACRO's  ==*/
@@ -47,9 +45,9 @@
  */
 #if (CONFIG_API_VALIDATION == 1)
 #define N_IS_TIMER_OBJECT(timer_obj)                                            \
-    (((timer_obj) != NULL) && ((timer_obj)->signature == NSIGNATURE_TIMER))
+    (NSIGNATURE_OF(timer_obj) == NSIGNATURE_TIMER)
 #else
-#define N_IS_TIMER_OBJECT(timer_obj)    true
+#define N_IS_TIMER_OBJECT(timer_obj)    (timer_obj)
 #endif
 
 /**@brief       Convert time (given in seconds) into core timer ticks
@@ -59,7 +57,7 @@
  * @api
  */
 #define NTIMER_SEC(time_sec)                                                    \
-    ((ncore_time_tick)((uint32_t)(time_sec) *                                   \
+    ((uint32_t)((uint32_t)(time_sec) *                                   		\
         (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ))
 
 /**@brief       Convert time (given in milliseconds) into core timer ticks
@@ -70,7 +68,7 @@
  * @api
  */
 #define NTIMER_MS(time_ms)                                                      \
-    ((ncore_time_tick)(((uint32_t)(time_ms) *                                   \
+    ((uint32_t)(((uint32_t)(time_ms) *                                   		\
         (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ + 999ul) / 1000ul))
 
 /**@brief       Convert time (given in microseconds) into core timer ticks
@@ -81,7 +79,7 @@
  * @api
  */
 #define NTIMER_US(time_us)                                                      \
-    ((ncore_time_tick)(((uint32_t)(time_us) *                                   \
+    ((uint32_t)(((uint32_t)(time_us) *                                   		\
         (uint32_t)CONFIG_CORE_TIMER_EVENT_FREQ + 999999ul) / 1000000ul))
 
 /**@brief       Timer attribute: one shot
@@ -98,6 +96,29 @@
  */
 #define NTIMER_ATTR_REPEAT              (0x1u << 1)
 
+/**
+ * @brief       Helper macro for timer signature
+ * @notapi
+ */
+#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
+#define NP_TIMER_SIGNATURE_INIT               NSIGNATURE_TIMER,
+#else
+#define NP_TIMER_SIGNATURE_INIT
+#endif
+
+#define NTIMER_INITIALIZER(name)										     	\
+	{																			\
+		NSIGNATURE_INITIALIZER(NSIGNATURE_TIMER)								\
+		NDLIST_INITIALIZER((name).list),									    \
+		0,																		\
+		0,																		\
+		NULL,																	\
+		NULL																	\
+	}
+
+#define NTIMER_DEFINE(name)														\
+	struct ntimer name = NTIMER_INITIALIZER(name)
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -105,7 +126,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Virtual Timer structure
+/**@brief       Virtual timer structure
  * @details     All elements of this structure are private members. This
  *              implementation detail is only exposed so the structure can be
  *              allocated on stack.
@@ -113,17 +134,15 @@ extern "C" {
  */
 struct ntimer
 {
+	NSIGNATURE_DECLARE								/**<@brief Debug signature*/
     struct ndlist               list;               /**<@brief Linked list    */
-    ncore_time_tick             rtick;              /**<@brief Relative ticks */
-    ncore_time_tick             itick;              /**<@brief Initial ticks  */
+    uint32_t                    rtick;              /**<@brief Relative ticks */
+    uint32_t                    itick;              /**<@brief Initial ticks  */
     void                     (* fn)(void *);        /**<@brief Callback       */
     void *                      arg;                /**<@brief Argument       */
-#if (CONFIG_API_VALIDATION == 1)
-    unsigned int                signature;          /**<@brief Debug signature*/
-#endif
 };
 
-/**@brief       Virtual Timer structure type
+/**@brief       Virtual timer type
  * @api
  */
 typedef struct ntimer ntimer;
@@ -133,11 +152,11 @@ typedef struct ntimer ntimer;
 
 
 #if (CONFIG_API_VALIDATION == 1)
-/**@brief       Initialise the timer structure
- * @details     This function will initialise the timer structure. When
+/**@brief       Initialize the timer structure
+ * @details     This function will initialize the timer structure. When
  *              @ref CONFIG_API_VALIDATION is enabled it will make the structure
  *              valid before using other timer functions. Also, the function
- *              will raise assert if you try to initialise already initialised
+ *              will raise assert if you try to initialize already initialized
  *              timer.
  * @param       timer
  *              Pointer to timer structure
@@ -145,13 +164,14 @@ typedef struct ntimer ntimer;
  */
 void ntimer_init(struct ntimer * timer);
 #else
-#define ntimer_init(timer)              (void)timer
+#define ntimer_init(timer_obj)              									\
+	ndlist_init(&(timer_obj)->list)
 #endif
 
 
 
 #if (CONFIG_API_VALIDATION == 1)
-/**@brief       Deinitialise the timer structure
+/**@brief       De-initialize the timer structure
  * @param       timer
  *              Pointer to timer structure
  * @api
@@ -175,8 +195,8 @@ void ntimer_term(struct ntimer * timer);
  * @iclass
  * @api
  */
-void ntimer_start_i(struct ntimer * timer, ncore_time_tick tick,
-        void (* fn)(void *), void * arg, uint8_t flags);
+void ntimer_start_i(struct ntimer * timer, uint32_t tick, void (* fn)(void *),
+		void * arg, uint8_t flags);
 
 
 
@@ -191,8 +211,8 @@ void ntimer_start_i(struct ntimer * timer, ncore_time_tick tick,
  *              Argument for callback function
  * @api
  */
-void ntimer_start(struct ntimer * timer, ncore_time_tick tick,
-        void (* fn)(void *), void * arg, uint8_t flags);
+void ntimer_start(struct ntimer * timer, uint32_t tick, void (* fn)(void *),
+		void * arg, uint8_t flags);
 
 
 
@@ -233,7 +253,7 @@ bool ntimer_is_running_i(const struct ntimer * timer);
  *              return value is 0.
  * @api
  */
-ncore_time_tick ntimer_remaining(const struct ntimer * timer);
+uint32_t ntimer_remaining(const struct ntimer * timer);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

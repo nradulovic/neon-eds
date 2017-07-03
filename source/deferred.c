@@ -32,8 +32,7 @@
 
 #include "sched/deferred.h"
 #include "base/debug.h"
-#include "base/component.h"
-
+#include "port/core.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
 /*======================================================  LOCAL DATA TYPES  ==*/
@@ -48,13 +47,9 @@ struct sched_deferred_ctx
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static struct nsched_deferred *
-ndlist_to_deferred(struct ndlist * list);
+static struct nsched_deferred * ndlist_to_deferred(struct ndlist * list);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Deferred work");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 
 static struct sched_deferred_ctx g_ctx;
@@ -62,8 +57,7 @@ static struct sched_deferred_ctx g_ctx;
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
-static struct nsched_deferred *
-ndlist_to_deferred(struct ndlist * list)
+static struct nsched_deferred * ndlist_to_deferred(struct ndlist * list)
 {
     return (PORT_C_CONTAINER_OF(list, struct nsched_deferred, list));
 }
@@ -76,9 +70,9 @@ void nsched_deferred_init(struct nsched_deferred * deferred,
 {
     static bool                 is_initialized;
 
-    NREQUIRE(NAPI_POINTER, deferred != NULL);
-    NREQUIRE(NAPI_OBJECT, deferred->signature != NSIGNATURE_DEFER);
-    NREQUIRE(NAPI_POINTER, fn != NULL);
+    NREQUIRE(deferred);
+    NREQUIRE(NSIGNATURE_OF(deferred) != NSIGNATURE_DEFER);
+    NREQUIRE(fn);
 
     if (!is_initialized) {
         is_initialized = true;
@@ -91,15 +85,15 @@ void nsched_deferred_init(struct nsched_deferred * deferred,
     deferred->arg = arg;
     ndlist_init(&deferred->list);
 
-    NOBLIGATION(deferred->signature = NSIGNATURE_DEFER);
+    NOBLIGATION(NSIGNATURE_IS(deferred, NSIGNATURE_DEFER));
 }
 
 
 
 void nsched_deferred_do(struct nsched_deferred * deferred)
 {
-    NREQUIRE(NAPI_POINTER, deferred != NULL);
-    NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
+    NREQUIRE(deferred);
+    NREQUIRE(NSIGNATURE_OF(deferred) == NSIGNATURE_DEFER);
 
     if (ndlist_is_empty(&deferred->list)) {
     	ndlist_add_after(g_ctx.pending, &deferred->list);
@@ -126,7 +120,7 @@ void ncore_deferred_work(void)
     	current = ndlist_next(g_ctx.working);
 
 		deferred = ndlist_to_deferred(current);
-		NREQUIRE(NAPI_OBJECT, deferred->signature = NSIGNATURE_DEFER);
+		NREQUIRE(NSIGNATURE_OF(deferred) == NSIGNATURE_DEFER);
 		deferred->fn(deferred->arg);
 		ndlist_remove(current);
     }

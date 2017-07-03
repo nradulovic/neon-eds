@@ -41,10 +41,17 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NDLIST_TO_BIAS_LIST(node)                                               \
-    NDLIST_ENTRY(node, struct nbias_list, list)
+#define ndlist_to_bias_list(node)                                               \
+    ndlist_entry(node, struct nbias_list, list)
 
 #define NBIAS_LIST_MAX_PRIO             255u
+
+
+#define NBIAS_LIST_INITIALIZER(name, priority)                                  \
+    {                                                                           \
+        .list = NDLIST_INITIALIZER(name.list),                                  \
+        .bias = priority & 0xffu                                                \
+    }
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
@@ -94,15 +101,13 @@ void nbias_list_sort_insert(struct nbias_list * list, struct nbias_list * node)
 {
     struct ndlist *             current;
 
-    current = &list->list;
+    for (NDLIST_FOR_EACH(current, &list->list)) {
 
-    do {
-        current = ndlist_next(current); /* Iterate to the next node in list.  */
-                                        /* Not end of list and node has equal */
-                                        /* or higher bias than given node?    */
-    } while ((current != &list->list) &&                                        
-             (NDLIST_TO_BIAS_LIST(current)->bias >= node->bias));
-    ndlist_add_before(current, &node->list);
+        if (ndlist_to_bias_list(current)->bias >= node->bias) {
+            ndlist_add_before(current, &node->list);
+            break;
+        }
+    }
 }
 
 
@@ -126,7 +131,7 @@ void nbias_list_remove(struct nbias_list * node)
 PORT_C_INLINE
 struct nbias_list * nbias_list_tail(const struct nbias_list * list)
 {
-    return (NDLIST_TO_BIAS_LIST(ndlist_next(&list->list)));
+    return (ndlist_to_bias_list(ndlist_next(&list->list)));
 }
 
 
@@ -134,7 +139,7 @@ struct nbias_list * nbias_list_tail(const struct nbias_list * list)
 PORT_C_INLINE
 struct nbias_list * nbias_list_head(struct nbias_list * list)
 {
-    return (NDLIST_TO_BIAS_LIST(ndlist_prev(&list->list)));
+    return (ndlist_to_bias_list(ndlist_prev(&list->list)));
 }
 
 
@@ -150,7 +155,7 @@ bool nbias_list_is_empty(const struct nbias_list * list)
 PORT_C_INLINE
 struct nbias_list * nbias_list_next(const struct nbias_list * node)
 {
-    return (NDLIST_TO_BIAS_LIST(ndlist_next(&node->list)));
+    return (ndlist_to_bias_list(ndlist_next(&node->list)));
 }
 
 

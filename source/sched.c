@@ -34,7 +34,6 @@
 
 #include "port/core.h"
 #include "base/debug.h"
-#include "base/component.h"
 #include "base/bitop.h"
 #include "sched/sched.h"
 
@@ -57,7 +56,7 @@ struct prio_bitmap
     ncore_reg                    group;
 #endif  /* (CONFIG_PRIORITY_BUCKETS > NCPU_DATA_WIDTH) */
                                         /**<@brief Bucket indicator           */
-    ncore_reg                    bit[NDIVISION_ROUNDUP(CONFIG_PRIORITY_BUCKETS,
+    uint32_t                     bit[NDIVISION_ROUNDUP(CONFIG_PRIORITY_BUCKETS,
                                      NCPU_DATA_WIDTH)];
 };
 
@@ -91,8 +90,6 @@ struct sched_ctx
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Scheduler");
 
 static struct sched_ctx         g_sched_ctx;
 
@@ -341,43 +338,36 @@ sched_task_dispatch_i(struct nthread * thread, struct ncore_lock * lock)
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void nthread_init(struct nthread * thread, const struct nthread_define * define)
+void nthread_init(struct nthread * thread, const char * name, uint8_t priority,
+        void (* vf_dispatch)(struct nthread *, struct ncore_lock *))
 {
     struct sched_ctx *          ctx = &g_sched_ctx;
     
-    NREQUIRE(NAPI_POINTER, thread != NULL);
-    NREQUIRE(NAPI_OBJECT,  thread->signature != NSIGNATURE_THREAD);
+    NREQUIRE(NSIGNATURE_OF(thread) != NSIGNATURE_THREAD);
 
     /* Prepare run_queue for usage */
     if (ctx->is_initialized != true) {
+        static struct nthread   idle_thread;
         struct ncore_lock       lock;
-
-        static const struct nthread_define idle_thread_define =
-                NTHREAD_DEF_INIT(sched_idle_dispatch_i, "idle thread", 0);
-        static struct nthread       idle_thread;
 
         ctx->is_initialized  = true;
         ctx->current         = NULL;
         prio_queue_init(&ctx->run_queue); /* Initialize run_queue structure. */
-        nthread_init(&idle_thread, &idle_thread_define);
+        nthread_init(&idle_thread, "idle thread", 0, sched_idle_dispatch_i);
         ncore_lock_enter(&lock);
         nthread_insert_i(&idle_thread);
         ncore_lock_exit(&lock);
     }
-    nbias_list_init(&thread->node, define->priority);
+    nbias_list_init(&thread->node, priority);
     thread->ref = 0u;
-    thread->vf_dispatch_i = define->vf_dispatch;
+    thread->vf_dispatch_i = vf_dispatch;
 
 #if (CONFIG_REGISTRY == 1)
-    memset(thread->name, 0, sizeof(thread->name));
-
-    if (define->name) {
-        strncpy(thread->name, define->name, sizeof(thread->name));
-    }
+    thread->name = name;
     ndlist_init(&thread->registry_node);
 #endif /* (CONFIG_REGISTRY == 1) */
 
-    NOBLIGATION(thread->signature = NSIGNATURE_THREAD);
+    NOBLIGATION(NSIGNATURE_IS(thread, NSIGNATURE_THREAD));
 }
 
 
@@ -387,8 +377,7 @@ void nthread_term(struct nthread * thread)
     struct sched_ctx *          ctx = &g_sched_ctx;
     ncore_lock                  lock;
 
-    NREQUIRE(NAPI_POINTER, thread != NULL);
-    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
+    NREQUIRE(NSIGNATURE_OF(thread) == NSIGNATURE_THREAD);
 
     ncore_lock_enter(&lock);
 
@@ -398,16 +387,15 @@ void nthread_term(struct nthread * thread)
     nbias_list_term(&thread->node);
     ncore_lock_exit(&lock);
 
-    NOBLIGATION(thread->signature = ~NSIGNATURE_THREAD);
+    NOBLIGATION(NSIGNATURE_IS(thread, ~NSIGNATURE_THREAD));
 }
 
 
 
 void nthread_insert_i(struct nthread * thread)
 {
-    NREQUIRE(NAPI_POINTER, thread != NULL);
-    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(NSIGNATURE_OF(thread) != NSIGNATURE_THREAD);
+    NREQUIRE(ncore_is_lock_valid());
 
     if (thread->ref == 0u) {
         struct sched_ctx *      ctx = &g_sched_ctx;
@@ -422,9 +410,8 @@ void nthread_insert_i(struct nthread * thread)
 
 void nthread_remove_i(struct nthread * thread)
 {
-    NREQUIRE(NAPI_POINTER, thread != NULL);
-    NREQUIRE(NAPI_OBJECT,  thread->signature == NSIGNATURE_THREAD);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(NSIGNATURE_OF(thread) != NSIGNATURE_THREAD);
+    NREQUIRE(ncore_is_lock_valid());
 
     thread->ref--;
 
@@ -464,41 +451,13 @@ struct nthread * nthread_get_current(void)
 
 
 
-void ntask_init(struct ntask * task, const struct ntask_define * define,
-        void * arg)
+void ntask_init(struct ntask * task, const char * name, uint8_t priority, 
+        void (* vf_task)(struct ntask *, void * arg), void * arg)
 {
-    struct nthread_define       thread_define;
-
-    thread_define.name = define->name;
-    thread_define.priority = define->priority;
-    thread_define.vf_dispatch = sched_task_dispatch_i;
-
-    task->vf_task = define->vf_task;
+    task->vf_task = vf_task;
     task->arg = arg;
 
-    nthread_init(&task->thread, &thread_define);
-}
-
-
-
-void ntask_ready(struct ntask * task)
-{
-    struct ncore_lock           lock;
-
-    ncore_lock_enter(&lock);
-    ntask_ready_i(task);
-    ncore_lock_exit(&lock);
-}
-
-
-
-void ntask_block(struct ntask * task)
-{
-    struct ncore_lock           lock;
-
-    ncore_lock_enter(&lock);
-    ntask_block_i(task);
-    ncore_lock_exit(&lock);
+    nthread_init(&task->thread, name, priority, sched_task_dispatch_i);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

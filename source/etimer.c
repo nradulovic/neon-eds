@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "base/debug.h"
-#include "base/component.h"
 #include "ep/epa.h"
 #include "ep/event.h"
 #include "ep/etimer.h"
@@ -40,22 +39,17 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void etimer_handler(
-    void *                      arg);
+static void etimer_handler(void * arg);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Event Timer");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-static void etimer_handler(
-    void *                      arg)
+static void etimer_handler(void * arg)
 {
     struct netimer *            timer = arg;
 
-    nepa_send_event_i(timer->client, &timer->event);
+    nepa_send_event_i(timer->epa, &timer->event);
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
@@ -64,14 +58,13 @@ static void etimer_handler(
 void netimer_init(
     struct netimer *            timer)
 {
-    NREQUIRE(NAPI_POINTER, timer != NULL);
-    NREQUIRE(NAPI_OBJECT,  timer->signature != NSIGNATURE_ETIMER);
+	NREQUIRE(!N_IS_ETIMER_OBJECT(timer));
 
     ntimer_init(&timer->timer);
     timer->event  = g_default_event;
-    timer->client = nepa_get_current();
+    timer->epa = nepa_get_current();
 
-    NOBLIGATION(timer->signature = NSIGNATURE_ETIMER);
+    NOBLIGATION(NSIGNATURE_IS(timer, NSIGNATURE_ETIMER));
 }
 
 
@@ -79,23 +72,20 @@ void netimer_init(
 void netimer_term(
     struct netimer *            timer)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+    NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     ntimer_term(&timer->timer);
 
-    NOBLIGATION(timer->signature = ~NSIGNATURE_ETIMER);
+    NOBLIGATION(NSIGNATURE_IS(timer, ~NSIGNATURE_ETIMER));
 }
 
 
 
-void netimer_after(
-    struct netimer *            timer,
-    ncore_time_tick             tick,
-    uint16_t                    event_id)
+void netimer_after(struct netimer * timer, uint32_t tick, uint16_t event_id)
 {
     ncore_lock                  lock;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+    NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     ncore_lock_enter(&lock);
     ntimer_cancel_i(&timer->timer);
@@ -107,14 +97,11 @@ void netimer_after(
 
 
 
-void netimer_every(
-    struct netimer *            timer,
-    ncore_time_tick             tick,
-    uint16_t                    event_id)
+void netimer_every(struct netimer * timer, uint32_t tick, uint16_t event_id)
 {
     ncore_lock                  lock;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+    NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     ncore_lock_enter(&lock);
     ntimer_cancel_i(&timer->timer);
@@ -130,10 +117,9 @@ void netimer_every(
 
 
 
-void netimer_cancel(
-    struct netimer *            timer)
+void netimer_cancel(struct netimer * timer)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+	NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     /* Make this event NULL event. This is used to NULLify event even if it was
      * delivered to EPA.
@@ -144,20 +130,18 @@ void netimer_cancel(
 
 
 
-bool netimer_is_running_i(
-    const struct netimer *      timer)
+bool netimer_is_running_i(const struct netimer * timer)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+	NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     return (ntimer_is_running_i(&timer->timer));
 }
 
 
 
-ncore_time_tick netimer_remaining(
-    const struct netimer *      timer)
+uint32_t netimer_remaining(const struct netimer * timer)
 {
-    NREQUIRE(NAPI_OBJECT, N_IS_ETIMER_OBJECT(timer));
+	NREQUIRE(N_IS_ETIMER_OBJECT(timer));
 
     return (ntimer_remaining(&timer->timer));
 }

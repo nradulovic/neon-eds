@@ -163,6 +163,9 @@
 
 #define n_lsb_32(x)                     n_xb1(x)
 
+#define N_IS_POWEROF_2(num)														\
+	(((num) != 0u) && (((num) & ((num) - 1)) == 0u))
+
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
 extern "C" {
@@ -171,18 +174,6 @@ extern "C" {
 /*============================================================  DATA TYPES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
-
-
-PORT_C_INLINE
-bool n_is_power_of2(unsigned int value)
-{
-    if ((value != 0u) && ((value & (value - 1)) == 0u)) {
-        return (true);
-    } else {
-        return (false);
-    }
-}
-
 
 
 #define n_xb4(value)                    ncore_exu4(value)

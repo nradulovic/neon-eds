@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -32,7 +32,6 @@
 
 #include <stdbool.h>
 
-#include "base/component.h"
 #include "base/debug.h"
 #include "ep/event.h"
 #include "ep/smp.h"
@@ -52,10 +51,7 @@ struct hsm_path
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-
 static nstate * hsm_get_state_super(struct nsm * sm, nstate * state);
-
-
 
 /**@brief       Finds transition path
  * @param       sm
@@ -65,38 +61,14 @@ static nstate * hsm_get_state_super(struct nsm * sm, nstate * state);
  * @return      Index for destination starting position
  * @notapi
  */
-static void hsm_build_path(
-    struct nsm *                sm,
-    struct hsm_path *           entry,
-    struct hsm_path *           exit);
-
-
+static void hsm_build_path(struct nsm * sm, struct hsm_path * entry,
+    struct hsm_path * exit);
 
 static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry);
 
-
-
 static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit);
 
-
-
-static void hsm_dispatch_init(struct nsm * sm, const struct nevent * event);
-
-
-
-static void hsm_dispatch(struct nsm * sm, const struct nevent * event);
-
-
-
-static void fsm_dispatch_init(struct nsm * sm, const struct nevent * event);
-
-
-
-static void fsm_dispatch(struct nsm * sm, const struct nevent * event);
-
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("State Machine Processor");
 
 /*
  * NOTE: We don't use indexed initialisation here, so it must be ensured that
@@ -113,7 +85,6 @@ static const struct nevent g_smp_events[4] =
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
 static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
 {
 #if (CONFIG_API_VALIDATION == 1)
@@ -121,7 +92,7 @@ static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
 
     ret = state(sm, NSMP_EVENT(NSM_SUPER));
 
-    NREQUIRE(NAPI_USAGE, ret == NACTION_SUPER);
+    NREQUIRE(ret == NACTION_SUPER);
 #else
     state(sm, NSMP_EVENT(NSM_SUPER));
 #endif
@@ -129,12 +100,8 @@ static nstate * hsm_get_state_super(struct nsm * sm, nstate * state)
     return (sm->state);
 }
 
-
-
-static void hsm_build_path(
-    struct nsm *                sm,
-    struct hsm_path *           entry,
-    struct hsm_path *           exit)
+static void hsm_build_path(struct nsm * sm, struct hsm_path * entry,
+    struct hsm_path * exit)
 {
     nstate *                    current_state;
     entry->index = 0;
@@ -213,8 +180,6 @@ static void hsm_build_path(
     }
 }
 
-
-
 static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
 {
     uint_fast8_t                index = entry->index;
@@ -224,16 +189,13 @@ static void hsm_path_enter(struct nsm * sm, const struct hsm_path * entry)
         naction                 ret;
 
         ret = entry->buff[index](sm, NSMP_EVENT(NSM_ENTRY));
-        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-                             (ret == NACTION_HANDLED) ||
-                             (ret == NACTION_SUPER));
+        NREQUIRE((ret == NACTION_IGNORED) || (ret == NACTION_HANDLED) ||
+                 (ret == NACTION_SUPER));
 #else
         (void)entry->buff[index](sm, NSMP_EVENT(NSM_ENTRY));
 #endif
     }
 }
-
-
 
 static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
 {
@@ -244,29 +206,78 @@ static void hsm_path_exit(struct nsm * sm, const struct hsm_path * exit)
         naction                 ret;
 
         ret = exit->buff[count](sm, NSMP_EVENT(NSM_EXIT));
-        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) || 
-                             (ret == NACTION_HANDLED) ||
-                             (ret == NACTION_SUPER));
+        NREQUIRE((ret == NACTION_IGNORED) || (ret == NACTION_HANDLED) ||
+                 (ret == NACTION_SUPER));
 #else
         (void)exit->buff[count](sm, NSMP_EVENT(NSM_EXIT));
 #endif
     }
 }
 
+/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
-
-static void hsm_dispatch_init(struct nsm * sm, const struct nevent * event)
+#if (CONFIG_DYNAMIC_SM == 1) || defined(__DOXYGEN__)
+struct nsm * nsm_alloc(struct nmem * mem, size_t wspace_size, 
+    nstate * init_state, enum nsm_type type)
 {
-    sm->vf_dispatch = hsm_dispatch;
-    sm->vf_dispatch(sm, event);
-#if 0
-    sm->vf_dispatch(sm, nsm_event(NSM_INIT));
+    struct nsm *                sm;
+    
+    NREQUIRE(N_IS_MEM_OBJECT(mem));
+    NREQUIRE(init_state);
+    NREQUIRE((type == NSM_TYPE_FSM) || (type == NSM_TYPE_HSM));
+    
+    sm = nmem_zalloc(mem, sizeof(struct nsm) + wspace_size);
+    
+    if (!sm) {
+        goto ERROR_ALLOC_SM;
+    }
+    sm->mem = mem;
+    sm->state = init_state;
+    sm->vf_dispatch = type == NSM_TYPE_FSM ? n_sm_fsm_dispatch : 
+                                             n_sm_hsm_dispatch;
+    
+    NOBLIGATION(NSIGNATURE_IS(sm, NSIGNATURE_SM));
+    
+    return (sm);
+ERROR_ALLOC_SM:
+    NENSURE(sm);
+
+    return (sm);
+}
 #endif
+
+#if (CONFIG_DYNAMIC_SM == 1) || defined(__DOXYGEN__)
+void nsm_free(struct nsm * sm)
+{
+    NREQUIRE(N_IS_SM_OBJECT(sm));
+    
+    sm->state = NULL;
+    sm->vf_dispatch = NULL;
+    
+    NOBLIGATION(NSIGNATURE_IS(sm, ~NSIGNATURE_SM));
+    
+    if (sm->mem) {
+        nmem_free(sm->mem, sm);
+    }
+}
+#endif
+
+naction ntop_state(struct nsm * sm, const struct nevent * event)
+{
+    (void)sm;
+    (void)event;
+
+    NASSERT(event->id < NEVENT_USER_ID);
+
+    return (NACTION_IGNORED);
 }
 
+const struct nevent * nsm_event(enum nsm_event event_id)
+{
+    return (&g_smp_events[event_id]);
+}
 
-
-static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
+void n_sm_hsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
@@ -294,20 +305,7 @@ static void hsm_dispatch(struct nsm * sm, const struct nevent * event)
     sm->state = current_state;
 }
 
-
-
-static void fsm_dispatch_init(struct nsm * sm, const struct nevent * event)
-{
-    sm->vf_dispatch = fsm_dispatch;
-    sm->vf_dispatch(sm, event);
-#if 0
-    sm->vf_dispatch(sm, nsm_event(NSM_INIT));
-#endif
-}
-
-
-
-static void fsm_dispatch(struct nsm * sm, const struct nevent * event)
+void n_sm_fsm_dispatch(struct nsm * sm, const struct nevent * event)
 {
     naction                     ret;
     nstate *                    current_state;
@@ -317,78 +315,21 @@ static void fsm_dispatch(struct nsm * sm, const struct nevent * event)
     while ((ret = current_state(sm, event)) == NACTION_TRANSIT_TO) {
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSM_EXIT));
-        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
-                             (ret == NACTION_HANDLED));
+        NREQUIRE((ret == NACTION_IGNORED) || (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSM_EXIT));
 #endif
         current_state = sm->state;
 #if (CONFIG_API_VALIDATION == 1)
         ret = current_state(sm, NSMP_EVENT(NSM_ENTRY));
-        NREQUIRE(NAPI_USAGE, (ret == NACTION_IGNORED) ||
-                             (ret == NACTION_HANDLED));
+        NREQUIRE((ret == NACTION_IGNORED) || (ret == NACTION_HANDLED));
 #else
         (void)current_state(sm, NSMP_EVENT(NSM_ENTRY));
 #endif
         event = NSMP_EVENT(NSM_INIT);
     }
-    NREQUIRE(NAPI_USAGE, ret != NACTION_SUPER);
+    NREQUIRE(ret != NACTION_SUPER);
     sm->state = current_state;
-}
-
-/*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
-
-
-void nsm_init(struct nsm * sm, const struct nsm_define * sm_define)
-{
-    NREQUIRE(NAPI_POINTER, sm                    != NULL);
-    NREQUIRE(NAPI_POINTER, sm->signature         != NSIGNATURE_SM);
-    NREQUIRE(NAPI_POINTER, sm_define             != NULL);
-    NREQUIRE(NAPI_POINTER, sm_define->init_state != NULL);
-    NREQUIRE(NAPI_USAGE, (sm_define->type == NSM_TYPE_FSM) ||
-                         (sm_define->type == NSM_TYPE_HSM));
-
-    sm->state  = sm_define->init_state;
-    sm->wspace = sm_define->wspace;
-
-    if (sm_define->type == NSM_TYPE_HSM) {
-        sm->vf_dispatch = &hsm_dispatch_init;
-    } else {
-        sm->vf_dispatch = &fsm_dispatch_init;
-    }
-    NOBLIGATION(sm->signature = NSIGNATURE_SM);
-}
-
-
-
-void nsm_term(struct nsm * sm)
-{
-    NREQUIRE(NAPI_POINTER, sm != NULL);
-    NREQUIRE(NAPI_OBJECT,  sm->signature == NSIGNATURE_SM);
-
-    sm->vf_dispatch = NULL;
-    sm->state       = NULL;
-    sm->wspace      = NULL;
-    NOBLIGATION(sm->signature = ~NSIGNATURE_SM);
-}
-
-
-
-naction ntop_state(struct nsm * sm, const struct nevent * event)
-{
-    (void)sm;
-    (void)event;
-
-    NASSERT("Unhandled event in state machine", event->id < NEVENT_USER_ID);
-
-    return (NACTION_IGNORED);
-}
-
-
-
-const struct nevent * nsm_event(enum nsm_event event_id)
-{
-    return (&g_smp_events[event_id]);
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

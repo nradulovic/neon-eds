@@ -42,23 +42,23 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Deferred job structure
+/**
+ * @brief       Deferred job structure
  * @api
  */
 struct nsched_deferred
 {
 	struct ndlist 				list;                  /* Linked list of jobs */               
 	void 					 (* fn)(void * arg);   /* Associated job function */
-	void *						arg;                     /* Funciton argument */
-#if (CONFIG_API_VALIDATION == 1)
-    unsigned int                signature;        /* This structure signature */
-#endif
+	void *						arg;                     /* Function argument */
+	NSIGNATURE_DECLARE							  /* This structure signature */
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-/**@brief       Initialize deferred job structure
+/**
+ * @brief       Initialize deferred job structure
  * @details     This function must be invoked before using deferred job. Once 
  *              initialized job can be invoked multiple times.
  * @param       deferred
@@ -74,7 +74,8 @@ struct nsched_deferred
 void nsched_deferred_init(struct nsched_deferred * deferred, 
         void (* fn)(void *), void * arg);
 
-/**@brief       Activate a deferred job function.
+/**
+ * @brief       Activate a deferred job function.
  * @details     This function will activate the associated deferred job 
  *              function as soon as possible.
  * @param       deferred

@@ -36,8 +36,9 @@
 
 /**@brief       Error table
  * @details     This table defines error enumerators, number and associated text
+ * @notapi
  */
-#define ERROR_TABLE_(entry)                                                     \
+#define NP_ERROR_TABLE(entry)                                                     \
     entry(NERROR_NONE,                  0u,     "no error")                     \
     entry(NERROR_TIMEOUT,               1u,     "general timeout")              \
     entry(NERROR_OP_ABORT,              2u,     "operation aborted")            \
@@ -60,7 +61,9 @@
 
 /**@brief       Expander for error enum
  */
-#define ERROR_ENUM_(a, b, c)                a = b,
+#define NP_ERROR_ENUM(a, b, c)          a = b,
+
+#define nerror_set(error)               nerror = error
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -73,8 +76,8 @@ extern "C" {
  */
 enum nerror 
 {
-    ERROR_TABLE_(ERROR_ENUM_)
-    N_LAST_ERROR_NUMBER                     /**< @brief Last enum member      */
+    NP_ERROR_TABLE(NP_ERROR_ENUM)
+    NP_LAST_ERROR_NUMBER                    /**< @brief Last enum member      */
 };
 
 /**@brief       Error type
@@ -85,7 +88,7 @@ typedef enum nerror nerror;
 
 /**@brief       Error text which is associated with error number
  */
-extern const char * const g_error_text[];
+extern const char * const       g_error_text[];
 
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 /*--------------------------------------------------------  C++ extern end  --*/

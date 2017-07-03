@@ -1,7 +1,7 @@
 /*
  * This file is part of Neon.
  *
- * Copyright (C) 2010 - 2015 Nenad Radulovic
+ * Copyright (C) 2010 - 2017 Nenad Radulovic
  *
  * Neon is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -21,73 +21,81 @@
  *//***********************************************************************//**
  * @file
  * @author      Nenad Radulovic
- * @brief       Event queue implementation
- * @addtogroup  event_queue
+ * @brief       Base implementation
+ * @addtogroup  base
  *********************************************************************//** @{ */
-/**@defgroup    event_queue_impl Implementation
- * @brief       Event queue Implementation
+/**@defgroup    base_impl Implementation
+ * @brief       Base implementation
  * @{ *//*--------------------------------------------------------------------*/
 
 /*=========================================================  INCLUDE FILES  ==*/
 
+#include "base/queue.h"
 #include "base/debug.h"
-#include "base/component.h"
-#include "ep/equeue.h"
-#include "ep/event.h"
+#include "base/error.h"
+#include "mm/mem.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+#define ERROR_TEXT(a, b, c)             c,
+
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Event Queue");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
+
+const char * const              g_error_text[NP_LAST_ERROR_NUMBER] =
+{
+    NP_ERROR_TABLE(ERROR_TEXT)
+};
+
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
-void nequeue_init(
-    struct nequeue *            queue,
-    const struct nequeue_define * define)
+#if (CONFIG_DYNAMIC_QUEUE == 1) || defined(__DOXYGEN__)
+struct nqueue * nqueue_alloc(struct nmem * mem, uint32_t elements)
 {
-    size_t                      size;
+    struct nqueue * 			queue = NULL;
+    void **                     buf = NULL;
 
-    NREQUIRE(NAPI_POINTER, queue != NULL);
-    NREQUIRE(NAPI_OBJECT,  queue->signature != NSIGNATURE_EQUEUE);
+	NREQUIRE(N_IS_MEM_OBJECT(mem));
+	NREQUIRE((elements >= 2) && N_IS_POWEROF_2(elements));
 
-    size = define->size / sizeof(struct nevent * [1]);
-
-    nqueue_init(&queue->queue, define->storage, size);
-#if (CONFIG_REGISTRY == 1)
-    queue->min = size;
-#endif
-    NOBLIGATION(queue->signature = NSIGNATURE_EQUEUE);
-}
-
-
-
-void nequeue_term(
-    struct nequeue *            queue)
-{
-    NREQUIRE(NAPI_POINTER, queue != NULL);
-    NREQUIRE(NAPI_OBJECT,  queue->signature == NSIGNATURE_EQUEUE);
-
-    while (!nequeue_is_empty(queue)) {
-        const struct nevent *   event;
-
-        event = nequeue_get(queue);
-        nevent_ref_down(event);
-        nevent_destroy(event);
+    if ((elements >=2) && N_IS_POWEROF_2(elements)) {
+        queue = nmem_alloc(mem, sizeof(struct nqueue));
+    		           
+        if (queue) {
+            buf = nmem_alloc(mem,  elements * sizeof(void * [1]))
+            
+            if (!buf) {
+                nmem_free(mem, queue);
+            }
+        }
+            
+        if (queue && buf) {
+            queue->mem = mem;
+        	queue->head = 0u;
+        	queue->tail = 0u;
+        	queue->empty = elements;
+        	queue->mask = elements - 1u;
+        	queue->buf = buf;            
+        }
     }
-    nqueue_term(&queue->queue);
-#if (CONFIG_REGISTRY == 1)
-    queue->min = 0;
-#endif
-    NOBLIGATION(queue->signature = ~NSIGNATURE_EQUEUE);
+    NENSURE(queue);
+    
+    return (queue);
 }
+#endif
 
+#if (CONFIG_DYNAMIC_QUEUE == 1) || defined(__DOXYGEN__)
+void nqueue_free(struct nqueue * queue)
+{
+    nmem_free(queue->mem, buf);
+	nmem_free(queue->mem, queue);
+}
+#endif
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
 /** @endcond *//** @} *//** @} *//*********************************************
- * END of equeue.c
+ * END of base.c
  ******************************************************************************/

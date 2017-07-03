@@ -32,6 +32,7 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "base/config.h"
 #include "timer/timer.h"
@@ -44,8 +45,12 @@
  *              macro is enabled.
  * @api
  */
+#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
 #define N_IS_ETIMER_OBJECT(etimer_obj)                                          \
-    (((etimer_obj) != NULL) && ((etimer_obj)->signature == NSIGNATURE_ETIMER))
+    (NSIGNATURE_OF(etimer_obj) == NSIGNATURE_ETIMER)
+#else
+#define N_IS_ETIMER_OBJECT(etimer_obj)  (etimer_obj)
+#endif
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -58,54 +63,41 @@ struct nepa;
 
 struct netimer
 {
+	NSIGNATURE_DECLARE
+	struct nepa *               epa;
     struct ntimer               timer;
     struct nevent               event;
-    struct nepa *               client;
-#if (CONFIG_API_VALIDATION == 1)
-    unsigned int                signature;
-#endif
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-void netimer_init(
-    struct netimer *            timer);
+void netimer_init(struct netimer * timer);
 
 
 
-void netimer_term(
-    struct netimer *            timer);
+void netimer_term(struct netimer * timer);
 
 
 
-void netimer_after(
-    struct netimer *            timer,
-    ncore_time_tick             tick,
-    uint16_t                    event_id);
+void netimer_after(struct netimer * timer, uint32_t tick, uint16_t event_id);
 
 
 
-void netimer_every(
-    struct netimer *            timer,
-    ncore_time_tick             tick,
-    uint16_t                    event_id);
+void netimer_every(struct netimer * timer, uint32_t tick, uint16_t event_id);
 
 
 
-void netimer_cancel(
-    struct netimer *            timer);
+void netimer_cancel(struct netimer * timer);
 
 
 
-bool netimer_is_running_i(
-    const struct netimer *      timer);
+bool netimer_is_running_i(const struct netimer * timer);
 
 
 
-ncore_time_tick netimer_remaining(
-    const struct netimer *      timer);
+uint32_t netimer_remaining(const struct netimer * timer);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

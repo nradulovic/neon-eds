@@ -56,7 +56,6 @@
 /* EDS Base */
 #include "base/bias_list.h"
 #include "base/bitop.h"
-#include "base/component.h"
 #include "base/config.h"
 #include "base/debug.h"
 #include "base/dlist.h"
@@ -79,7 +78,6 @@
 
 /* EDS Event Procesing */
 #include "ep/epa.h"
-#include "ep/equeue.h"
 #include "ep/etimer.h"
 #include "ep/event.h"
 #include "ep/smp.h"

@@ -31,33 +31,56 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include "../base/dlist.h"
+#include "base/debug.h"
+#include "base/dlist.h"
 #include "base/config.h"
 #include "base/bias_list.h"
 
 /*===============================================================  MACRO's  ==*/
 
-/**@brief       Maximum level of priority possible for application thread
+/**
+ * @brief       Helper macro to validate thread signature
+ * @notapi
+ */
+#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
+#define N_IS_THREAD_OBJECT(epa_obj)                                             \
+    (NSIGNATURE_OF(epa_obj) == NSIGNATURE_EPA)
+#else
+#define N_IS_EPA_OBJECT(epa_obj)        (epa_obj)
+#endif
+
+#if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
+#define NP_THREAD_REGISTRY_INIT(thread_name)                                    \
+    .name = # thread_name,                                                      \
+    .registry_node = NDLIST_INITIALIZER(thread_name.registry_node),
+#else
+#define NP_THREAD_REGISTRY_INIT(name)
+#endif
+
+/**
+ * @brief       Maximum level of priority possible for application thread
  * @api
  */
 #define NTHREAD_PRIORITY_MAX            (CONFIG_PRIORITY_LEVELS - 1u)
 
-/**@brief       Minimum level of priority possible for application thread
+/**
+ * @brief       Minimum level of priority possible for application thread
  * @api
  */
 #define NTHREAD_PRIORITY_MIN            (1u)
 
-/**@brief       Define thread properties
+/**
+ * @brief       Define thread properties
  * @api
  */
-#define NTHREAD_DEF_INIT(dispatcher, name, priority)                            \
-    {dispatcher, name, priority}
-
-/**@brief       Define thread properties
- * @api
- */
-#define NTASK_DEF_INIT(task_fn, name, priority)                                 \
-    {task_fn, name, priority}
+#define NTHREAD_INITIALIZER(name, dispatcher, priority)                         \
+    {                                                                           \
+        NSIGNATURE_INITIALIZER(NSIGNATURE_THREAD)                               \
+        .node = NBIAS_LIST_INITIALIZER(name.node, priority),                    \
+        .ref = 0,                                                               \
+        .vf_dispatch_i = dispatcher,                                            \
+        NP_THREAD_REGISTRY_INIT(name)                                           \
+    }
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -70,34 +93,17 @@ struct ntask;
 struct nthread;
 struct ncore_lock;
 
-struct nthread_define
-{
-    void                     (* vf_dispatch)(struct nthread *,
-            struct ncore_lock *);
-    const char *                name;
-    uint8_t                     priority;
-};
-
 struct nthread
 {
-    struct nbias_list           node;           /**<@brief Priority queue node*/
-    uint_fast32_t               ref;            /**<@brief Reference count    */
+    NSIGNATURE_DECLARE                            /**<@brief Thread signature */
+    struct nbias_list           node;          /**<@brief Priority queue node */
+    uint_fast32_t               ref;               /**<@brief Reference count */
     void                     (* vf_dispatch_i)(struct nthread * thread,
             struct ncore_lock *);
 #if (CONFIG_REGISTRY == 1) || defined(__DOXYGEN__)
-    char                        name[CONFIG_REGISTRY_NAME_SIZE];
+    const char *                name;
     struct ndlist               registry_node;
 #endif
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-    unsigned int                signature;
-#endif
-};
-
-struct ntask_define
-{
-    void                     (* vf_task)(struct ntask *, void * arg);
-    const char *                name;
-    uint8_t                     priority;
 };
 
 struct ntask
@@ -114,7 +120,8 @@ struct ntask
     (thread)->vf_dispatch_i = (dispatch)
 
 
-void nthread_init(struct nthread * thread, const struct nthread_define * define);
+void nthread_init(struct nthread * thread, const char * name, uint8_t priority,
+        void (* vf_dispatch)(struct nthread *, struct ncore_lock *));
 
 
 
@@ -138,8 +145,8 @@ struct nthread * nthread_get_current(void);
 
 
 
-void ntask_init(struct ntask * task, const struct ntask_define * define,
-        void * arg);
+void ntask_init(struct ntask * task, const char * name, uint8_t priority, 
+        void (* vf_task)(struct ntask *, void *), void * arg);
 
 
 
@@ -147,7 +154,14 @@ void ntask_init(struct ntask * task, const struct ntask_define * define,
 
 
 
-void ntask_ready(struct ntask * task);
+#define ntask_ready(task)                                                       \
+    do {                                                                        \
+        struct ncore_lock       lock;                                           \
+                                                                                \
+        ncore_lock_enter(&lock);                                                \
+        ntask_ready_i(task);                                                    \
+        ncore_lock_exit(&lock);                                                 \
+    } while (0)
 
 
 
@@ -155,7 +169,14 @@ void ntask_ready(struct ntask * task);
 
 
 
-void ntask_block(struct ntask * task);
+#define ntask_block(task)                                                       \
+    do {                                                                        \
+        struct ncore_lock       lock;                                           \
+                                                                                \
+        ncore_lock_enter(&lock);                                                \
+        ntask_block_i(task);                                                    \
+        ncore_lock_exit(&lock);                                                 \
+    } while (0)
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

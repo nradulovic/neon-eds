@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "base/component.h"
 #include "base/bitop.h"
 #include "mm/static.h"
 
@@ -44,18 +43,14 @@ static void * static_alloc_i(struct nmem * mem_class, size_t size);
 static void static_free_i(struct nmem * mem_class, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Static Memory Management");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 
 static void * static_alloc_i(struct nmem * mem_class, size_t size)
 {
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT,  mem_class->signature == NSIGNATURE_STATIC);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(NSIGNATURE_OF(mem_class) == NSIGNATURE_STATIC);
+    NREQUIRE(ncore_is_lock_valid());
 
     size = NALIGN_UP(size, NCPU_DATA_ALIGNMENT);
 
@@ -82,10 +77,10 @@ static void static_free_i(struct nmem * mem_class, void * mem)
 
 void nstatic_init(struct nstatic * static_obj, void * storage, size_t size)
 {
-    NREQUIRE(NAPI_POINTER, static_obj != NULL);
-    NREQUIRE(NAPI_OBJECT,  static_obj->mem_class.signature != NSIGNATURE_STATIC);
-    NREQUIRE(NAPI_POINTER, storage != NULL);
-    NREQUIRE(NAPI_RANGE,   size > NCPU_DATA_ALIGNMENT);
+    NREQUIRE(static_obj);
+    NREQUIRE(NSIGNATURE_OF(static_obj->mem_class) != NSIGNATURE_STATIC);
+    NREQUIRE(storage);
+    NREQUIRE(size > NCPU_DATA_ALIGNMENT);
 
     static_obj->mem_class.base     = storage;
     static_obj->mem_class.size     = NALIGN(size, NCPU_DATA_ALIGNMENT);
@@ -93,7 +88,7 @@ void nstatic_init(struct nstatic * static_obj, void * storage, size_t size)
     static_obj->mem_class.vf_alloc = static_alloc_i;
     static_obj->mem_class.vf_free  = static_free_i;
 
-    NOBLIGATION(static_obj->mem_class.signature = NSIGNATURE_STATIC);
+    NOBLIGATION(NSIGNATURE_IS(static_obj->mem_class, NSIGNATURE_STATIC));
 }
 
 
@@ -107,7 +102,7 @@ void * nstatic_alloc_i(struct nstatic * static_obj, size_t size)
 
 void * nstatic_alloc(struct nstatic * static_mem, size_t size)
 {
-    ncore_lock                   sys_lock;
+    ncore_lock                  sys_lock;
     void *                      mem;
 
     ncore_lock_enter(&sys_lock);

@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "base/component.h"
 #include "base/debug.h"
 #include "base/bitop.h"
 #include "mm/heap.h"
@@ -44,7 +43,7 @@
  * @api
  */
 #define N_IS_HEAP_OBJECT(mem_obj)                                               \
-    (((mem_obj) != NULL) && ((mem_obj)->signature == NSIGNATURE_HEAP))
+    (NSIGNATURE_OF(mem_obj) == NSIGNATURE_HEAP)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
@@ -71,9 +70,6 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size);
 static void heap_free_i(struct nmem * mem_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Heap Memory Management");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
@@ -84,9 +80,9 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
     struct heap_block *         curr;
     void *                      mem;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
-    NREQUIRE(NAPI_RANGE, (size != 0u) && (size < NCPU_SSIZE_MAX));
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_HEAP_OBJECT(mem_obj));
+    NREQUIRE((size != 0u) && (size < NCPU_SSIZE_MAX));
+    NREQUIRE(ncore_is_lock_valid());
 
     mem      = NULL;
     size     = NALIGN_UP(size, sizeof(struct heap_phy [1]));
@@ -137,8 +133,7 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
         }
         curr = curr->free.next;
     }
-
-    NENSURE("heap memory not allocated", mem != NULL);
+    NENSURE(mem);
 
     return (mem);
 }
@@ -149,9 +144,9 @@ static void heap_free_i(struct nmem * mem_obj, void * mem)
     struct heap_block *         curr;
     struct heap_block *         tmp;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_HEAP_OBJECT(mem_obj));
-    NREQUIRE(NAPI_POINTER, mem != NULL);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_HEAP_OBJECT(mem_obj));
+    NREQUIRE(mem);
+    NREQUIRE(ncore_is_lock_valid());
 
     curr           = (struct heap_block *)
         ((uint8_t *)mem - offsetof(struct heap_block, free));
@@ -205,11 +200,11 @@ void nheap_init(struct nheap * heap_obj, void * storage, size_t size)
     struct heap_block *         sentinel;
     struct heap_block *         begin;
 
-    NREQUIRE(NAPI_POINTER, heap_obj != NULL);
-    NREQUIRE(NAPI_OBJECT,  heap_obj->mem_class.signature != NSIGNATURE_HEAP);
-    NREQUIRE(NAPI_POINTER, storage != NULL);
-    NREQUIRE(NAPI_RANGE,   size > sizeof(struct heap_block [2]));
-    NREQUIRE(NAPI_RANGE,   size < NCPU_SSIZE_MAX);
+    NREQUIRE(heap_obj);
+    NREQUIRE(NSIGNATURE_OF(&heap_obj->mem_class) != NSIGNATURE_HEAP);
+    NREQUIRE(storage);
+    NREQUIRE(size > sizeof(struct heap_block [2]));
+    NREQUIRE(size < NCPU_SSIZE_MAX);
 
     size = NALIGN(size, NCPU_DATA_ALIGNMENT);
                                             /* Sentinel is the last element   */
@@ -232,19 +227,19 @@ void nheap_init(struct nheap * heap_obj, void * storage, size_t size)
     heap_obj->mem_class.vf_alloc = heap_alloc_i;
     heap_obj->mem_class.vf_free  = heap_free_i;
 
-    NOBLIGATION(heap_obj->mem_class.signature = NSIGNATURE_HEAP);
+    NOBLIGATION(NSIGNATURE_IS(&heap_obj->mem_class, NSIGNATURE_HEAP));
 }
 
 
 
 void nheap_term(struct nheap * heap_obj)
 {
-    NREQUIRE(NAPI_POINTER, heap_obj != NULL);
-    NREQUIRE(NAPI_OBJECT,  heap_obj->mem_class.signature == NSIGNATURE_HEAP);
+    NREQUIRE(heap_obj);
+    NREQUIRE(NSIGNATURE_OF(&heap_obj->mem_class) == NSIGNATURE_HEAP);
 
     heap_obj->mem_class.base = NULL;
 
-    NOBLIGATION(heap_obj->mem_class.signature = ~NSIGNATURE_HEAP);
+    NOBLIGATION(NSIGNATURE_IS(&heap_obj->mem_class, ~NSIGNATURE_HEAP));
 }
 
 

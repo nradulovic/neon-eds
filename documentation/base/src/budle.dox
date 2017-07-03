@@ -1,0 +1,75 @@
+/** @file */
+/** @defgroup   bundle Bundle
+@brief          Bundle object description
+
+@section        errors_intro Intro
+
+A bundle object is a structure that consists of core managing structure which 
+defines attributes and functions, and a data structure that is managed by core 
+managing structure.
+
+@section        object_allocation General object allocation in embedded systems
+
+@par            Dynamic allocation
+
+This type of allocation is not so used by embedded systems, but sometimes may 
+come wery handy to solve a specific problem. Bundles support dynamic allocation,
+which is in line with the following code:
+
+@code
+struct nqueue * queue = nqueue_alloc(queue_size);
+@endcode
+
+@par            Static allocation
+
+Bundle can be allocated using several ways:
+
+- immediate declaration, instantiation and initialization
+
+@code
+static NQUEUE_BUNDLE_DEFINE(my_queue, 16);
+@endcode
+
+- declaration of bundle object and deferred instantiation and initialization:
+
+@code
+NQUEUE_BUNDLE_DECLARE(my_queue, 16);
+
+/* ... other code ... */
+
+struct my_queue my_queue = NQUEUE_BUNDLE_INITIALIZER(my_queue);
+@endcode
+
+- declaration and instantiation of bundle object and deferred initialization:
+    
+@code
+struct some_bigger_struct
+{
+    int a_member;
+    NQUEUE_BUNDLE_DECLARE(my_queue, 16);
+    int b_some_other_member;
+};
+
+/* ... other code that allocates some_bigger_struct ... */
+
+struct some_bigger_struct * ptr = malloc(sizeof some_bigger_struct);
+
+/* ... now we need to initialize it ... */
+
+NQUEUE_BUNDLE_INIT(&ptr->my_queue);
+@endcode
+
+/**
+
+@section        errors_usage Usage
+@par            Configuration
+    
+In order to use Debug macros configuration option @ref CFG_DBG_ENABLE must be
+active. This option will enable generic assert macros which are used by other
+macros of Debug module. 
+
+To activate API contract validation macros configuration option 
+@ref CFG_DBG_API_VALIDATION must be also activated.
+
+Internal checking macros are activated with option @ref CFG_DBG_INTERNAL_CHECK.
+*/

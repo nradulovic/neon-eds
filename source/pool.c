@@ -31,7 +31,6 @@
 /*=========================================================  INCLUDE FILES  ==*/
 
 #include "port/core.h"
-#include "base/component.h"
 #include "base/bitop.h"
 #include "mm/pool.h"
 
@@ -43,7 +42,7 @@
  * @api
  */
 #define N_IS_POOL_OBJECT(mem_obj)                                               \
-    (((mem_obj) != NULL) && ((mem_obj)->signature == NSIGNATURE_POOL))
+    (NSIGNATURE_OF(mem_obj) == NSIGNATURE_POOL)
 
 /*======================================================  LOCAL DATA TYPES  ==*/
 
@@ -61,9 +60,6 @@ static void * pool_alloc_i(struct nmem * mem_obj, size_t size);
 static void pool_free_i(struct nmem * mem_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Pool Memory Module");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
@@ -72,8 +68,8 @@ static void * pool_alloc_i(struct nmem * mem_obj, size_t size)
 {
     struct pool_block *         block;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_POOL_OBJECT(mem_obj));
+    NREQUIRE(ncore_is_lock_valid());
 
     block = mem_obj->base;
     (void)size;
@@ -82,8 +78,7 @@ static void * pool_alloc_i(struct nmem * mem_obj, size_t size)
         mem_obj->base  = block->next;
         mem_obj->free -= mem_obj->size;
     }
-
-    NENSURE("pool memory not allocated", block != NULL);
+    NENSURE(block);
 
     return ((void *)block);
 }
@@ -94,9 +89,9 @@ static void pool_free_i(struct nmem * mem_obj, void * mem)
 {
     struct pool_block *         block;
 
-    NREQUIRE(NAPI_OBJECT, N_IS_POOL_OBJECT(mem_obj));
-    NREQUIRE(NAPI_POINTER, mem != NULL);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_POOL_OBJECT(mem_obj));
+    NREQUIRE(mem);
+    NREQUIRE(ncore_is_lock_valid());
 
     block            = (struct pool_block *)mem;
     block->next      = mem_obj->base;
@@ -114,11 +109,11 @@ void npool_init(struct npool * pool, void * array, size_t array_size,
     size_t                      nblocks;
     struct pool_block *         block;
 
-    NREQUIRE(NAPI_POINTER, pool != NULL);
-    NREQUIRE(NAPI_OBJECT,  pool->mem_class.signature != NSIGNATURE_POOL);
-    NREQUIRE(NAPI_POINTER, array != NULL);
-    NREQUIRE(NAPI_RANGE,   block_size != 0u);
-    NREQUIRE(NAPI_RANGE,   block_size <= array_size);
+    NREQUIRE(pool);
+    NREQUIRE(NSIGNATURE_OF(&pool->mem_class) != NSIGNATURE_POOL);
+    NREQUIRE(array);
+    NREQUIRE(block_size);
+    NREQUIRE(block_size <= array_size);
 
     block_size = NALIGN_UP(block_size, NCPU_DATA_ALIGNMENT);
     nblocks    = array_size / block_size;
@@ -135,7 +130,7 @@ void npool_init(struct npool * pool, void * array, size_t array_size,
         block = block->next;
     }
     block->next = NULL;
-    NOBLIGATION(pool->mem_class.signature = NSIGNATURE_POOL);
+    NOBLIGATION(NSIGNATURE_IS(&pool->mem_class, NSIGNATURE_POOL));
 }
 
 

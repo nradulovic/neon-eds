@@ -45,12 +45,6 @@
  */
 #define NCPU_DATA_ALIGNMENT                 4u
 
-#define NCPU_REG_MAX                        UINT32_MAX
-
-#define NCPU_SIZE_MAX                       UINT32_MAX
-
-#define NCPU_SSIZE_MAX                      INT32_MAX
-
 /**@brief       Specify the number of bits used in ISR priority mask. For now
  *              all STM32F4xx series MCU's implement 4 bits
  */
@@ -81,18 +75,7 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief General purpose registers are 32bit wide.
- */
-typedef unsigned int ncore_reg;
-
-typedef unsigned int ncpu_size;
-
 typedef   signed int ncpu_ssize;
-
-struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_ref
-{
-    uint32_t                    value;
-};
 
 /**@brief       Interrupt context structure
  * @details     This type is used to declare variable type which will hold
@@ -103,6 +86,9 @@ struct ncore_lock
     unsigned int                level;
 };
 
+/**@brief       Atomic structure
+ * @api
+ */
 struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 {
     int32_t                     value;
@@ -112,8 +98,8 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) ncore_atomic
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
-PORT_C_INLINE_ALWAYS uint_fast8_t
-ncore_log2(ncore_reg value)
+PORT_C_INLINE_ALWAYS
+uint_fast8_t ncore_log2(uint32_t value)
 {
     uint_fast8_t                clz;
 
@@ -128,101 +114,16 @@ ncore_log2(ncore_reg value)
 
 
 
-PORT_C_INLINE_ALWAYS ncore_reg
-ncore_exp2(uint_fast8_t value)
+PORT_C_INLINE_ALWAYS
+uint32_t ncore_exp2(uint_fast8_t value)
 {
     return (0x1u << value);
 }
 
 
 
-PORT_C_INLINE_ALWAYS void
-ncore_ref_write(struct ncore_ref * ref,
-    uint32_t                    value)
-{
-    ref->value = value;
-}
-
-
-
-PORT_C_INLINE_ALWAYS uint32_t
-ncore_ref_read(struct ncore_ref * ref)
-{
-    return (ref->value);
-}
-
-
-
-PORT_C_INLINE_ALWAYS void
-ncore_ref_increment(struct ncore_ref * ref)
-{
-    if (ref->value != UINT32_MAX) {
-        ref->value++;
-    }
-}
-
-
-
-PORT_C_INLINE_ALWAYS void
-ncore_ref_decrement(struct ncore_ref * ref)
-{
-    if (ref->value != 0u) {
-        ref->value--;
-    }
-}
-
-
-
-/*
- * TODO: Write this thread safe and in assembler.
- */
-PORT_C_INLINE_ALWAYS void
-ncore_atomic_write(struct ncore_atomic * v, int32_t i)
-{
-    v->value = i;
-}
-
-
-
-/*
- * TODO: Write this thread safe and in assembler.
- */
-PORT_C_INLINE_ALWAYS int32_t
-ncore_atomic_read(struct ncore_atomic * ref)
-{
-    return (ref->value);
-}
-
-
-
-/*
- * TODO: Write this thread safe and in assembler.
- */
-PORT_C_INLINE_ALWAYS void
-ncore_atomic_inc(struct ncore_atomic * ref)
-{
-    if (ref->value != INT32_MAX) {
-        ref->value++;
-    }
-}
-
-
-
-/*
- * TODO: Write this thread safe and in assembler.
- */
-PORT_C_INLINE_ALWAYS void
-ncore_atomic_dec(struct ncore_atomic * ref)
-{
-    if (ref->value != 0u) {
-        ref->value--;
-    }
-}
-
-
-
-PORT_C_INLINE void
-ncore_lock_enter(struct ncore_lock * lock)
+PORT_C_INLINE
+void ncore_lock_enter(struct ncore_lock * lock)
 {
     extern bool                 g_core_is_locked;
 #if (CONFIG_CORE_LOCK_MAX_LEVEL != 255)
@@ -253,8 +154,8 @@ ncore_lock_enter(struct ncore_lock * lock)
 
 
 
-PORT_C_INLINE void
-ncore_lock_exit(struct ncore_lock * lock)
+PORT_C_INLINE
+void ncore_lock_exit(struct ncore_lock * lock)
 {
     extern bool                 g_core_is_locked;
 
@@ -276,8 +177,8 @@ ncore_lock_exit(struct ncore_lock * lock)
 
 
 
-PORT_C_INLINE bool
-ncore_is_lock_valid(void)
+PORT_C_INLINE
+bool ncore_is_lock_valid(void)
 {
     extern bool                 g_core_is_locked;
     bool                        is_isr;
@@ -289,12 +190,36 @@ ncore_is_lock_valid(void)
 
 
 
+PORT_C_INLINE_ALWAYS
+void ncore_atomic_inc(struct ncore_atomic * ref)
+{
+	struct ncore_lock			lock;
+
+	ncore_lock_enter(&lock);
+	ref->value++;
+    ncore_lock_exit(&lock);
+}
+
+
+
+PORT_C_INLINE_ALWAYS
+void ncore_atomic_dec(struct ncore_atomic * ref)
+{
+	struct ncore_lock			lock;
+
+	ncore_lock_enter(&lock);
+	ref->value--;
+    ncore_lock_exit(&lock);
+}
+
+
+
 void ncore_deferred_init(void);
 
 
 
-PORT_C_INLINE void
-ncore_deferred_do(void)
+PORT_C_INLINE
+void ncore_deferred_do(void)
 {
     /* Interrupt Control and State Register & PENDSVSET */
     *((uint32_t volatile *)0xe000ed04u) = 0x10000000u;
@@ -306,8 +231,8 @@ extern void ncore_deferred_work(void);
 
 
 
-PORT_C_INLINE uint8_t
-ncore_exu4(uint32_t data)
+PORT_C_INLINE
+uint8_t ncore_exu4(uint32_t data)
 {
     uint32_t        retval;
 
@@ -322,8 +247,8 @@ ncore_exu4(uint32_t data)
 
 
 
-PORT_C_INLINE uint8_t
-ncore_exu3(uint32_t data)
+PORT_C_INLINE
+uint8_t ncore_exu3(uint32_t data)
 {
     uint32_t        retval;
 

@@ -38,8 +38,6 @@
 
 /*===============================================================  MACRO's  ==*/
 
-#define NCORE_TIME_TICK_MAX             UINT32_MAX
-
 /**@brief       Number of valid bits in system lock level
  * @note        This macro is usually defined in port.
  */
@@ -70,17 +68,13 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-/**@brief       Core timer hardware register type.
- */
-typedef uint32_t                ncore_time_tick;
-
 /**@brief       System lock type
  * @note        Structure 'ncore_lock' is defined in port p_core.h header.
  */
 typedef struct ncore_lock       ncore_lock;
 
 /**@brief       Atomic type
- * @note        Structure 'ncore_atomic' is defined in port p_core.h header.
+ * @api
  */
 typedef struct ncore_atomic     ncore_atomic;
 
@@ -101,53 +95,31 @@ void ncore_term(void);
 
 
 
-uint_fast8_t ncore_log2(
-    ncore_reg                   value);
-
-
-ncore_reg ncore_exp2(
-    uint_fast8_t                value);
+uint_fast8_t ncore_log2(uint32_t value);
 
 
 
-/**@brief       Write the value to reference integer value
- */
-void ncore_ref_write(
-    struct ncore_ref *          ref,
-    uint32_t                    value);
-
-
-
-/**@brief       Read the value from reference integer value
- */
-uint32_t ncore_ref_read(
-    struct ncore_ref *          ref);
-
-
-
-/**@brief       Increment reference integer value
- */
-void ncore_ref_increment(
-    struct ncore_ref *          ref);
-
-
-
-/**@brief       Decrement reference integer value
- */
-void ncore_ref_decrement(
-    struct ncore_ref *          ref);
+uint32_t ncore_exp2(uint_fast8_t value);
 
 
 
 /**@brief       Atomically read the integer value of v
  */
-int32_t ncore_atomic_read(struct ncore_atomic * v);
+PORT_C_INLINE_ALWAYS
+int32_t ncore_atomic_read(const struct ncore_atomic * ref)
+{
+    return (ref->value);
+}
 
 
 
 /**@brief       Atomically set v equal to i
  */
-void ncore_atomic_write(struct ncore_atomic * v, int32_t i);
+PORT_C_INLINE_ALWAYS
+void ncore_atomic_write(struct ncore_atomic * v, int32_t i)
+{
+    v->value = i;
+}
 
 
 

@@ -44,10 +44,10 @@
  * @api
  */
 #define N_IS_MEM_OBJECT(mem_obj)                                                \
-    (((mem_obj) != NULL) && (((mem_obj)->signature == NSIGNATURE_STATIC) ||     \
-                         ((mem_obj)->signature == NSIGNATURE_HEAP) ||           \
-                         ((mem_obj)->signature == NSIGNATURE_POOL) ||           \
-                         ((mem_obj)->signature == NSIGNATURE_STDHEAP)))
+    (((mem_obj) != NULL) && ((NSIGNATURE_OF(mem_obj) == NSIGNATURE_STATIC) ||   \
+                         (NSIGNATURE_OF(mem_obj) == NSIGNATURE_HEAP) ||         \
+                         (NSIGNATURE_OF(mem_obj) == NSIGNATURE_POOL) ||         \
+                         (NSIGNATURE_OF(mem_obj) == NSIGNATURE_STDHEAP)))
 
 #define NMEM_GENERIC_HEAP               nmem_get_generic_heap()
 
@@ -75,10 +75,7 @@ struct nmem
     void *                      base;   /**<@brief Base address               */
     size_t                      free;   /**<@brief Free bytes                 */
     size_t                      size;   /**<@brief Size of memory             */
-#if (CONFIG_API_VALIDATION == 1) || defined(__DOXYGEN__)
-                                        /**<@brief Memory object signature    */
-    unsigned int                signature;
-#endif
+    NSIGNATURE_DECLARE    				/**<@brief Memory object signature    */
 };
 
 /**@brief       Memory object type

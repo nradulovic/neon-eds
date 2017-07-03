@@ -47,25 +47,6 @@
  *              @ref CONFIG_DEBUG.
  * @{ *//*--------------------------------------------------------------------*/
 
-/**@brief       Static assert macro
- * @param       msg
- *              Message : a standard error message, see
- *              @ref Standard error messages.
- * @param       expr
- *              Expression : C expression : condition which must be 'true'.
- * @details     This macro will evaluate the given expression at compile time.
- *              If the expression is not true the compilation process will stop
- *              with an error message about negative size of array.
- * @api
- */
-#if defined(PORT_C_STATIC_ASSERT)
-# define NASSERT_STATIC(msg, expr)                                              \
-    PORT_C_STATIC_ASSERT(expr)
-#else
-# define NASSERT_STATIC(msg, expr)                                              \
-    extern char static_assert_has_failed_##msg[(expr) ? 1 : -1]
-#endif
-
 /**@brief       Generic assert macro.
  * @param       msg
  *              Message : a standard error message, see
@@ -75,12 +56,12 @@
  * @api
  */
 #if (CONFIG_DEBUG == 1)
-# define NASSERT(msg, expr)                                                     \
+# define NASSERT(expr)                                                     		\
     if (!(expr)) {                                                              \
-        hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, #expr, msg);\
+        hook_at_assert(PORT_C_FILE, PORT_C_FUNC, PORT_C_LINE, #expr);			\
     }
 #else
-# define NASSERT(msg, expr)               (void)0
+# define NASSERT(expr)               	(void)0
 #endif
 
 /**@brief       Assert macro that will always execute (no conditional).
@@ -94,9 +75,9 @@
  */
 #if (CONFIG_DEBUG == 1)
 # define NASSERT_ALWAYS(text)                                                   \
-    hook_at_assert(&g_component_info, PORT_C_FUNC, PORT_C_LINE, text, NULL)
+    hook_at_assert(PORT_C_FILE, PORT_C_FUNC, PORT_C_LINE, text)
 #else
-# define NASSERT_ALWAYS(text)               (void)0
+# define NASSERT_ALWAYS(text)           (void)0
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -111,38 +92,31 @@
  * @api
  */
 #if (CONFIG_API_VALIDATION == 1)
-# define NOBLIGATION(expr)                  expr
+# define NOBLIGATION(expr)              expr
 #else
-# define NOBLIGATION(expr)                  (void)0
+# define NOBLIGATION(expr)              (void)0
 #endif
 
 /**@brief       Make sure the caller has fulfilled all contract preconditions
- * @param       msg
- *              Message : a standard error message, see
- *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
 #if (CONFIG_API_VALIDATION == 1)
-# define NREQUIRE(msg, expr)                NASSERT(msg, expr)
+# define NREQUIRE(expr)               	NASSERT(expr)
 #else
-# define NREQUIRE(msg, expr)                (void)0
+# define NREQUIRE(expr)                	(void)0
 #endif
 
 /**@brief       Make sure the callee has fulfilled all contract postconditions
- * @param       msg
- *              Message : a standard error message, see
- *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
 #if (CONFIG_API_VALIDATION == 1)
-# define NENSURE(msg, expr)                                                     \
-    NASSERT("Method call failure: " msg, expr)
+# define NENSURE(expr)                  NASSERT(expr)
 #else
-# define NENSURE(msg, expr)                 (void)0
+# define NENSURE(expr)                  (void)0
 #endif
 
 /**@} *//*----------------------------------------------------------------*//**
@@ -152,30 +126,15 @@
  * @{ *//*--------------------------------------------------------------------*/
 
 /**@brief       Assert macro used for internal execution checking
- * @param       msg
- *              Message : a standard error message, see
- *              @ref Standard error messages.
  * @param       expr
  *              Expression : C expression : condition which must be 'true'.
  * @api
  */
 #if (CONFIG_ASSERT_INTERNAL == 1) && (CONFIG_DEBUG == 1)
-# define NASSERT_INTERNAL(msg, expr)        NASSERT(msg, expr)
+# define NASSERT_INTERNAL(expr)        	NASSERT(expr)
 #else
-# define NASSERT_INTERNAL(msg, expr)        (void)0
+# define NASSERT_INTERNAL(expr)        	(void)0
 #endif
-
-/**@} *//*----------------------------------------------------------------*//**
- * @name        Standard error messages
- * @brief       These are used throughout Neon software collection in a concise
- *              way to inform about error details.
- * @{ *//*--------------------------------------------------------------------*/
-
-#define NAPI_RANGE                          "Value is out of valid range."
-#define NAPI_OBJECT                         "Object is not valid."
-#define NAPI_POINTER                        "Passed a NULL value pointer."
-#define NAPI_USAGE                          "Object/method usage failure."
-#define NASSERT_FAILED                      "Assert failed"
 
 /**@} *//*----------------------------------------------------------------*//**
  * @name        Object debug signatures
@@ -196,10 +155,15 @@
 #define NSIGNATURE_DEFER                    ((unsigned int)0xdeadfeefu)
 
 #if (CONFIG_API_VALIDATION == 1)
-#define NSIGNATURE_DECLARE                  int _signature;
+#define NSIGNATURE_DECLARE                 	int _signature;
+#define NSIGNATURE_INITIALIZER(signature)   ._signature = signature
 #else
 #define NSIGNATURE_DECLARE
+#define NSIGNATURE_INITIALIZER(signature)   
 #endif
+
+#define NSIGNATURE_OF(object)				((object) ? (object)->_signature : 0)
+#define NSIGNATURE_IS(object, signature)	(object)->_signature = (signature)
 
 /**@} *//*-----------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -207,16 +171,13 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-struct ncomponent_info;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
 
 /**@brief       An assertion has failed
- * @param       component_info
- *              Software component information.
+ * @param       file
+ *              Filename where the assert fired.
  * @param       fn
  *              Function name where the error occurred.
  * @param       line
@@ -224,8 +185,6 @@ struct ncomponent_info;
  * @param       expr
  *              Expression: is pointer to the string containing the expression
  *              that failed to evaluate to `true`.
- * @param       msg
- *              String containing some information about the error.
  * @note        1) This function may be called only if @ref CONFIG_DEBUG is
  *              active.
  * @details     An assertion has failed. This function should inform the user
@@ -233,12 +192,8 @@ struct ncomponent_info;
  * @api
  */
 PORT_C_NORETURN
-void hook_at_assert(
-    const struct ncomponent_info * component_info,
-    const char *                fn,
-    uint32_t                    line,
-    const char *                expr,
-    const char *                msg);
+void hook_at_assert(const char * file, const char * fn, uint32_t line,
+    const char * expr);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

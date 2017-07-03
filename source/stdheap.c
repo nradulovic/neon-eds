@@ -33,10 +33,18 @@
 #include <stdlib.h>
 
 #include "port/core.h"
-#include "base/component.h"
 #include "mm/stdheap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
+
+/**@brief       Validate the pointer to heap memory object
+ * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
+ *              macro is enabled.
+ * @api
+ */
+#define N_IS_STDHEAP_OBJECT(mem_obj)                                            \
+    (NSIGNATURE_OF(mem_obj) == NSIGNATURE_STDHEAP)
+    
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
@@ -45,17 +53,13 @@ static void * stdheap_alloc_i(struct nmem * mem_class, size_t size);
 static void stdheap_free_i(struct nmem * mem_class, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
-
-static const NCOMPONENT_DEFINE("Static Memory Management");
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
 static void * stdheap_alloc_i(struct nmem * mem_class, size_t size)
 {
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT, mem_class->signature == NSIGNATURE_STDHEAP);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_STDHEAP_OBJECT(mem_class));
+    NREQUIRE(ncore_is_lock_valid());
 
     (void)mem_class;
 
@@ -64,9 +68,8 @@ static void * stdheap_alloc_i(struct nmem * mem_class, size_t size)
 
 static void stdheap_free_i(struct nmem * mem_class, void * mem)
 {
-    NREQUIRE(NAPI_POINTER, mem_class != NULL);
-    NREQUIRE(NAPI_OBJECT, mem_class->signature == NSIGNATURE_STDHEAP);
-    NREQUIRE(NAPI_USAGE, ncore_is_lock_valid());
+    NREQUIRE(N_IS_STDHEAP_OBJECT(mem_class));
+    NREQUIRE(ncore_is_lock_valid());
 
     (void)mem_class;
     free(mem);
@@ -77,8 +80,8 @@ static void stdheap_free_i(struct nmem * mem_class, void * mem)
 
 void nstdheap_init(struct nstdheap * stdheap_obj)
 {
-    NREQUIRE(NAPI_POINTER, stdheap_obj != NULL);
-    NREQUIRE(NAPI_OBJECT, stdheap_obj->mem_class.signature != NSIGNATURE_STDHEAP);
+    NREQUIRE(stdheap_obj);
+    NREQUIRE(NSIGNATURE_OF(&stdheap_obj->mem_class) != NSIGNATURE_STDHEAP);
 
     stdheap_obj->mem_class.base     = NULL;
     stdheap_obj->mem_class.size     = 0u;
@@ -86,7 +89,7 @@ void nstdheap_init(struct nstdheap * stdheap_obj)
     stdheap_obj->mem_class.vf_alloc = stdheap_alloc_i;
     stdheap_obj->mem_class.vf_free  = stdheap_free_i;
 
-    NOBLIGATION(stdheap_obj->mem_class.signature = NSIGNATURE_STDHEAP);
+    NOBLIGATION(NSIGNATURE_IS(&stdheap_obj->mem_class, NSIGNATURE_STDHEAP));
 }
 
 
