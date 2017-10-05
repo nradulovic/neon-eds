@@ -120,7 +120,7 @@ tool:
 
     doxygen doxyfile-eds
 
-This will generate HTML, LaTex and man documentation in ``doc/build``
+This will generate HTML, LaTex and man documentation in ``documentation/build``
 directory.
 
 Support
