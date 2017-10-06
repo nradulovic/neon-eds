@@ -1,0 +1,4 @@
+@INCLUDE = ../documentation/doxyfile_base
+@INCLUDE = ../documentation/doxyfile_neon
+@INCLUDE = ../documentation/doxyfile_version
+

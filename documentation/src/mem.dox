@@ -1,27 +1,25 @@
 /** @file */
-/** @addtogroup base_mem
+/** @defgroup   mem Memory management
+
 @brief          Memory Management overview
 
-@section        mem_index Sadrzaj
+@section        mem_index Index
 - @ref mem_smem
 - @ref mem_dmem
 - @ref mem_pmem
 - @ref mem_configuration
 
-@section        mem_smem Staticki memorijski menadzer
-Staticki memorijski menadzer moze samo da alocira memoriju i jednom alocirana
-memorija se ne moze osloboditi. Koristi se kada je potrebno staticki alocirati
-objekte koji se nikada ne brisu. Ovaj memorijski menadzer je najjednostavniji i 
-najbrzi, pa se preporucuje za mikroprocesore sa ogranicenim performansama. 
-Potrosnja memorije iznosi samo 4-8 bajtova za ceo memorijski menadzer i ne 
-postoji dodatna potrosnja memorije prilikom alociranja.
+@section        mem_smem Static memory management
 
-Staticni memorijski menadzer je jedinstven za embedded sistem. Ne mogu postojati
-vise instanci staticnog alokatora. Velicina memorije koja se predaje staticnom
-alokatoru na koriscenje se podesava opcijom @ref OPT_MEM_SMEM_SIZE.
+Static memory manager can only allocate the memory and once it allocates it can
+not free it back. This is the simplest and the fastest memory management and
+it is usually used in memory constrained environments. Total memory consumption
+per memory manager instance is only 4 to 8 bytes. There is no additional
+memory consumption per allocation as with other memory managers.
 
-@section        mem_dmem Dinamicki memorijski menadzer
+@section        mem_dmem Dynamic memory management
 
+Dynamic memory managements are ver
 Dinamicki memorijski menadzer je po funkcionalnosti identican sa funkcijama 
 standardne C biblioteke malloc/free, sa tom izmenom da je prilagodjen za rad sa
 embedded sistemima. 

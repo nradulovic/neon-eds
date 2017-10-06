@@ -46,3 +46,7 @@ Release/
 **/.libs/
 **/Makefile
 **/Makefile.in
+
+# Ignore doxygen built files
+documentation/build/
+documentation/doxyfile_version
