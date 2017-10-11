@@ -129,25 +129,13 @@ struct application_struct
     }
 
 /**
- * @brief       Macro to declare a queue bundle object
- * @param       name
- *              Name of the declared queue data-type
- * @param       elements 
- *              Number of elements in the queue
- * @mseffect
- * @api
- */
-#define NQUEUE_BUNDLE_DECLARE(name, elements)                                   \
-    NQUEUE_BUNDLE_STRUCT(name, elements) name
-    
-/**
  * @brief       Initialize a queue bundle declared by @ref NQUEUE_BUNDLE_DECLARE
  * @param       name
  *              Name of the declared queue data-type
  * @mseffect
  * @api
  */
-#define NQUEUE_BUNDLE_INITIALIZER(name)                                         \
+#define NQUEUE_BUNDLE_STRUCT_INIT(name)                                         \
     {                                                                           \
         .b = {                                                                  \
             NP_QUEUE_MEM                                                        \
@@ -171,7 +159,7 @@ struct application_struct
  * @api
  */
 #define NQUEUE_BUNDLE_DEFINE(name, elements)                                    \
-    NQUEUE_BUNDLE_DECLARE(name, elements) = NQUEUE_BUNDLE_INITIALIZER(name)
+    NQUEUE_BUNDLE_STRUCT(name, elements) name  = NQUEUE_BUNDLE_STRUCT_INIT(name)
 
 /**
  * @brief		Macro to initialize bundle structure of dynamically allocated

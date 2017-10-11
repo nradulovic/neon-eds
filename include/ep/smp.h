@@ -36,6 +36,7 @@
 
 #include "port/compiler.h"
 #include "base/config.h"
+#include "base/debug.h"
 
 /*===============================================================  MACRO's  ==*/
 
@@ -60,21 +61,6 @@
 #define N_SM_MEM
 #endif
 
-/**@brief       State machine define structure initializator
- * @details     This is a convinience macro for filling up the @ref nsm
- *              structure.
- * @api
- */
-#define NSM_INITIALIZER(wspace_ptr, init_state_ptr, type_enum)                  \
-    {                                                                           \
-        NSIGNATURE_INITIALIZER(NSIGNATURE_SM)                                   \
-        N_SM_MEM                                                                \
-        .vf_dispatch = type_enum == NSM_TYPE_HSM ? n_sm_hsm_dispatch :          \
-                                              n_sm_fsm_dispatch,                \
-        .state = init_state_ptr,                                                \
-        .wspace = wspace_ptr                                                    \
-    }
-
 /**
  * @brief       State machine bundle structure
  * @param       name
@@ -95,23 +81,6 @@
     }
 
 /**
- * @brief       Declare state machine bundle structure
- * @param       name
- *              C expression : This is a name of new structure that will be 
- *              created.
- * @param       wspace_struct
- *              C expression : This is workspace structure type. Pass this 
- *              argument as 'struct my_wspace' then macro will declare a member 
- *              in bundle structure of this type.
- * @details     Bundle structure ties up together state machine structure and
- *              user definable workspace structure into a single structure. This
- *              macro will declare a variable of this structure type.
- * @api
- */
-#define NSM_BUNDLE_DECLARE(name, wspace_struct)                                 \
-    NSM_BUNDLE_STRUCT(name, wspace_struct) name
-   
-/**
  * @brief       Initialize state machine bundle structure
  * @param       wspace_struct
  *              C expression : This is workspace structure type. Pass this 
@@ -128,9 +97,16 @@
  *              macro will initialize a variable of this structure type.
  * @api
  */ 
-#define NSM_BUNDLE_INITIALIZER(name, init_state_ptr, type_enum)           \
+#define NSM_BUNDLE_STRUCT_INIT(name, init_state_ptr, type_enum)                 \
     {                                                                           \
-        .b = NSM_INITIALIZER(&name.workspace, init_state_ptr, type_enum),            \
+        .b = {                                                                  \
+            NSIGNATURE_INITIALIZER(NSIGNATURE_SM)                               \
+            N_SM_MEM                                                            \
+            .vf_dispatch = type_enum == NSM_TYPE_HSM ? n_sm_hsm_dispatch :      \
+                                                  n_sm_fsm_dispatch,            \
+            .state = init_state_ptr,                                            \
+            .wspace = &name.workspace                                           \
+        }                                                                       \
     }
     
 /**
@@ -155,8 +131,8 @@
  * @api
  */     
 #define NSM_BUNDLE_DEFINE(name, wspace_struct, init_state_ptr, type_enum)       \
-    NSM_BUNDLE_DECLARE(name, wspace_struct) =                                   \
-        NSM_BUNDLE_INITIALIZER(name, init_state_ptr, type_enum)      
+    NSM_BUNDLE_STRUCT(name, wspace_struct) name =                               \
+        NSM_BUNDLE_STRUCT_INIT(name, init_state_ptr, type_enum)      
 
 /**
  * @brief       Get the state machine workspace pointer

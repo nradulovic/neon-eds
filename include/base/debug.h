@@ -156,7 +156,7 @@
 
 #if (CONFIG_API_VALIDATION == 1)
 #define NSIGNATURE_DECLARE                 	int _signature;
-#define NSIGNATURE_INITIALIZER(signature)   ._signature = signature
+#define NSIGNATURE_INITIALIZER(signature)   ._signature = signature,
 #else
 #define NSIGNATURE_DECLARE
 #define NSIGNATURE_INITIALIZER(signature)   

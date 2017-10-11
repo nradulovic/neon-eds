@@ -74,32 +74,26 @@
 #define NEPA_BUNDLE_STRUCT(name, queue_size, wspace_struct)                     \
     struct name {                                                               \
         struct nepa         b;                                              	\
-        NSM_BUNDLE_DECLARE(sm, wspace_struct); 				                    \
-        NQUEUE_BUNDLE_DECLARE(equeue, queue_size);                              \
+        NSM_BUNDLE_STRUCT(name ## _sm, wspace_struct) sm; 				        \
+        NQUEUE_BUNDLE_STRUCT(name ## _equeue, queue_size) equeue;               \
     }
     
-#define NEPA_BUNDLE_DECLARE(name, queue_size, wspace_struct)             \
-    NEPA_BUNDLE_STRUCT(name, queue_size, wspace_struct) name
-    
-
-#define NEPA_INITIALIZER(name, prio, equeue_ptr, sm_ptr)                        \
-    {                                                                           \
-        N_EPA_MEM                                                               \
-        NSIGNATURE_INITIALIZER(NSIGNATURE_EPA)                                  \
-        .thread = NTHREAD_INITIALIZER(name.b.thread, NULL, prio),                         \
-        .sm = (sm_ptr),                                                           \
-        .queue = (equeue_ptr),                                                       \
-    }
-    
-#define NEPA_BUNDLE_DEFINE(name, queue_size, priority, wspace_struct, init_state_ptr, type_enum)        \
-	NEPA_BUNDLE_DECLARE(name, queue_size, wspace_struct) = {             \
-		.b = NEPA_INITIALIZER(name, priority, &name.equeue.b, &name.sm.b),            	\
-		.sm = NSM_BUNDLE_INITIALIZER(name.sm, init_state_ptr, type_enum), \
-		.equeue = NQUEUE_BUNDLE_INITIALIZER(name.equeue),                              \
+#define NEPA_BUNDLE_STRUCT_INIT(name, queue_size, priority, wspace_struct, init_state_ptr, type_enum)        \
+	{                                                                           \
+		.b = {                                                                  \
+            N_EPA_MEM                                                           \
+            NSIGNATURE_INITIALIZER(NSIGNATURE_EPA)                              \
+            .thread = NTHREAD_INITIALIZER(name.b.thread, NULL, priority),       \
+            .sm = (&name.sm.b),                                                   \
+            .queue = (&name.equeue.b),                                            \
+        },                                                                      \
+		.sm = NSM_BUNDLE_STRUCT_INIT(name.sm, init_state_ptr, type_enum),       \
+		.equeue = NQUEUE_BUNDLE_STRUCT_INIT(name.equeue),                       \
 	}
 
-#define NEPA_BUNDLE_EXPORT(name)												\
-	&name.b
+#define NEPA_BUNDLE_DEFINE(name, queue_size, priority, wspace_struct, init_state_ptr, type_enum)        \
+	NEPA_BUNDLE_STRUCT(name, queue_size, wspace_struct) name =                  \
+        NEPA_BUNDLE_STRUCT_INIT(name, queue_size, priority, wspace_struct, init_state_ptr, type_enum)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
