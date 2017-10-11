@@ -84,8 +84,8 @@
             N_EPA_MEM                                                           \
             NSIGNATURE_INITIALIZER(NSIGNATURE_EPA)                              \
             .thread = NTHREAD_INITIALIZER(name.b.thread, NULL, priority),       \
-            .sm = (&name.sm.b),                                                   \
-            .queue = (&name.equeue.b),                                            \
+            .sm = (&name.sm.b),                                                 \
+            .queue = (&name.equeue.b),                                          \
         },                                                                      \
 		.sm = NSM_BUNDLE_STRUCT_INIT(name.sm, init_state_ptr, type_enum),       \
 		.equeue = NQUEUE_BUNDLE_STRUCT_INIT(name.equeue),                       \
