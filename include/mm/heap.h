@@ -31,86 +31,36 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stddef.h>
+#include <stdint.h>
 
 #include "mm/mem.h"
+#include "base/debug.h"
+#include "base/bitop.h"
 
 /*===============================================================  MACRO's  ==*/
+
+#define NHEAP_BUNDLE_STRUCT(name, size)                                     \
+    NMEM_BUNDLE_STRUCT(name, size)
+
+#define NHEAP_BUNDLE_STRUCT_INIT(instance)                                  \
+    NMEM_BUNDLE_STRUCT_INIT(instance, 1, heap_init_alloc, NSIGNATURE_HEAP)
+
+#define NHEAP_BUNDLE_DEFINE(name, size)                                     \
+    NHEAP_BUNDLE_STRUCT(name, size) name =                                  \
+        NHEAP_BUNDLE_STRUCT_INIT(name)
+
+#define NHEAP_FROM_BUNDLE(instance)     NMEM_FROM_BUNDLE(instance)
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       Heap memory instance structure
- * @details     This structure holds information about dynamic memory instance.
- * @see         nheap_init()
- * @api
- */
-struct nheap
-{
-    struct nmem                 mem_class;
-};
-
-/**@brief       Heap memory instance type
- * @api
- */
-typedef struct nheap nheap;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-
-/**@brief       Initialize heap structure instance
- * @param       heap
- *              Pointer to heap structure instance, see @ref nheap.
- * @param       storage
- *              Pointer to reserved memory space. Usually this will be an array
- *              of bytes which are statically alloacated.
- * @param       Size of storage reserved memory in bytes.
- * @details     This function must be called before @c heap structure can be
- *              used by other functions.
- * @api
- */
-void nheap_init(
-    struct nheap *              heap_obj,
-    void *                      storage,
-    size_t                      size);
-
-
-
-/**@brief       Terminate heap instance
- * @param       heap
- *              Pointer to heap structure instance
- * @api
- */
-void nheap_term(
-    struct nheap *              heap_obj);
-
-
-
-void * nheap_alloc_i(
-    struct nheap *              heap_obj,
-    size_t                      size);
-
-
-
-void * nheap_alloc(
-    struct nheap *              heap_obj,
-    size_t                      size);
-
-
-
-void nheap_free_i(
-    struct nheap *              heap_obj,
-    void *                      mem);
-
-
-
-void nheap_free(
-    struct nheap *              heap_obj,
-    void *                      mem);
+void * heap_init_alloc(struct nmem * mem_obj, size_t size);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

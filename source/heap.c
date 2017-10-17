@@ -36,15 +36,6 @@
 #include "mm/heap.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Validate the pointer to heap memory object
- * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
- *              macro is enabled.
- * @api
- */
-#define N_IS_HEAP_OBJECT(mem_obj)                                               \
-    (NSIGNATURE_OF(mem_obj) == NSIGNATURE_HEAP)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Dynamic allocator memory block header structure
@@ -54,7 +45,7 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) heap_block
     struct heap_phy
     {
         struct heap_block *         prev;
-        ncpu_ssize                  size;
+        int32_t						size;
     }                           phy;
     struct heap_free
     {
@@ -65,36 +56,35 @@ struct PORT_C_ALIGN(NCPU_DATA_ALIGNMENT) heap_block
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void * heap_alloc_i(struct nmem * mem_obj, size_t size);
+static void * heap_alloc(struct nmem * heap_obj, size_t size);
 
-static void heap_free_i(struct nmem * mem_obj, void * mem);
+static void heap_free(struct nmem * heap_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
-static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
+static void * heap_alloc(struct nmem * heap_obj, size_t size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         curr;
     void *                      mem;
 
-    NREQUIRE(N_IS_HEAP_OBJECT(mem_obj));
-    NREQUIRE((size != 0u) && (size < NCPU_SSIZE_MAX));
+    NREQUIRE(NSIGNATURE_OF(heap_obj) == NSIGNATURE_HEAP);
+    NREQUIRE((size != 0u) && (size < INT32_MAX));
     NREQUIRE(ncore_is_lock_valid());
 
     mem      = NULL;
     size     = NALIGN_UP(size, sizeof(struct heap_phy [1]));
-    sentinel = mem_obj->base;
+    sentinel = heap_obj->base;
     curr     = sentinel->free.next;
 
     while (curr != sentinel) {
 
-        if (curr->phy.size >= (ncpu_ssize)size) {
+        if (curr->phy.size >= (int32_t)size) {
 
             if (curr->phy.size >
-                (ncpu_ssize)(size + sizeof(struct heap_block [1]))) {
+                (int32_t)(size + sizeof(struct heap_block [1]))) {
                 struct heap_block * tmp;
                                        /* Create smaller free block           */
                 mem            = (void *)(&curr->free);
@@ -103,10 +93,10 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
                     ((uint8_t *)curr + size + sizeof(struct heap_phy [1]));
                 tmp->phy.prev  = curr;
                 tmp->phy.size  = curr->phy.size;
-                tmp->phy.size -= (ncpu_ssize)size;
-                tmp->phy.size -= (ncpu_ssize)sizeof(struct heap_phy [1]);
+                tmp->phy.size -= (int32_t)size;
+                tmp->phy.size -= (int32_t)sizeof(struct heap_phy [1]);
                                        /* Mark block as allocated             */
-                curr->phy.size = (ncpu_ssize)size * (-1);
+                curr->phy.size = (int32_t)size * (-1);
                                        /* Remove current and add smaller free */
                                        /* block back to free list             */
                 tmp->free.next = curr->free.next;
@@ -138,26 +128,25 @@ static void * heap_alloc_i(struct nmem * mem_obj, size_t size)
     return (mem);
 }
 
-
-static void heap_free_i(struct nmem * mem_obj, void * mem)
+static void heap_free(struct nmem * heap_obj, void * mem)
 {
     struct heap_block *         curr;
     struct heap_block *         tmp;
 
-    NREQUIRE(N_IS_HEAP_OBJECT(mem_obj));
+    NREQUIRE(NSIGNATURE_OF(heap_obj) == NSIGNATURE_HEAP);
     NREQUIRE(mem);
     NREQUIRE(ncore_is_lock_valid());
 
     curr           = (struct heap_block *)
         ((uint8_t *)mem - offsetof(struct heap_block, free));
-    curr->phy.size = (ncpu_ssize)curr->phy.size * (-1); /* Mark block as free */
+    curr->phy.size = (int32_t)curr->phy.size * (-1); /* Mark block as free */
     tmp            = (struct heap_block *)
         ((uint8_t *)curr + curr->phy.size + sizeof(struct heap_phy [1]));
 
                                                     /* Previous block is free */
     if ((curr->phy.prev->phy.size > 0) && (tmp->phy.size < 0)) {                
         curr->phy.prev->phy.size  += curr->phy.size;
-        curr->phy.prev->phy.size  += (ncpu_ssize)sizeof(struct heap_phy [1]);
+        curr->phy.prev->phy.size  += (int32_t)sizeof(struct heap_phy [1]);
         tmp->phy.prev              = curr->phy.prev;
                                                         /* Next block is free */
     } else if ((curr->phy.prev->phy.size < 0) && (tmp->phy.size > 0)) {         
@@ -166,7 +155,7 @@ static void heap_free_i(struct nmem * mem_obj, void * mem)
         curr->free.prev->free.next = curr;
         curr->free.next->free.prev = curr;
         curr->phy.size            += tmp->phy.size;
-        curr->phy.size            += (ncpu_ssize)sizeof(struct heap_phy [1]);
+        curr->phy.size            += (int32_t)sizeof(struct heap_phy [1]);
         tmp                        = (struct heap_block *)
             ((uint8_t *)curr + curr->phy.size + sizeof(struct heap_phy [1]));
         tmp->phy.prev              = curr;
@@ -175,14 +164,14 @@ static void heap_free_i(struct nmem * mem_obj, void * mem)
         tmp->free.prev->free.next  = tmp->free.next;
         tmp->free.next->free.prev  = tmp->free.prev;
         curr->phy.prev->phy.size  += curr->phy.size + tmp->phy.size;
-        curr->phy.prev->phy.size  += (ncpu_ssize)sizeof(struct heap_phy [2]);
+        curr->phy.prev->phy.size  += (int32_t)sizeof(struct heap_phy [2]);
         tmp                        = (struct heap_block *)
             ((uint8_t *)curr->phy.prev + curr->phy.prev->phy.size +
             sizeof(struct heap_phy [1]));
         tmp->phy.prev              = curr->phy.prev;
                                       /* Previous and next blocks are used    */
     } else {                                                                    
-        struct heap_block *     sentinel = mem_obj->base;
+        struct heap_block *     sentinel = heap_obj->base;
 
         curr->free.next            = sentinel->free.next;
         curr->free.prev            = sentinel;
@@ -194,25 +183,23 @@ static void heap_free_i(struct nmem * mem_obj, void * mem)
 /*===================================  GLOBAL PRIVATE FUNCTION DEFINITIONS  ==*/
 /*====================================  GLOBAL PUBLIC FUNCTION DEFINITIONS  ==*/
 
-
-void nheap_init(struct nheap * heap_obj, void * storage, size_t size)
+void * heap_init_alloc(struct nmem * heap_obj, size_t size)
 {
     struct heap_block *         sentinel;
     struct heap_block *         begin;
 
-    NREQUIRE(heap_obj);
-    NREQUIRE(NSIGNATURE_OF(&heap_obj->mem_class) != NSIGNATURE_HEAP);
-    NREQUIRE(storage);
-    NREQUIRE(size > sizeof(struct heap_block [2]));
-    NREQUIRE(size < NCPU_SSIZE_MAX);
+    NREQUIRE(NSIGNATURE_OF(heap_obj) == NSIGNATURE_HEAP);
+    NREQUIRE(heap_obj->base);
+    NREQUIRE(heap_obj->size > sizeof(struct heap_block [2]));
+    NREQUIRE(heap_obj->size < INT32_MAX);
 
-    size = NALIGN(size, NCPU_DATA_ALIGNMENT);
-                                            /* Sentinel is the last element   */
-    sentinel = (struct heap_block *)((uint8_t *)storage + size) - 1;
-    begin    = (struct heap_block *)storage;
-    begin->phy.size  = (ncpu_ssize)size;
-    begin->phy.size -= (ncpu_ssize)sizeof(struct heap_block [1]);
-    begin->phy.size -= (ncpu_ssize)sizeof(struct heap_phy [1]);
+                                             /* Sentinel is the last element */
+    sentinel = (struct heap_block *)
+            ((uint8_t *)heap_obj->base + heap_obj->size) - 1;
+    begin    = (struct heap_block *)heap_obj->base;
+    begin->phy.size  = (int32_t)heap_obj->size;
+    begin->phy.size -= (int32_t)sizeof(struct heap_block [1]);
+    begin->phy.size -= (int32_t)sizeof(struct heap_phy [1]);
     begin->phy.prev  = sentinel;
     begin->free.next = sentinel;
     begin->free.prev = sentinel;
@@ -221,64 +208,13 @@ void nheap_init(struct nheap * heap_obj, void * storage, size_t size)
     sentinel->phy.prev   = begin;
     sentinel->free.next  = begin;
     sentinel->free.prev  = begin;
-    heap_obj->mem_class.base = sentinel;
-    heap_obj->mem_class.size = (size_t)begin->phy.size;
-    heap_obj->mem_class.free = (size_t)begin->phy.size;
-    heap_obj->mem_class.vf_alloc = heap_alloc_i;
-    heap_obj->mem_class.vf_free  = heap_free_i;
+    heap_obj->base = sentinel;
+    heap_obj->size = (size_t)begin->phy.size;
+    heap_obj->free = (size_t)begin->phy.size;
+    heap_obj->vf_alloc = heap_alloc;
+    heap_obj->vf_free  = heap_free;
 
-    NOBLIGATION(NSIGNATURE_IS(&heap_obj->mem_class, NSIGNATURE_HEAP));
-}
-
-
-
-void nheap_term(struct nheap * heap_obj)
-{
-    NREQUIRE(heap_obj);
-    NREQUIRE(NSIGNATURE_OF(&heap_obj->mem_class) == NSIGNATURE_HEAP);
-
-    heap_obj->mem_class.base = NULL;
-
-    NOBLIGATION(NSIGNATURE_IS(&heap_obj->mem_class, ~NSIGNATURE_HEAP));
-}
-
-
-
-void * nheap_alloc_i(struct nheap * heap_obj, size_t size)
-{
-    return (heap_alloc_i(&heap_obj->mem_class, size));
-}
-
-
-
-void * nheap_alloc(struct nheap * heap, size_t size)
-{
-    ncore_lock                  sys_lock;
-    void *                      mem;
-
-    ncore_lock_enter(&sys_lock);
-    mem = heap_alloc_i(&heap->mem_class, size);
-    ncore_lock_exit(&sys_lock);
-
-    return (mem);
-}
-
-
-
-void nheap_free_i(struct nheap * heap, void * mem)
-{
-    heap_free_i(&heap->mem_class, mem);
-}
-
-
-
-void nheap_free(struct nheap * heap, void * mem)
-{
-    ncore_lock                   sys_lock;
-
-    ncore_lock_enter(&sys_lock);
-    heap_free_i(&heap->mem_class, mem);
-    ncore_lock_exit(&sys_lock);
+    return (heap_alloc(heap_obj, size));
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

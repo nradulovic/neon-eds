@@ -170,7 +170,7 @@ void * nepa_create_storage(size_t size)
         mem = epa->mem;
     }
 #endif
-    NASSERT_INTERNAL(N_IS_MEM_OBJECT(epa->mem));
+    NASSERT_INTERNAL(N_IS_MEM_OBJECT(mem));
 
     return (nmem_zalloc(mem, size));
 }
@@ -189,7 +189,7 @@ void nepa_delete_storage(void * storage)
         mem = epa->mem;
     }
 #endif
-    NASSERT_INTERNAL(N_IS_MEM_OBJECT(epa->mem));
+    NASSERT_INTERNAL(N_IS_MEM_OBJECT(mem));
     nmem_free(mem, storage);
 }
 

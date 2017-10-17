@@ -14,3 +14,11 @@ Contributing a Patch
    be merged. If it needs additional work, the repo owner will respond with
    useful comments.
 
+Code style
+----------
+
+* Use code style defined by Linux Kernel project (refer to `Linux Kernel
+  Coding Style`_) with one exception: use ``tab == 4 spaces``.
+  
+  
+.. _Linux Kernel Coding Style: https://www.kernel.org/doc/html/v4.10/process/coding-style.html

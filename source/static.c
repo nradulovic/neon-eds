@@ -38,78 +38,53 @@
 /*======================================================  LOCAL DATA TYPES  ==*/
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void * static_alloc_i(struct nmem * mem_class, size_t size);
+static void * static_alloc(struct nmem * static_obj, size_t size);
 
-static void static_free_i(struct nmem * mem_class, void * mem);
+static void static_free(struct nmem * static_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
-static void * static_alloc_i(struct nmem * mem_class, size_t size)
+static void * static_alloc(struct nmem * static_obj, size_t size)
 {
-    NREQUIRE(NSIGNATURE_OF(mem_class) == NSIGNATURE_STATIC);
+    NREQUIRE(NSIGNATURE_IS(static_obj, NSIGNATURE_STATIC));
+    NREQUIRE((size != 0u) && (size < INT32_MAX));
     NREQUIRE(ncore_is_lock_valid());
 
     size = NALIGN_UP(size, NCPU_DATA_ALIGNMENT);
 
-    if (size <= mem_class->free) {
-        mem_class->free -= size;
+    if (size <= static_obj->free) {
+        static_obj->free -= size;
 
-        return ((void *)&((uint8_t *)mem_class->base)[mem_class->free]);
+        return ((void *)&((uint8_t *)static_obj->base)[static_obj->free]);
     } else {
 
         return (NULL);
     }
 }
 
-static void static_free_i(struct nmem * mem_class, void * mem)
+static void static_free(struct nmem * static_obj, void * mem)
 {
     (void)mem;
-    (void)mem_class;
+    (void)static_obj;
 
     NASSERT_ALWAYS("illegal static memory call");
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
-
-void nstatic_init(struct nstatic * static_obj, void * storage, size_t size)
+void * static_init_alloc(struct nmem * static_obj, size_t size)
 {
-    NREQUIRE(static_obj);
-    NREQUIRE(NSIGNATURE_OF(static_obj->mem_class) != NSIGNATURE_STATIC);
-    NREQUIRE(storage);
-    NREQUIRE(size > NCPU_DATA_ALIGNMENT);
+    NREQUIRE(NSIGNATURE_IS(static_obj, NSIGNATURE_STATIC));
+    NREQUIRE(static_obj->base);
+    NREQUIRE(static_obj->size >= NCPU_DATA_ALIGNMENT);
 
-    static_obj->mem_class.base     = storage;
-    static_obj->mem_class.size     = NALIGN(size, NCPU_DATA_ALIGNMENT);
-    static_obj->mem_class.free     = NALIGN(size, NCPU_DATA_ALIGNMENT);
-    static_obj->mem_class.vf_alloc = static_alloc_i;
-    static_obj->mem_class.vf_free  = static_free_i;
+    static_obj->free     = static_obj->size;
+    static_obj->vf_alloc = static_alloc;
+    static_obj->vf_free  = static_free;
 
-    NOBLIGATION(NSIGNATURE_IS(static_obj->mem_class, NSIGNATURE_STATIC));
-}
-
-
-
-void * nstatic_alloc_i(struct nstatic * static_obj, size_t size)
-{
-    return (static_alloc_i(&static_obj->mem_class, size));
-}
-
-
-
-void * nstatic_alloc(struct nstatic * static_mem, size_t size)
-{
-    ncore_lock                  sys_lock;
-    void *                      mem;
-
-    ncore_lock_enter(&sys_lock);
-    mem = static_alloc_i(&static_mem->mem_class, size);
-    ncore_lock_exit(&sys_lock);
-
-    return (mem);
+    return (static_alloc(static_obj, size));
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/

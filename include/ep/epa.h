@@ -95,6 +95,8 @@
 	NEPA_BUNDLE_STRUCT(name, queue_size, wspace_struct) name =                  \
         NEPA_BUNDLE_STRUCT_INIT(name, queue_size, priority, wspace_struct, init_state_ptr, type_enum)
 
+#define NEPA_FROM_BUNDLE(instance)			(&(instance)->b)
+
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
 extern "C" {

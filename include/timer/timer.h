@@ -170,19 +170,6 @@ void ntimer_init(struct ntimer * timer);
 
 
 
-#if (CONFIG_API_VALIDATION == 1)
-/**@brief       De-initialize the timer structure
- * @param       timer
- *              Pointer to timer structure
- * @api
- */
-void ntimer_term(struct ntimer * timer);
-#else
-#define ntimer_term(timer)              (void)timer
-#endif
-
-
-
 /**@brief       Start a timer
  * @param       timer
  *              Pointer to timer structure

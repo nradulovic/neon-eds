@@ -47,12 +47,12 @@
 
 static struct ntimer g_timer_sentinel =
 {
+	NSIGNATURE_INITIALIZER(NSIGNATURE_TIMER)
     NDLIST_INITIALIZER(g_timer_sentinel.list),
     UINT32_MAX,
     0,
     NULL,
     NULL,
-	NSIGNATURE_INITIALIZER(NSIGNATURE_TIMER)
 };
 
 /*======================================================  GLOBAL VARIABLES  ==*/
@@ -91,24 +91,11 @@ void remove_timer(struct ntimer * timer)
 #if (CONFIG_API_VALIDATION == 1)
 void ntimer_init(struct ntimer * timer)
 {
-    NREQUIRE(timer);
     NREQUIRE(NSIGNATURE_OF(timer) != NSIGNATURE_TIMER);
 
     ndlist_init(&timer->list);
 
     NOBLIGATION(NSIGNATURE_IS(timer, NSIGNATURE_TIMER));
-}
-#endif
-
-
-
-#if (CONFIG_API_VALIDATION == 1)
-void ntimer_term(struct ntimer * timer)
-{
-    (void)timer;
-
-    NREQUIRE(N_IS_TIMER_OBJECT(timer));
-    NOBLIGATION(NSIGNATURE_IS(timer, ~NSIGNATURE_TIMER));
 }
 #endif
 
@@ -224,7 +211,7 @@ void ncore_timer_isr(void)
         struct ntimer *         current;
 
         current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
-        NASSERT_INTERNAL(NSIGNATURE_IS(current) == NSIGNATURE_TIMER);
+        NASSERT_INTERNAL(N_IS_TIMER_OBJECT(current));
         --current->rtick;
 
         while (current->rtick == 0u) {
@@ -238,7 +225,7 @@ void ncore_timer_isr(void)
             }
             tmp     = current;
             current = NODE_TO_TIMER(ndlist_next(&g_timer_sentinel.list));
-            NASSERT_INTERNAL(NSIGNATURE_IS(current) == NSIGNATURE_TIMER);
+            NASSERT_INTERNAL(N_IS_TIMER_OBJECT(current));
             tmp->fn(tmp->arg);
         }
     }

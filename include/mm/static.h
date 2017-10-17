@@ -31,11 +31,22 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stddef.h>
-
+#include "base/debug.h"
 #include "mm/mem.h"
 
 /*===============================================================  MACRO's  ==*/
+
+#define NSTATICMEM_BUNDLE_STRUCT(name, size)                                \
+    NMEM_BUNDLE_STRUCT(name, size)
+
+#define NSTATICMEM_BUNDLE_STRUCT_INIT(instance)                             \
+    NMEM_BUNDLE_STRUCT_INIT(instance, 1, static_init_alloc, NSIGNATURE_STATIC)
+
+#define NSTATICMEM_BUNDLE_DEFINE(name, size)                                \
+    NSTATICMEM_BUNDLE_STRUCT(name, size) name =                             \
+        NSTATICMEM_BUNDLE_STRUCT_INIT(name)
+
+#define NSTATICMEM_FROM_BUNDLE(instance) NMEM_FROM_BUNDLE(instance)
 
 /*-------------------------------------------------------  C++ extern base  --*/
 #ifdef __cplusplus
@@ -43,68 +54,10 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       Static memory object structure
- * @details     This structure holds information about static memory instance.
- * @api
- */
-struct nstatic
-{
-    struct nmem                 mem_class;
-};
-
-/**@brief       Static memory instance handle type
- * @api
- */
-typedef struct nstatic nstatic;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-
-/**@brief       Initializes static memory instance
- * @param       static_obj
- *              Pointer to static object
- * @param       storage
- *              Storage memory reserved for static memory manager.
- * @param       size
- *              Size of reserved memory expresses in bytes.
- * @details     This function shall be called before any other static memory
- *              management function.
- * @api
- */
-void nstatic_init(
-    struct nstatic *            static_obj,
-    void *                      storage,
-    size_t                      size);
-
-
-
-/**@brief       Allocates static memory of get_size @c get_size
- * @param       static_obj
- *              Pointer to static object
- * @param       size
- *              The size of requested memory in bytes.
- * @return      Pointer to free memory of requested get_size.
- * @iclass
- */
-void * nstatic_alloc_i(
-    struct nstatic *            static_obj,
-    size_t                      size);
-
-
-
-/**@brief       Allocates static memory of get_size @c get_size
- * @param       static_obj
- *              Pointer to static object
- * @param       size
- *              The size of requested memory in bytes.
- * @return      Pointer to free memory of requested get_size.
- * @api
- */
-void * nstatic_alloc(
-    struct nstatic *            static_obj,
-    size_t                      size);
+void * static_init_alloc(struct nmem * static_obj, size_t size);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

@@ -75,8 +75,6 @@ extern "C" {
 
 /*============================================================  DATA TYPES  ==*/
 
-typedef   signed int ncpu_ssize;
-
 /**@brief       Interrupt context structure
  * @details     This type is used to declare variable type which will hold
  *              interrupt context data.

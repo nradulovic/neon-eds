@@ -31,15 +31,26 @@
 
 /*=========================================================  INCLUDE FILES  ==*/
 
-#include <stddef.h>
-
 #include "base/bitop.h"
 #include "mm/mem.h"
 
 /*===============================================================  MACRO's  ==*/
 
-#define NPOOL_MEM_COMPUTE_SIZE(blocks, blockSize)                               \
-    ((blocks) * (NALIGN_UP(blockSize, sizeof(ncpu_reg))))
+#define NPOOL_COMPUTE_SIZE(n_of_blocks, block_size)                         \
+    ((n_of_blocks) * (NALIGN_UP(block_size, sizeof(NCPU_DATA_ALIGNMENT))))
+
+#define NPOOL_BUNDLE_STRUCT(name, block_size, n_of_blocks)                  \
+    NMEM_BUNDLE_STRUCT(name, NPOOL_COMPUTE_SIZE(n_of_blocks, block_size))
+
+#define NPOOL_BUNDLE_STRUCT_INIT(instance, n_of_blocks)                     \
+    NMEM_BUNDLE_STRUCT_INIT(instance, n_of_blocks, pool_init_alloc,         \
+        NSIGNATURE_POOL)
+
+#define NPOOL_BUNDLE_DEFINE(name, block_size, n_of_blocks)                  \
+    NPOOL_BUNDLE_STRUCT(name, block_size, n_of_blocks) name =               \
+        NPOOL_BUNDLE_STRUCT_INIT(name, n_of_blocks)
+
+#define NPOOL_FROM_BUNDLE(instance)     NMEM_FROM_BUNDLE(instance)
 
 /*------------------------------------------------------  C++ extern begin  --*/
 #ifdef __cplusplus
@@ -47,100 +58,10 @@ extern "C" {
 #endif
 
 /*============================================================  DATA TYPES  ==*/
-
-/**@brief       Pool memory instance
- * @details     This structure holds information about pool_mem memory instance.
- * @p           This structure hold information about pool_mem and block sizes.
- *              Additionally, it holds a guard member which will ensure mutual
- *              exclusion in preemption environments.
- * @see         npool_init()
- * @api
- */
-struct npool
-{
-    struct nmem                 mem_class;
-};
-
-/**@brief       Pool memory instance pool_mem type
- * @api
- */
-typedef struct npool npool;
-
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*===================================================  FUNCTION PROTOTYPES  ==*/
 
-
-/**@brief       Initializes pool_mem memory instance
- * @param       pool_mem
- *              Pointer to pool_mem memory instance, see @ref npool.
- * @param       pool_mem
- *              Reserved memory area for pool_mem allocator.
- * @param       array_size
- *              The get_size of reserved memory area expressed in bytes.
- * @param       block_size
- *              The get_size of one block expressed in bytes.
- * @details     This function must be called before any call to npool_alloc_i()
- *              or npool_alloc().
- * @api
- */
-void npool_init(
-    struct npool *              pool,
-    void *                      array,
-    size_t                      array_size,
-    size_t                      block_size);
-
-
-
-/**@brief       Allocate one block from memory pool_mem
- * @param       pool_mem
- *              Pointer to pool_mem memory instance, see @ref npool.
- * @return      eSolid standard error:
- *              - @ref ES_ERROR_NONE - no error occurred
- *              - @ref ES_ERROR_NO_MEMORY - not enough memory available
- * @iclass
- */
-void * npool_alloc_i(
-    struct npool *              pool);
-
-
-
-/**@brief       Allocate one block from memory pool_mem
- * @param       pool_mem
- *              Pointer to pool_mem memory instance, see @ref npool.
- * @return      eSolid standard error:
- *              - @ref ES_ERROR_NONE - no error occurred
- *              - @ref ES_ERROR_NO_MEMORY - not enough memory available
- * @api
- */
-void * npool_alloc(
-    struct npool *              pool);
-
-
-
-/**
- * @brief       Oslobadja prethodno alocirani blok
- * @param       [in] pool_mem             Deskriptor pool_mem alokatora
- * @param       [in] mem                Prethodno alociran blok memorije
- * @iclass
- */
-void npool_free_i(
-    struct npool *              pool,
-    void *                      mem);
-
-
-
-/**
- * @brief       Oslobadja prethodno alocirani blok
- * @param       [in] pool_mem             Deskriptor pool_mem alokatora
- * @param       [in] mem                Prethodno alociran blok memorije
- * @note        Funkcija koristi makroe @ref ES_LOCK_SYS i
- *              @ref ES_UNLOCK_SYS za zastitu memorije od istovremenog
- *              pristupa.
- * @api
- */
-void npool_free(
-    struct npool *              pool,
-    void *                      mem);
+void * pool_init_alloc(struct nmem * pool_obj, size_t size);
 
 /*--------------------------------------------------------  C++ extern end  --*/
 #ifdef __cplusplus

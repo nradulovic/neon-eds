@@ -35,15 +35,6 @@
 #include "mm/pool.h"
 
 /*=========================================================  LOCAL MACRO's  ==*/
-
-/**@brief       Validate the pointer to pool memory object
- * @note        This macro may be used only when @ref CONFIG_API_VALIDATION
- *              macro is enabled.
- * @api
- */
-#define N_IS_POOL_OBJECT(mem_obj)                                               \
-    (NSIGNATURE_OF(mem_obj) == NSIGNATURE_POOL)
-
 /*======================================================  LOCAL DATA TYPES  ==*/
 
 /**@brief       Pool allocator header structure
@@ -55,121 +46,75 @@ struct pool_block
 
 /*=============================================  LOCAL FUNCTION PROTOTYPES  ==*/
 
-static void * pool_alloc_i(struct nmem * mem_obj, size_t size);
+static void * pool_alloc(struct nmem * pool_obj, size_t size);
 
-static void pool_free_i(struct nmem * mem_obj, void * mem);
+static void pool_free(struct nmem * pool_obj, void * mem);
 
 /*=======================================================  LOCAL VARIABLES  ==*/
 /*======================================================  GLOBAL VARIABLES  ==*/
 /*============================================  LOCAL FUNCTION DEFINITIONS  ==*/
 
-
-static void * pool_alloc_i(struct nmem * mem_obj, size_t size)
+static void * pool_alloc(struct nmem * pool_obj, size_t size)
 {
     struct pool_block *         block;
 
-    NREQUIRE(N_IS_POOL_OBJECT(mem_obj));
+    NREQUIRE(NSIGNATURE_OF(pool_obj) == NSIGNATURE_POOL);
     NREQUIRE(ncore_is_lock_valid());
 
-    block = mem_obj->base;
+    block = pool_obj->base;
     (void)size;
 
     if (block != NULL) {
-        mem_obj->base  = block->next;
-        mem_obj->free -= mem_obj->size;
+        pool_obj->base  = block->next;
+        pool_obj->free -= pool_obj->size / pool_obj->no_blocks;
     }
     NENSURE(block);
 
     return ((void *)block);
 }
 
-
-
-static void pool_free_i(struct nmem * mem_obj, void * mem)
+static void pool_free(struct nmem * pool_obj, void * mem)
 {
     struct pool_block *         block;
 
-    NREQUIRE(N_IS_POOL_OBJECT(mem_obj));
+    NREQUIRE(NSIGNATURE_OF(pool_obj) == NSIGNATURE_POOL);
     NREQUIRE(mem);
     NREQUIRE(ncore_is_lock_valid());
 
-    block            = (struct pool_block *)mem;
-    block->next      = mem_obj->base;
-    mem_obj->base  = block;
-    mem_obj->free += mem_obj->size;
+    block           = (struct pool_block *)mem;
+    block->next     = pool_obj->base;
+    pool_obj->base  = block;
+    pool_obj->free += pool_obj->size / pool_obj->no_blocks;
 }
 
 /*===========================================  GLOBAL FUNCTION DEFINITIONS  ==*/
 
 
-void npool_init(struct npool * pool, void * array, size_t array_size, 
-        size_t block_size)
+void * pool_init_alloc(struct nmem * pool_obj, size_t size)
 {
+    size_t                      block_size;
     size_t                      block_cnt;
     size_t                      nblocks;
     struct pool_block *         block;
 
-    NREQUIRE(pool);
-    NREQUIRE(NSIGNATURE_OF(&pool->mem_class) != NSIGNATURE_POOL);
-    NREQUIRE(array);
-    NREQUIRE(block_size);
-    NREQUIRE(block_size <= array_size);
+    NREQUIRE(NSIGNATURE_OF(pool_obj) == NSIGNATURE_POOL);
+    NREQUIRE(pool_obj->base);
+    NREQUIRE(pool_obj->size < INT32_MAX);
+    NREQUIRE(pool_obj->no_blocks >= 1);
 
-    block_size = NALIGN_UP(block_size, NCPU_DATA_ALIGNMENT);
-    nblocks    = array_size / block_size;
-    pool->mem_class.base     = array;
-    pool->mem_class.size     = block_size;
-    pool->mem_class.free     = array_size;
-    pool->mem_class.vf_alloc = pool_alloc_i;
-    pool->mem_class.vf_free  = pool_free_i;
-    block = array;
-
-    for (block_cnt = 0u; block_cnt < nblocks - 1u; block_cnt++) {
+    for (block_cnt = 0u, block_size = pool_obj->size / pool_obj->no_blocks;
+        block_cnt < pool_obj->no_blocks - 1u; 
+        block_cnt++) {
         block->next =
-            (struct pool_block *)((uint8_t *)block + pool->mem_class.size);
+            (struct pool_block *)((uint8_t *)block + pool_obj->size);
         block = block->next;
     }
     block->next = NULL;
-    NOBLIGATION(NSIGNATURE_IS(&pool->mem_class, NSIGNATURE_POOL));
-}
 
+    pool_obj->vf_alloc = pool_alloc;
+    pool_obj->vf_free  = pool_free;
 
-
-void * npool_alloc_i(struct npool * pool)
-{
-    return (pool_alloc_i(&pool->mem_class, 0));
-}
-
-
-
-void * npool_alloc(struct npool * pool)
-{
-    ncore_lock                   sys_lock;
-    void *                      mem;
-
-    ncore_lock_enter(&sys_lock);
-    mem = pool_alloc_i(&pool->mem_class, 0);
-    ncore_lock_exit(&sys_lock);
-
-    return (mem);
-}
-
-
-
-void npool_free_i(struct npool * pool, void * mem)
-{
-    pool_free_i(&pool->mem_class, mem);
-}
-
-
-
-void npool_free(struct npool * pool, void * mem)
-{
-    ncore_lock                 sys_lock;
-
-    ncore_lock_enter(&sys_lock);
-    pool_free_i(&pool->mem_class, mem);
-    ncore_lock_exit(&sys_lock);
+    return (pool_alloc(pool_obj, 0));
 }
 
 /*================================*//** @cond *//*==  CONFIGURATION ERRORS  ==*/
